@@ -1,1 +1,1 @@
-This is a linguistics website for a research project with Saffieh 
+This is a research project with professor Saffieh aimed to providing Linguistics students resources for the upcoming fall semester. It includes some treeform writing tools along with the app that allows students to click on the links to listen to the audio-recordings
