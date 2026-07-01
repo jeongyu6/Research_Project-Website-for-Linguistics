@@ -2,6 +2,7 @@ import { useState } from 'react'
 import './App.css'
 import utLogo from './utoronto_coa_no_background.png'
 import EnglishPage from './pages/EnglishPage.jsx'
+import LanguageDataPage from './pages/LanguageDataPage.jsx'
 
 function App() {
   const [currentPage, setCurrentPage] = useState('home')
@@ -26,6 +27,8 @@ function App() {
       <main>
         {currentPage === 'english' ? (
           <EnglishPage onBack={() => setCurrentPage('home')} />
+        ) : currentPage === 'language-data' ? (
+          <LanguageDataPage onBack={() => setCurrentPage('home')} />
         ) : (
           <>
             <section className="hero" id="hero">
@@ -117,7 +120,13 @@ function App() {
                   </div>
                   <h3>Language Data & Projects</h3>
                   <p>Access datasets, ongoing projects, and tools for language research.</p>
-                  <button type="button" className="card-button">Coming Soon</button>
+                  <button
+                    type="button"
+                    className="card-button"
+                    onClick={() => setCurrentPage('language-data')}
+                  >
+                    Explore Data →
+                  </button>
                 </article>
               </div>
             </section>
