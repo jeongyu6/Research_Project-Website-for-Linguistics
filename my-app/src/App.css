@@ -496,6 +496,444 @@ main {
   box-shadow: 0 16px 38px rgba(20, 48, 92, 0.05);
 }
 
+.language-data-page {
+  display: grid;
+  gap: 30px;
+  padding: 34px 0 56px;
+  text-align: left;
+}
+
+.language-data-section {
+  display: grid;
+  gap: 18px;
+  padding: 28px;
+  border: 1px solid #dbe6f5;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(20, 48, 92, 0.05);
+}
+
+.treeform-container {
+  min-height: 560px;
+  padding: 0;
+  border: 1px solid #d8e2ef;
+  border-radius: 14px;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.treeform-container p {
+  color: #64748b;
+  font-size: 1.1rem;
+}
+
+.syntax-tree-builder {
+  display: grid;
+  gap: 16px;
+  width: 100%;
+  padding: 18px;
+  background: #f8fafc;
+}
+
+.tree-workspace {
+  display: grid;
+  grid-template-columns: minmax(190px, 230px) minmax(270px, 320px) minmax(0, 1fr);
+  gap: 16px;
+  min-height: 470px;
+}
+
+.tree-template-palette {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-content: start;
+  gap: 6px;
+  padding: 8px;
+  border: 1px solid #c8d4e3;
+  border-radius: 10px;
+  background: #eef3f8;
+}
+
+.tree-template-button {
+  display: grid;
+  grid-template-rows: auto minmax(48px, 1fr) auto;
+  gap: 3px;
+  min-width: 0;
+  min-height: 92px;
+  padding: 6px;
+  border: 1px solid #aebbcc;
+  border-radius: 4px;
+  background: linear-gradient(#ffffff, #e8edf3);
+  color: #111827;
+  font: inherit;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  transition: border-color 0.16s ease, box-shadow 0.16s ease, transform 0.16s ease;
+}
+
+.tree-template-button:hover,
+.tree-template-button:focus-visible {
+  border-color: #1555c5;
+  box-shadow: 0 0 0 2px rgba(21, 85, 197, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.9);
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.template-key {
+  min-height: 17px;
+  color: #334155;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.template-preview {
+  display: grid;
+  place-content: center;
+  gap: 0;
+  min-width: 0;
+  color: #111827;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.92rem;
+  font-weight: 700;
+  line-height: 1.05;
+  text-align: center;
+  white-space: pre;
+}
+
+.template-label {
+  min-width: 0;
+  color: #1f2937;
+  font-size: 0.78rem;
+  font-weight: 800;
+  line-height: 1.05;
+  text-align: center;
+  overflow-wrap: anywhere;
+}
+
+.tree-panel,
+.tree-canvas,
+.tree-status {
+  border: 1px solid #d8e2ef;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.tree-editor {
+  display: grid;
+  align-content: start;
+  gap: 16px;
+  padding: 18px;
+}
+
+.tree-panel-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid #e3ebf5;
+  color: #475569;
+  font-size: 0.92rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.tree-panel-header strong {
+  color: #001747;
+  font-size: 1.2rem;
+  text-transform: none;
+}
+
+.tree-field {
+  display: grid;
+  gap: 8px;
+  color: #102044;
+  font-size: 0.93rem;
+  font-weight: 800;
+}
+
+.tree-inline-control {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 8px;
+}
+
+.tree-field input {
+  width: 100%;
+  min-width: 0;
+  border: 1px solid #cbd8e8;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #0f172a;
+  font: inherit;
+}
+
+.tree-field input {
+  min-height: 42px;
+  padding: 8px 10px;
+}
+
+.tree-inline-control button,
+.tree-actions button,
+.tree-secondary,
+.tree-danger {
+  min-height: 42px;
+  border: 1px solid rgba(31, 95, 181, 0.38);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1555c5;
+  font: inherit;
+  font-size: 0.9rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease, transform 0.18s ease;
+}
+
+.tree-inline-control button {
+  padding: 8px 12px;
+}
+
+.tree-inline-control button:hover,
+.tree-actions button:hover,
+.tree-secondary:hover,
+.tree-danger:hover,
+.tree-inline-control button:focus-visible,
+.tree-actions button:focus-visible,
+.tree-secondary:focus-visible,
+.tree-danger:focus-visible {
+  background: #1555c5;
+  border-color: #1555c5;
+  color: #ffffff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+.tree-swatches {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.tree-swatches button {
+  width: 32px;
+  height: 32px;
+  border: 1.5px solid #94a3b8;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.tree-swatches button.active {
+  box-shadow: 0 0 0 3px rgba(21, 85, 197, 0.24);
+  border-color: #1555c5;
+}
+
+.tree-feature-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-height: 36px;
+}
+
+.tree-feature-list span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 8px;
+  border: 1px solid #d8e2ef;
+  border-radius: 999px;
+  background: #f8fafc;
+  color: #102044;
+  font-size: 0.86rem;
+  font-weight: 800;
+}
+
+.tree-feature-value {
+  display: inline-flex;
+  align-items: center;
+  min-width: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-weight: 800;
+  cursor: text;
+}
+
+.tree-feature-value:hover,
+.tree-feature-value:focus-visible {
+  color: #1555c5;
+  text-decoration: underline;
+  outline: none;
+}
+
+.tree-feature-remove {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 18px;
+  height: 18px;
+  border: 0;
+  border-radius: 999px;
+  background: #e2e8f0;
+  color: #334155;
+  cursor: pointer;
+}
+
+.tree-feature-list em {
+  color: #64748b;
+  font-size: 0.9rem;
+}
+
+.tree-secondary {
+  width: 100%;
+}
+
+.tree-danger {
+  width: 100%;
+  border-color: rgba(185, 28, 28, 0.32);
+  color: #991b1b;
+}
+
+.tree-danger:hover,
+.tree-danger:focus-visible {
+  background: #991b1b;
+  border-color: #991b1b;
+}
+
+.tree-movement-controls {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid #d8e2ef;
+  border-radius: 10px;
+  background: #f8fafc;
+}
+
+.tree-movement-controls > span {
+  color: #102044;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.movement-slider {
+  display: grid;
+  gap: 6px;
+  color: #334155;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.movement-slider input {
+  width: 100%;
+  accent-color: #1555c5;
+  cursor: pointer;
+}
+
+.movement-control-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.tree-movement-controls button {
+  min-height: 36px;
+  border: 1px solid rgba(31, 95, 181, 0.38);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #1555c5;
+  font: inherit;
+  font-size: 0.86rem;
+  font-weight: 800;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.tree-movement-controls button:hover,
+.tree-movement-controls button:focus-visible {
+  background: #1555c5;
+  border-color: #1555c5;
+  color: #ffffff;
+  outline: none;
+}
+
+.tree-canvas {
+  min-height: 470px;
+  overflow: auto;
+}
+
+.tree-canvas svg {
+  display: block;
+  min-width: 640px;
+  min-height: 470px;
+}
+
+.movement-path {
+  stroke: #334155;
+  stroke-width: 3;
+  stroke-dasharray: 2 9;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  cursor: pointer;
+  pointer-events: stroke;
+}
+
+.movement-path.selected {
+  stroke: #1555c5;
+  stroke-width: 4;
+}
+
+.movement-handles line {
+  stroke: rgba(21, 85, 197, 0.22);
+  stroke-width: 1.4;
+  stroke-dasharray: 4 5;
+  pointer-events: none;
+}
+
+.movement-handles circle {
+  fill: #1555c5;
+  stroke: #ffffff;
+  stroke-width: 2.5;
+  cursor: grab;
+  filter: drop-shadow(0 2px 4px rgba(15, 23, 42, 0.22));
+}
+
+.movement-handles circle:active {
+  cursor: grabbing;
+}
+
+.movement-control-handle {
+  fill: #38bdf8;
+}
+
+.tree-node rect,
+.tree-node text,
+.triangle-node polygon,
+.feature-label {
+  cursor: pointer;
+}
+
+.svg-button-reset {
+  display: none;
+}
+
+.tree-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.tree-actions button {
+  padding: 8px 14px;
+}
+
+.tree-status {
+  padding: 12px 14px;
+  color: #334155;
+  font-size: 0.94rem;
+  font-weight: 700;
+}
+
 .ipa-section-heading {
   display: grid;
   gap: 8px;
@@ -715,6 +1153,19 @@ main {
   .hero {
     grid-template-columns: 1fr;
     gap: 32px;
+  }
+
+  .tree-workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .tree-canvas,
+  .tree-canvas svg {
+    min-height: 420px;
+  }
+
+  .syntax-tree-builder {
+    padding: 12px;
   }
 
 }
