@@ -1,23 +1,21 @@
 import SyntaxTreeBuilder from '../components/SyntaxTreeBuilder.jsx'
 
-export default function LanguageDataPage({ onBack }) {
+export default function SyntaxPage({ onBack }) {
   return (
-    <div className="language-data-page">
+    <div className="syntax-page">
       <div className="ipa-page-header">
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>Language Data & Projects</h1>
+        <h1>Syntax Tree Builder</h1>
       </div>
 
-      <section className="language-data-section">
+      <section className="syntax-tool-section">
         <div className="ipa-section-heading">
-          <h2>TreeForm Application</h2>
+          <h2>TreeForm Web</h2>
           <p>Create, edit, import, and export syntax trees directly in the browser.</p>
         </div>
-        <div className="treeform-container">
-          <SyntaxTreeBuilder />
-        </div>
+        <SyntaxTreeBuilder />
       </section>
     </div>
   )
