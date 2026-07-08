@@ -73,7 +73,7 @@ function App() {
                   <div className="card-icon ipa-icon">
                     <span>/æ/</span>
                   </div>
-                  <h3>IPA_Page</h3>
+                  <h3>International Phonetic Alphabet (IPA)</h3>
                   <p>Explore the symbols used to represent the sounds of spoken languages.</p>
                   <button
                     type="button"
@@ -134,14 +134,14 @@ function App() {
                       <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
                     </svg>
                   </div>
-                  <h3>Treeform_Page</h3>
+                  <h3>Language Data & Projects</h3>
                   <p>Access datasets, ongoing projects, and tools for language research.</p>
                   <button
                     type="button"
                     className="card-button"
                     onClick={() => setCurrentPage('Treeform_Page')}
                   >
-                    Explore Treeform_Page →
+                    Explore Data →
                   </button>
                 </article>
               </div>
