@@ -7,7 +7,7 @@ export default function Treeform_Page({ onBack }) {
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>Treeform_Page</h1>
+        <h1>Treeform Page</h1>
       </div>
 
       <section className="language-data-section">
