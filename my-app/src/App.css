@@ -1,3 +1,17 @@
+/*
+  App.css controls the main visual design of the website.
+
+  Sections:
+  - Page shell and main layout: overall page size, background, and content width.
+  - U of T header: logo, university text, department text, and responsive header layout.
+  - Homepage hero: main title, description, and "About This Site" panel.
+  - Resource cards: homepage cards, icons, descriptions, buttons, and hover effects.
+  - Responsive layout: adjusts header, hero, cards, and pages for smaller screens.
+  - IPA page: page header, back button, chart containers, vowel chart, consonant table, and audio player.
+  - Treeform page: Treeform container, template buttons, editor controls, color swatches, features, movement controls, and tree canvas.
+  - Footer: bottom website footer styling.
+*/
+
 .page-shell {
   min-height: 100vh;
   width: 100%;
