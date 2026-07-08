@@ -4,7 +4,9 @@ import utLogo from './utoronto_coa_no_background.png'
 import IPA_Page from './pages/IPA_Page.jsx'
 import Treeform_Page from './pages/Treeform_Page.jsx'
 
-// This is the main component of the website. It is responsible for the following
+
+// This is the main structure/content of the website.
+//  It is responsible for the following:
   //1. Showing the U of T header
   //2. Showing the homepage
   //3. Switching to the pages

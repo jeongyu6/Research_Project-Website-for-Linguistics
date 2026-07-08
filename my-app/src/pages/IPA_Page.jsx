@@ -156,7 +156,7 @@ export default function IPA_Page({ onBack }) {
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>IPA_Page</h1>
+        <h1>International Phonetic Alphabet</h1>
       </div>
 
       <section className="ipa-chart-section">

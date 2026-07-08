@@ -1,5 +1,11 @@
 @import url('https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;600;700;800&display=swap');
 
+/* 
+  Global website styles.
+  Defines shared colors, fonts, spacing, layout defaults,
+  and base styles for headings, paragraphs, and code.
+*/
+
 :root {
   --text: #4b5563;
   --text-h: #0f172a;
