@@ -14,6 +14,7 @@ const nodeHeight = 36
 const canvasMargin = 220
 let nodeCounter = 0
 let movementCounter = 0
+const commonConstituentLabels = ['NP', 'VP', 'TP', 'CP', 'DP', 'PP', 'AdjP', 'AdvP', 'IP', 'XP']
 
 // Buttons to create were for:
 // node down, node up, terminal, triangle,
@@ -22,7 +23,7 @@ let movementCounter = 0
 // add feature
 
 const treeTemplates = [
-  { key: 'F1', label: 'Node Down', preview: ['|', 'X'], action: 'nodeDown' },
+  { key: 'F1', label: 'Node Down', preview: ['|', 'X'], previewStyle: 'nodeDown', action: 'nodeDown' },
   { key: 'F2', label: 'Node Up', preview: ['X', '|'], action: 'nodeUp' },
   { key: 'F3', label: 'Terminal', preview: ['|', 'text'], action: 'terminal' },
   { key: 'F4', label: 'Triangle', preview: ['△', 'text'], action: 'triangle' },
@@ -246,6 +247,143 @@ function TreeNode({ node, selectedId, onSelect }) {
       ))}
     </g>
   )
+}
+
+function PreviewNode({ x, y, label, tone = 'light' }) {
+  return (
+    <g>
+      <rect className={`preview-node preview-node-${tone}`} x={x - 18} y={y - 9} width="36" height="18" rx="7" />
+      <text x={x} y={y + 4} textAnchor="middle">{label}</text>
+    </g>
+  )
+}
+
+function PreviewLine({ x1, y1, x2, y2 }) {
+  return <line className="preview-line" x1={x1} y1={y1} x2={x2} y2={y2} />
+}
+
+function TemplateDiagram({ template }) {
+  switch (template.action) {
+    case 'nodeDown':
+      return (
+        <>
+          <PreviewNode x={55} y={18} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={28} x2={55} y2={45} />
+          <PreviewNode x={55} y={56} label="X" />
+        </>
+      )
+    case 'nodeUp':
+      return (
+        <>
+          <PreviewNode x={55} y={18} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={28} x2={55} y2={45} />
+          <PreviewNode x={55} y={56} label="X" tone="muted" />
+        </>
+      )
+    case 'terminal':
+      return (
+        <>
+          <PreviewNode x={55} y={18} label="X" />
+          <PreviewLine x1={55} y1={28} x2={55} y2={48} />
+          <text className="preview-terminal" x={55} y={62} textAnchor="middle">text</text>
+        </>
+      )
+    case 'triangle':
+      return (
+        <>
+          <path className="preview-triangle" d="M55 16 L30 56 L80 56 Z" />
+          <text className="preview-terminal" x={55} y={68} textAnchor="middle">text</text>
+        </>
+      )
+    case 'unary':
+      return (
+        <>
+          <PreviewNode x={55} y={18} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={28} x2={55} y2={45} />
+          <PreviewNode x={55} y={56} label="X" />
+        </>
+      )
+    case 'binary':
+      return (
+        <>
+          <PreviewNode x={55} y={17} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={27} x2={35} y2={47} />
+          <PreviewLine x1={55} y1={27} x2={75} y2={47} />
+          <PreviewNode x={35} y={58} label="X" />
+          <PreviewNode x={75} y={58} label="Y" />
+        </>
+      )
+    case 'ternary':
+      return (
+        <>
+          <PreviewNode x={55} y={16} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={26} x2={27} y2={47} />
+          <PreviewLine x1={55} y1={26} x2={55} y2={47} />
+          <PreviewLine x1={55} y1={26} x2={83} y2={47} />
+          <PreviewNode x={27} y={58} label="X" />
+          <PreviewNode x={55} y={58} label="Y" />
+          <PreviewNode x={83} y={58} label="Z" />
+        </>
+      )
+    case 'adjunct':
+      return (
+        <>
+          <PreviewNode x={55} y={17} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={27} x2={34} y2={47} />
+          <PreviewLine x1={55} y1={27} x2={76} y2={47} />
+          <PreviewNode x={34} y={58} label="Adj" />
+          <PreviewNode x={76} y={58} label="XP" />
+        </>
+      )
+    case 'xbar':
+      return (
+        <>
+          <PreviewNode x={55} y={14} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={24} x2={31} y2={42} />
+          <PreviewLine x1={55} y1={24} x2={77} y2={42} />
+          <PreviewNode x={31} y={51} label="Spec" />
+          <PreviewNode x={77} y={51} label="X'" />
+          <PreviewLine x1={77} y1={60} x2={77} y2={70} />
+        </>
+      )
+    case 'movement':
+      return (
+        <>
+          <PreviewNode x={32} y={54} label="t" tone="muted" />
+          <PreviewNode x={80} y={24} label="XP" tone="selected" />
+          <path className="preview-arrow" d="M35 42 Q48 16 74 20" />
+          <path className="preview-arrow-head" d="M73 15 L84 22 L71 25 Z" />
+        </>
+      )
+    default:
+      return null
+  }
+}
+
+function TemplatePreview({ template }) {
+  const diagramActions = new Set(['nodeDown', 'nodeUp', 'terminal', 'triangle', 'unary', 'binary', 'ternary', 'adjunct', 'xbar', 'movement'])
+
+  if (diagramActions.has(template.action)) {
+    return (
+      <span className="template-preview template-diagram-preview" aria-hidden="true">
+        <svg className="template-diagram" viewBox="0 0 110 76" focusable="false">
+          <TemplateDiagram template={template} />
+        </svg>
+      </span>
+    )
+  }
+
+  return (
+    <span className="template-preview template-notation-preview" aria-hidden="true">
+      {template.preview.map((line, index) => (
+        <span key={`${template.label}-${line}-${index}`}>{line}</span>
+      ))}
+    </span>
+  )
+}
+
+function getLabelChoice(label) {
+  return commonConstituentLabels.includes(label) ? label : 'Other'
 }
 
 export default function SyntaxTreeBuilder() {
@@ -664,15 +802,11 @@ export default function SyntaxTreeBuilder() {
           <button
             type="button"
             key={`${template.key}-${template.label}`}
-            className="tree-template-button"
+            className={`tree-template-button template-action-${template.action}`}
             onClick={() => applyTemplate(template.action)}
           >
-            <span className="template-key">{template.key}</span>
-            <span className="template-preview" aria-hidden="true">
-              {template.preview.map((line, index) => (
-                <span key={`${template.label}-${line}-${index}`}>{line}</span>
-              ))}
-            </span>
+            <span className="template-key">{template.key || 'Tool'}</span>
+            <TemplatePreview template={template} />
             <span className="template-label">{template.label}</span>
           </button>
         ))}
@@ -687,7 +821,18 @@ export default function SyntaxTreeBuilder() {
 
           <label className="tree-field">
             <span>{tree ? 'Label' : 'Root label'}</span>
-            <div className="tree-inline-control">
+            <div className="tree-inline-control tree-label-control">
+              <select
+                value={getLabelChoice(labelInput)}
+                onChange={(event) => {
+                  if (event.target.value !== 'Other') setLabelInput(event.target.value)
+                }}
+              >
+                {commonConstituentLabels.map((label) => (
+                  <option key={label} value={label}>{label}</option>
+                ))}
+                <option value="Other">Other</option>
+              </select>
               <input value={labelInput} onChange={(event) => setLabelInput(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && saveLabel()} />
               <button type="button" onClick={saveLabel}>{tree ? 'Save' : 'Create'}</button>
             </div>
@@ -695,7 +840,18 @@ export default function SyntaxTreeBuilder() {
 
           <label className="tree-field">
             <span>New child</span>
-            <div className="tree-inline-control">
+            <div className="tree-inline-control tree-label-control">
+              <select
+                value={getLabelChoice(childInput)}
+                onChange={(event) => {
+                  if (event.target.value !== 'Other') setChildInput(event.target.value)
+                }}
+              >
+                {commonConstituentLabels.map((label) => (
+                  <option key={label} value={label}>{label}</option>
+                ))}
+                <option value="Other">Other</option>
+              </select>
               <input value={childInput} onChange={(event) => setChildInput(event.target.value)} onKeyDown={(event) => event.key === 'Enter' && addChild()} />
               <button type="button" onClick={addChild}>Add</button>
             </div>
