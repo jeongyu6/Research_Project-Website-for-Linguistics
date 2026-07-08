@@ -659,26 +659,26 @@ export default function SyntaxTreeBuilder() {
 
   return (
     <div className="syntax-tree-builder">
-      <div className="tree-workspace">
-        <section className="tree-template-palette" aria-label="TreeForm template buttons">
-          {treeTemplates.map((template) => (
-            <button
-              type="button"
-              key={`${template.key}-${template.label}`}
-              className="tree-template-button"
-              onClick={() => applyTemplate(template.action)}
-            >
-              <span className="template-key">{template.key}</span>
-              <span className="template-preview" aria-hidden="true">
-                {template.preview.map((line, index) => (
-                  <span key={`${template.label}-${line}-${index}`}>{line}</span>
-                ))}
-              </span>
-              <span className="template-label">{template.label}</span>
-            </button>
-          ))}
-        </section>
+      <section className="tree-template-palette" aria-label="TreeForm template buttons">
+        {treeTemplates.map((template) => (
+          <button
+            type="button"
+            key={`${template.key}-${template.label}`}
+            className="tree-template-button"
+            onClick={() => applyTemplate(template.action)}
+          >
+            <span className="template-key">{template.key}</span>
+            <span className="template-preview" aria-hidden="true">
+              {template.preview.map((line, index) => (
+                <span key={`${template.label}-${line}-${index}`}>{line}</span>
+              ))}
+            </span>
+            <span className="template-label">{template.label}</span>
+          </button>
+        ))}
+      </section>
 
+      <div className="tree-workspace">
         <section className="tree-panel tree-editor" aria-label="Tree editing controls">
           <div className="tree-panel-header">
             <span>Selected</span>
@@ -863,7 +863,6 @@ export default function SyntaxTreeBuilder() {
         <button type="button" onClick={downloadSvg}>Download SVG</button>
       </div>
 
-      <div className="tree-status" role="status">{status || 'Click any node to edit it. Add children to build the phrase structure, then export SVG for slides or handouts.'}</div>
     </div>
   )
 }
