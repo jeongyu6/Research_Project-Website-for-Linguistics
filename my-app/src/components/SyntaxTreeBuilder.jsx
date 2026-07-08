@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import utscLogo from '../UTSC_logo.png'
 
 
@@ -291,8 +291,8 @@ function TemplateDiagram({ template }) {
     case 'triangle':
       return (
         <>
-          <path className="preview-triangle" d="M55 16 L30 56 L80 56 Z" />
-          <text className="preview-terminal" x={55} y={68} textAnchor="middle">text</text>
+          <path className="preview-triangle" d="M55 22 L38 52 L72 52 Z" />
+          <text className="preview-terminal" x={55} y={66} textAnchor="middle">text</text>
         </>
       )
     case 'unary':
@@ -351,8 +351,8 @@ function TemplateDiagram({ template }) {
         <>
           <PreviewNode x={32} y={54} label="t" tone="muted" />
           <PreviewNode x={80} y={24} label="XP" tone="selected" />
-          <path className="preview-arrow" d="M35 42 Q48 16 74 20" />
-          <path className="preview-arrow-head" d="M73 15 L84 22 L71 25 Z" />
+          <path className="preview-arrow" d="M34 42 Q45 22 61 22" />
+          <path className="preview-arrow-head" d="M60 17 L70 22 L60 27 Z" />
         </>
       )
     default:
@@ -581,6 +581,20 @@ export default function SyntaxTreeBuilder() {
         break
     }
   }
+
+  useEffect(() => {
+    function handleTemplateShortcut(event) {
+      if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
+      const template = treeTemplates.find((item) => item.key === event.key)
+      if (!template) return
+
+      event.preventDefault()
+      applyTemplate(template.action)
+    }
+
+    window.addEventListener('keydown', handleTemplateShortcut)
+    return () => window.removeEventListener('keydown', handleTemplateShortcut)
+  })
 
   function saveLabel() {
     const label = labelInput.trim()
