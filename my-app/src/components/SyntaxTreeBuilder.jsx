@@ -1,4 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
+import utscLogo from '../UTSC_logo.png'
 
 
 //Got inspiration from the github: https://github.com/frekky/TreeForm.git
@@ -272,6 +273,10 @@ export default function SyntaxTreeBuilder() {
   const canvasWidth = Math.max(layout.width + canvasMargin * 2, 860)
   const canvasHeight = Math.max(layout.height + canvasMargin, 560)
   const canvasOffsetX = Math.max((canvasWidth - layout.width) / 2, canvasMargin)
+  const brandLogoSize = Math.min(canvasWidth, canvasHeight) * 0.44
+  const brandMarkX = canvasWidth - brandLogoSize / 2 - 28
+  const brandMarkY = canvasHeight - brandLogoSize / 2 - 8
+  const brandTextY = brandMarkY + brandLogoSize / 2 - 42
   const viewBox = `0 0 ${canvasWidth} ${canvasHeight}`
 
   function createNewTree(label = labelInput.trim() || 'S') {
@@ -774,6 +779,7 @@ export default function SyntaxTreeBuilder() {
             width="100%"
             height="100%"
             viewBox={viewBox}
+            preserveAspectRatio="xMidYMax meet"
             role="img"
             aria-label="Editable syntax tree"
             onMouseMove={dragMovementHandle}
@@ -786,6 +792,20 @@ export default function SyntaxTreeBuilder() {
               </marker>
             </defs>
             <rect width="100%" height="100%" fill="#ffffff" />
+            <g className="tree-brand-mark" transform={`translate(${brandMarkX}, ${brandMarkY})`} aria-hidden="true">
+              <image
+                className="tree-brand-logo"
+                href={utscLogo}
+                x={-brandLogoSize / 2}
+                y={-brandLogoSize / 2}
+                width={brandLogoSize}
+                height={brandLogoSize}
+                preserveAspectRatio="xMidYMid meet"
+              />
+            </g>
+            <text className="tree-brand-department" x={canvasWidth - 24} y={brandTextY} textAnchor="end" aria-hidden="true">
+              Department of Linguistic Studies
+            </text>
             {!tree && (
               <text x="50%" y="50%" textAnchor="middle" fill="#64748b" fontSize="18" fontWeight="700">
                 Start with a root node or choose a template button.

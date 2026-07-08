@@ -931,6 +931,22 @@ main {
   display: none;
 }
 
+.tree-brand-mark {
+  pointer-events: none;
+}
+
+.tree-brand-logo {
+  pointer-events: none;
+}
+
+.tree-brand-department {
+  fill: #00204e;
+  font-family: 'Open Sans', Arial, Helvetica, sans-serif;
+  font-size: 17px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+}
+
 .tree-actions {
   display: flex;
   flex-wrap: wrap;

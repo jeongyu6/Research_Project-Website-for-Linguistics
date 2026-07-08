@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import './App.css'
-import utLogo from './utoronto_coa_no_background.png'
+import utLogo from './UofT_logo.png'
 import IPA_Page from './pages/IPA_Page.jsx'
 import Treeform_Page from './pages/Treeform_Page.jsx'
 
