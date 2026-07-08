@@ -1,13 +1,27 @@
 import { useState } from 'react'
 import './App.css'
 import utLogo from './utoronto_coa_no_background.png'
-import EnglishPage from './pages/EnglishPage.jsx'
-import LanguageDataPage from './pages/LanguageDataPage.jsx'
+import IPA_Page from './pages/IPA_Page.jsx'
+import Treeform_Page from './pages/Treeform_Page.jsx'
 
+// This is the main component of the website. It is responsible for the following
+  //1. Showing the U of T header
+  //2. Showing the homepage
+  //3. Switching to the pages
+  //4. Showing the footer
+
+//This function is responsible for controlling the whole website
 function App() {
+  //When the app opens, it shows the homepage. 
   const [currentPage, setCurrentPage] = useState('home')
 
   return (
+
+     // This is responsible for the header of all of the pages.It includes the following
+        // 1. Cute UTSC logo
+        // 2. University of Toronto Scarborough
+        // 3. Department of Language Studies
+        // 4. Linguistics
     <div className="page-shell">
       <header className="ut-header">
         <div className="ut-header-left">
@@ -25,10 +39,10 @@ function App() {
       </header>
 
       <main>
-        {currentPage === 'english' ? (
-          <EnglishPage onBack={() => setCurrentPage('home')} />
-        ) : currentPage === 'language-data' ? (
-          <LanguageDataPage onBack={() => setCurrentPage('home')} />
+        {currentPage === 'IPA_Page' ? (
+          <IPA_Page onBack={() => setCurrentPage('home')} />
+        ) : currentPage === 'Treeform_Page' ? (
+          <Treeform_Page onBack={() => setCurrentPage('home')} />
         ) : (
           <>
             <section className="hero" id="hero">
@@ -57,12 +71,12 @@ function App() {
                   <div className="card-icon ipa-icon">
                     <span>/æ/</span>
                   </div>
-                  <h3>International Phonetic Alphabet (IPA)</h3>
+                  <h3>IPA_Page</h3>
                   <p>Explore the symbols used to represent the sounds of spoken languages.</p>
                   <button
                     type="button"
                     className="card-button"
-                    onClick={() => setCurrentPage('english')}
+                    onClick={() => setCurrentPage('IPA_Page')}
                   >
                     Explore IPA →
                   </button>
@@ -118,14 +132,14 @@ function App() {
                       <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
                     </svg>
                   </div>
-                  <h3>Language Data & Projects</h3>
+                  <h3>Treeform_Page</h3>
                   <p>Access datasets, ongoing projects, and tools for language research.</p>
                   <button
                     type="button"
                     className="card-button"
-                    onClick={() => setCurrentPage('language-data')}
+                    onClick={() => setCurrentPage('Treeform_Page')}
                   >
-                    Explore Data →
+                    Explore Treeform_Page →
                   </button>
                 </article>
               </div>
@@ -139,6 +153,8 @@ function App() {
         <p>Developed by the Department of Language Studies, University of Toronto Scarborough.</p>
       </footer>
     </div>
+    // This part with the footer is responsible for all the footer of the pages and it contains the label:
+        //Developed by the Department of Language Studies, University of Toronto Scarborough. 
   )
 }
 

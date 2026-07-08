@@ -130,7 +130,7 @@ function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
   )
 }
 
-export default function EnglishPage({ onBack }) {
+export default function IPA_Page({ onBack }) {
   const [selectedVowel, setSelectedVowel] = useState('')
   const [selectedVowelSymbol, setSelectedVowelSymbol] = useState('')
   const [selectedVowelRecordings, setSelectedVowelRecordings] = useState([])
@@ -156,7 +156,7 @@ export default function EnglishPage({ onBack }) {
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>International Phonetic Alphabet</h1>
+        <h1>IPA_Page</h1>
       </div>
 
       <section className="ipa-chart-section">

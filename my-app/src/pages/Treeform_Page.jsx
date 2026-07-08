@@ -1,13 +1,13 @@
 import SyntaxTreeBuilder from '../components/SyntaxTreeBuilder.jsx'
 
-export default function LanguageDataPage({ onBack }) {
+export default function Treeform_Page({ onBack }) {
   return (
     <div className="language-data-page">
       <div className="ipa-page-header">
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>Language Data & Projects</h1>
+        <h1>Treeform_Page</h1>
       </div>
 
       <section className="language-data-section">
