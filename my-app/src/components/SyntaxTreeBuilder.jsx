@@ -103,7 +103,7 @@ function layoutTree(node, left = 0, depth = 0, nodes = [], edges = []) {
   const width = measureTree(node)
   const x = left + width / 2
   const y = depth * verticalGap + 34
-  nodes.push({ ...node, x, y })
+  nodes.push({ ...node, x, y, depth })
 
   let childLeft = left
   for (const child of node.children || []) {
@@ -123,7 +123,7 @@ function getDepth(node) {
   return 1 + Math.max(...node.children.map(getDepth))
 }
 
-function FeatureLabel({ feature, y, onSelect }) {
+function FeatureLabel({ feature, y, onSelect, fontSize, fontFamily, fontWeight }) {
   return (
     <g className="feature-label" onClick={onSelect}>
       <text
@@ -131,12 +131,13 @@ function FeatureLabel({ feature, y, onSelect }) {
         y={y}
         textAnchor="middle"
         fill="#475569"
-        fontSize="11"
-        fontWeight="600"
+        fontFamily={fontFamily}
+        fontSize={Math.max(11, fontSize - 4)}
+        fontWeight={fontWeight === '400' ? '500' : fontWeight}
       >
         {feature}
       </text>
-      <line x1="-28" y1={y + 5} x2="28" y2={y + 5} stroke="#475569" strokeWidth="1.4" />
+      <line x1="-30" y1={y + 5} x2="30" y2={y + 5} stroke="#475569" strokeWidth="1.8" />
     </g>
   )
 }
@@ -176,7 +177,7 @@ function getMovementPath(movement, nodePositions) {
   }
 }
 
-function TreeNode({ node, selectedId, onSelect }) {
+function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight }) {
   const isSelected = selectedId === node.id
   const textColor = node.color === '#101828' ? '#ffffff' : '#172033'
   const isTriangle = node.shape === 'triangle'
@@ -188,15 +189,17 @@ function TreeNode({ node, selectedId, onSelect }) {
           points={`0,${-nodeHeight / 2} ${-nodeWidth / 2},${nodeHeight / 2} ${nodeWidth / 2},${nodeHeight / 2}`}
           fill={isSelected ? '#eef6ff' : 'transparent'}
           stroke={isSelected ? '#1555c5' : '#24324a'}
-          strokeWidth={isSelected ? '3' : '2'}
+          strokeWidth={isSelected ? '4' : '2.8'}
+          filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         />
         <text
           x="0"
           y={nodeHeight / 2 + 20}
           textAnchor="middle"
           fill="#172033"
-          fontSize="14"
-          fontWeight="700"
+          fontFamily={fontFamily}
+          fontSize={fontSize}
+          fontWeight={fontWeight}
         >
           {node.label}
         </text>
@@ -206,6 +209,9 @@ function TreeNode({ node, selectedId, onSelect }) {
             feature={feature}
             y={nodeHeight / 2 + 38 + index * 18}
             onSelect={() => onSelect(node.id)}
+            fontSize={fontSize}
+            fontFamily={fontFamily}
+            fontWeight={fontWeight}
           />
         ))}
       </g>
@@ -223,7 +229,8 @@ function TreeNode({ node, selectedId, onSelect }) {
         rx="6"
         fill={isSelected ? '#1555c5' : node.color}
         stroke={isSelected ? '#062d72' : '#24324a'}
-        strokeWidth={isSelected ? '3' : '1.8'}
+        strokeWidth={isSelected ? '4' : '2.6'}
+        filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         onClick={() => onSelect(node.id)}
       />
       <text
@@ -231,8 +238,9 @@ function TreeNode({ node, selectedId, onSelect }) {
         y="5"
         textAnchor="middle"
         fill={isSelected ? '#ffffff' : textColor}
-        fontSize="14"
-        fontWeight="700"
+        fontFamily={fontFamily}
+        fontSize={fontSize}
+        fontWeight={fontWeight}
         onClick={() => onSelect(node.id)}
       >
         {node.label}
@@ -243,6 +251,9 @@ function TreeNode({ node, selectedId, onSelect }) {
           feature={feature}
           y={nodeHeight / 2 + 16 + index * 18}
           onSelect={() => onSelect(node.id)}
+          fontSize={fontSize}
+          fontFamily={fontFamily}
+          fontWeight={fontWeight}
         />
       ))}
     </g>
@@ -397,8 +408,15 @@ export default function SyntaxTreeBuilder() {
   const [movements, setMovements] = useState([])
   const [selectedMovementId, setSelectedMovementId] = useState('')
   const [draggedMovementHandle, setDraggedMovementHandle] = useState(null)
+  const [isDownloadMenuOpen, setIsDownloadMenuOpen] = useState(false)
+  const [isLectureMode, setIsLectureMode] = useState(false)
+  const [lectureStep, setLectureStep] = useState(0)
+  const [treeFontSize, setTreeFontSize] = useState(17)
+  const [treeFontFamily, setTreeFontFamily] = useState("Georgia, 'Times New Roman', serif")
+  const [treeFontWeight, setTreeFontWeight] = useState('700')
   const [status, setStatus] = useState('')
   const svgRef = useRef(null)
+  const canvasRef = useRef(null)
 
   const selectedNode = findNode(tree, selectedId)
   const layout = useMemo(() => (tree ? layoutTree(tree) : { nodes: [], edges: [], width: 640, height: 420 }), [tree])
@@ -408,6 +426,15 @@ export default function SyntaxTreeBuilder() {
     [movements, nodePositions],
   )
   const selectedMovement = movements.find((movement) => movement.id === selectedMovementId)
+  const maxLectureStep = tree ? getDepth(tree) : 0
+  const visibleNodeIds = useMemo(() => new Set(
+    layout.nodes
+      .filter((node) => !isLectureMode || node.depth <= lectureStep)
+      .map((node) => node.id),
+  ), [isLectureMode, layout.nodes, lectureStep])
+  const visibleEdges = layout.edges.filter((edge) => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to))
+  const visibleNodes = layout.nodes.filter((node) => visibleNodeIds.has(node.id))
+  const visibleMovementPaths = movementPaths.filter((movement) => visibleNodeIds.has(movements.find((item) => item.id === movement.id)?.from) && visibleNodeIds.has(movements.find((item) => item.id === movement.id)?.to))
   const canvasWidth = Math.max(layout.width + canvasMargin * 2, 860)
   const canvasHeight = Math.max(layout.height + canvasMargin, 560)
   const canvasOffsetX = Math.max((canvasWidth - layout.width) / 2, canvasMargin)
@@ -595,6 +622,32 @@ export default function SyntaxTreeBuilder() {
     window.addEventListener('keydown', handleTemplateShortcut)
     return () => window.removeEventListener('keydown', handleTemplateShortcut)
   })
+
+  useEffect(() => {
+    setLectureStep((currentStep) => Math.min(currentStep, maxLectureStep))
+  }, [maxLectureStep])
+
+  function toggleLectureMode() {
+    setIsLectureMode((current) => !current)
+    setLectureStep(0)
+  }
+
+  function previousLectureStep() {
+    setLectureStep((currentStep) => Math.max(0, currentStep - 1))
+  }
+
+  function nextLectureStep() {
+    setLectureStep((currentStep) => Math.min(maxLectureStep, currentStep + 1))
+  }
+
+  function toggleCanvasFullscreen() {
+    if (!canvasRef.current) return
+    if (document.fullscreenElement) {
+      document.exitFullscreen()
+      return
+    }
+    canvasRef.current.requestFullscreen()
+  }
 
   function saveLabel() {
     const label = labelInput.trim()
@@ -791,22 +844,145 @@ export default function SyntaxTreeBuilder() {
     setStatus('Movement line reset.')
   }
 
-  function downloadSvg() {
-    if (!tree) {
-      setStatus('Create a tree before downloading SVG.')
-      return
-    }
-    if (!svgRef.current) return
-    const serializer = new XMLSerializer()
-    const source = serializer.serializeToString(svgRef.current)
-    const blob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+  function downloadBlob(blob, filename) {
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = 'syntax-tree.svg'
+    link.download = filename
     link.click()
     URL.revokeObjectURL(url)
+  }
+
+  function getSerializedSvg() {
+    if (!svgRef.current) return ''
+    const clonedSvg = svgRef.current.cloneNode(true)
+    clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
+    clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
+    clonedSvg.querySelectorAll('image').forEach((image) => {
+      const href = image.getAttribute('href') || image.getAttribute('xlink:href')
+      if (href) image.setAttribute('href', new URL(href, window.location.href).href)
+    })
+
+    return new XMLSerializer().serializeToString(clonedSvg)
+  }
+
+  function downloadSvg() {
+    const source = getSerializedSvg()
+    if (!source) return
+    downloadBlob(new Blob([source], { type: 'image/svg+xml;charset=utf-8' }), 'syntax-tree.svg')
     setStatus('SVG downloaded.')
+  }
+
+  function downloadJson() {
+    const source = JSON.stringify({ tree, movements }, null, 2)
+    downloadBlob(new Blob([source], { type: 'application/json;charset=utf-8' }), 'syntax-tree.json')
+    setStatus('JSON downloaded.')
+  }
+
+  function renderSvgToCanvas() {
+    return new Promise((resolve, reject) => {
+      const source = getSerializedSvg()
+      if (!source) {
+        reject(new Error('No SVG canvas found.'))
+        return
+      }
+
+      const image = new Image()
+      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+      const url = URL.createObjectURL(svgBlob)
+
+      image.onload = () => {
+        const canvas = document.createElement('canvas')
+        canvas.width = canvasWidth
+        canvas.height = canvasHeight
+        const context = canvas.getContext('2d')
+        context.fillStyle = '#ffffff'
+        context.fillRect(0, 0, canvas.width, canvas.height)
+        context.drawImage(image, 0, 0, canvas.width, canvas.height)
+        URL.revokeObjectURL(url)
+        resolve(canvas)
+      }
+
+      image.onerror = () => {
+        URL.revokeObjectURL(url)
+        reject(new Error('Could not render the tree image.'))
+      }
+
+      image.src = url
+    })
+  }
+
+  async function downloadPng() {
+    const canvas = await renderSvgToCanvas()
+    canvas.toBlob((blob) => {
+      if (!blob) return
+      downloadBlob(blob, 'syntax-tree.png')
+      setStatus('PNG downloaded.')
+    }, 'image/png')
+  }
+
+  function createPdfFromJpeg(jpegDataUrl, width, height) {
+    const imageData = atob(jpegDataUrl.split(',')[1])
+    const pageWidth = 612
+    const pageHeight = Math.max(792, pageWidth * (height / width))
+    const imageWidth = pageWidth - 72
+    const imageHeight = imageWidth * (height / width)
+    const imageX = 36
+    const imageY = pageHeight - imageHeight - 36
+    const contentStream = `q\n${imageWidth.toFixed(2)} 0 0 ${imageHeight.toFixed(2)} ${imageX} ${imageY.toFixed(2)} cm\n/Im0 Do\nQ`
+    const objects = [
+      '1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n',
+      '2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n',
+      `3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 ${pageWidth} ${pageHeight.toFixed(2)}] /Resources << /XObject << /Im0 4 0 R >> >> /Contents 5 0 R >>\nendobj\n`,
+      `4 0 obj\n<< /Type /XObject /Subtype /Image /Width ${width} /Height ${height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${imageData.length} >>\nstream\n${imageData}\nendstream\nendobj\n`,
+      `5 0 obj\n<< /Length ${contentStream.length} >>\nstream\n${contentStream}\nendstream\nendobj\n`,
+    ]
+    let pdf = '%PDF-1.4\n'
+    const offsets = [0]
+    objects.forEach((object) => {
+      offsets.push(pdf.length)
+      pdf += object
+    })
+    const xrefOffset = pdf.length
+    pdf += `xref\n0 ${objects.length + 1}\n0000000000 65535 f \n`
+    offsets.slice(1).forEach((offset) => {
+      pdf += `${String(offset).padStart(10, '0')} 00000 n \n`
+    })
+    pdf += `trailer\n<< /Size ${objects.length + 1} /Root 1 0 R >>\nstartxref\n${xrefOffset}\n%%EOF`
+
+    const bytes = new Uint8Array(pdf.length)
+    for (let index = 0; index < pdf.length; index += 1) {
+      bytes[index] = pdf.charCodeAt(index) & 0xff
+    }
+    return new Blob([bytes], { type: 'application/pdf' })
+  }
+
+  async function downloadPdf() {
+    const canvas = await renderSvgToCanvas()
+    const pdfBlob = createPdfFromJpeg(canvas.toDataURL('image/jpeg', 0.95), canvas.width, canvas.height)
+    downloadBlob(pdfBlob, 'syntax-tree.pdf')
+    setStatus('PDF downloaded.')
+  }
+
+  async function downloadTree(format) {
+    if (!tree) {
+      setStatus('Create a tree before downloading.')
+      return
+    }
+
+    try {
+      if (format === 'svg') downloadSvg()
+      if (format === 'png') await downloadPng()
+      if (format === 'pdf') await downloadPdf()
+      if (format === 'json') downloadJson()
+    } catch {
+      setStatus('Download failed. Try SVG or JSON instead.')
+    }
+  }
+
+  function handleDownloadClick(format) {
+    downloadTree(format)
+    setIsDownloadMenuOpen(false)
   }
 
   return (
@@ -830,7 +1006,6 @@ export default function SyntaxTreeBuilder() {
         <section className="tree-panel tree-editor" aria-label="Tree editing controls">
           <div className="tree-panel-header">
             <span>Selected</span>
-            <strong>{selectedNode?.label || 'None'}</strong>
           </div>
 
           <label className="tree-field">
@@ -885,6 +1060,38 @@ export default function SyntaxTreeBuilder() {
                 />
               ))}
             </div>
+          </div>
+
+          <div className="tree-field tree-typography-controls">
+            <span>Typography</span>
+            <label>
+              <span>Size</span>
+              <input
+                type="range"
+                min="12"
+                max="28"
+                value={treeFontSize}
+                onChange={(event) => setTreeFontSize(Number(event.target.value))}
+              />
+              <strong>{treeFontSize}px</strong>
+            </label>
+            <label>
+              <span>Style</span>
+              <select value={treeFontFamily} onChange={(event) => setTreeFontFamily(event.target.value)}>
+                <option value="Georgia, 'Times New Roman', serif">Serif</option>
+                <option value="system-ui, 'Segoe UI', Roboto, sans-serif">Sans</option>
+                <option value="'Courier New', ui-monospace, monospace">Mono</option>
+              </select>
+            </label>
+            <label>
+              <span>Weight</span>
+              <select value={treeFontWeight} onChange={(event) => setTreeFontWeight(event.target.value)}>
+                <option value="400">Regular</option>
+                <option value="600">Semi-bold</option>
+                <option value="700">Bold</option>
+                <option value="800">Heavy</option>
+              </select>
+            </label>
           </div>
 
           <label className="tree-field">
@@ -943,7 +1150,36 @@ export default function SyntaxTreeBuilder() {
           <button type="button" className="tree-danger" onClick={deleteSelected}>{tree ? 'Delete selected node' : 'Clear tree'}</button>
         </section>
 
-        <section className="tree-canvas" aria-label="Syntax tree canvas">
+        <section ref={canvasRef} className="tree-canvas" aria-label="Syntax tree canvas">
+          <div className="tree-presentation-tools">
+            <button type="button" onClick={toggleCanvasFullscreen}>Full screen</button>
+            <button type="button" aria-pressed={isLectureMode} onClick={toggleLectureMode}>
+              {isLectureMode ? 'Lecture on' : 'Lecture off'}
+            </button>
+            <button type="button" onClick={previousLectureStep} disabled={!isLectureMode || lectureStep === 0}>Back</button>
+            <span>Step {isLectureMode ? lectureStep + 1 : maxLectureStep + 1}/{maxLectureStep + 1}</span>
+            <button type="button" onClick={nextLectureStep} disabled={!isLectureMode || lectureStep === maxLectureStep}>Next</button>
+          </div>
+          <div className="tree-download-menu">
+            <button
+              type="button"
+              className="tree-download-trigger"
+              aria-haspopup="menu"
+              aria-expanded={isDownloadMenuOpen}
+              onClick={() => setIsDownloadMenuOpen((isOpen) => !isOpen)}
+            >
+              <span>Download</span>
+              <span aria-hidden="true">⌄</span>
+            </button>
+            {isDownloadMenuOpen && (
+              <div className="tree-download-options" role="menu">
+                <button type="button" role="menuitem" onClick={() => handleDownloadClick('svg')}>SVG</button>
+                <button type="button" role="menuitem" onClick={() => handleDownloadClick('png')}>PNG</button>
+                <button type="button" role="menuitem" onClick={() => handleDownloadClick('pdf')}>PDF</button>
+                <button type="button" role="menuitem" onClick={() => handleDownloadClick('json')}>JSON</button>
+              </div>
+            )}
+          </div>
           <svg
             ref={svgRef}
             width="100%"
@@ -957,6 +1193,9 @@ export default function SyntaxTreeBuilder() {
             onMouseLeave={stopMovementHandleDrag}
           >
             <defs>
+              <filter id="selected-node-glow" x="-40%" y="-60%" width="180%" height="220%">
+                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#1555c5" floodOpacity="0.35" />
+              </filter>
               <marker id="movement-arrow" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
                 <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155" />
               </marker>
@@ -982,10 +1221,10 @@ export default function SyntaxTreeBuilder() {
               </text>
             )}
             <g transform={`translate(${canvasOffsetX}, 0)`}>
-              {layout.edges.map((edge) => (
-                <line key={`${edge.from}-${edge.to}`} x1={edge.x1} y1={edge.y1} x2={edge.x2} y2={edge.y2} stroke="#334155" strokeWidth="2" />
+              {visibleEdges.map((edge) => (
+                <line key={`${edge.from}-${edge.to}`} x1={edge.x1} y1={edge.y1} x2={edge.x2} y2={edge.y2} stroke="#334155" strokeWidth="3.4" strokeLinecap="round" />
               ))}
-              {movementPaths.map((movement) => (
+              {visibleMovementPaths.map((movement) => (
                 <g key={movement.id} className="movement-layer">
                   <path
                     className={movement.id === selectedMovementId ? 'movement-path selected' : 'movement-path'}
@@ -1020,17 +1259,20 @@ export default function SyntaxTreeBuilder() {
                   )}
                 </g>
               ))}
-              {layout.nodes.map((node) => (
-                <TreeNode key={node.id} node={node} selectedId={selectedId} onSelect={selectNode} />
+              {visibleNodes.map((node) => (
+                <TreeNode
+                  key={node.id}
+                  node={node}
+                  selectedId={selectedId}
+                  onSelect={selectNode}
+                  fontSize={treeFontSize}
+                  fontFamily={treeFontFamily}
+                  fontWeight={treeFontWeight}
+                />
               ))}
             </g>
           </svg>
         </section>
-      </div>
-
-      <div className="tree-actions">
-        <button type="button" onClick={() => createNewTree()}>New root</button>
-        <button type="button" onClick={downloadSvg}>Download SVG</button>
       </div>
 
     </div>
