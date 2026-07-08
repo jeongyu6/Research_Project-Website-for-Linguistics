@@ -7,12 +7,12 @@ export default function Treeform_Page({ onBack }) {
         <button type="button" className="back-button" onClick={onBack}>
           <span>Back to overview</span>
         </button>
-        <h1>Treeform Page</h1>
+        <h1>Tree Builder</h1>
       </div>
 
       <section className="language-data-section">
         <div className="ipa-section-heading">
-          <h2>TreeForm Application</h2>
+          <h2>Tree Builder</h2>
           <p>Create, edit, import, and export syntax trees directly in the browser.</p>
         </div>
         <div className="treeform-container">
