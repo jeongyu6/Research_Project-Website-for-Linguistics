@@ -181,16 +181,29 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
   const isSelected = selectedId === node.id
   const textColor = node.color === '#101828' ? '#ffffff' : '#172033'
   const isTriangle = node.shape === 'triangle'
+  //Extra CSS class when the node isSelected; This it to allow for easier adding of special visual effects
   const nodeClassName = isSelected ? 'tree-node selected-tree-node' : 'tree-node'
 
   if (isTriangle) {
     return (
+      //
       <g className={`${nodeClassName} triangle-node`} transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)}>
+        {isSelected && (
+          <polygon
+            className="selected-node-halo"
+            points={`0,${-nodeHeight / 2 - 11} ${-nodeWidth / 2 - 14},${nodeHeight / 2 + 12} ${nodeWidth / 2 + 14},${nodeHeight / 2 + 12}`}
+            fill="rgba(21, 85, 197, 0.12)"
+            stroke="#38bdf8"
+            strokeWidth="3"
+            strokeLinejoin="round"
+          />
+        )}
         <polygon
           points={`0,${-nodeHeight / 2} ${-nodeWidth / 2},${nodeHeight / 2} ${nodeWidth / 2},${nodeHeight / 2}`}
-          fill={isSelected ? '#1555c5' : 'transparent'}
+          fill={isSelected ? '#eef6ff' : 'transparent'}
           stroke={isSelected ? '#1555c5' : '#24324a'}
           strokeWidth={isSelected ? '4.8' : '3.2'}
+          filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         />
         <text
           x="0"
@@ -221,6 +234,19 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
   return (
     <g className={nodeClassName} transform={`translate(${node.x}, ${node.y})`}>
       <button type="button" aria-label={`Select ${node.label}`} tabIndex="-1" className="svg-button-reset" />
+      {isSelected && (
+        <rect
+          className="selected-node-halo"
+          x={-nodeWidth / 2 - 11}
+          y={-nodeHeight / 2 - 11}
+          width={nodeWidth + 22}
+          height={nodeHeight + 22}
+          rx="12"
+          fill="rgba(21, 85, 197, 0.12)"
+          stroke="#38bdf8"
+          strokeWidth="3"
+        />
+      )}
       <rect
         x={-nodeWidth / 2}
         y={-nodeHeight / 2}
@@ -230,13 +256,13 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
         fill={isSelected ? '#1555c5' : node.color}
         stroke={isSelected ? '#062d72' : '#24324a'}
         strokeWidth={isSelected ? '4.8' : '3'}
+        filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         onClick={() => onSelect(node.id)}
       />
       <text
         x="0"
-        y="1"
+        y="5"
         textAnchor="middle"
-        dominantBaseline="central"
         fill={isSelected ? '#ffffff' : textColor}
         fontFamily={fontFamily}
         fontSize={fontSize}
@@ -1193,6 +1219,9 @@ export default function SyntaxTreeBuilder() {
             onMouseLeave={stopMovementHandleDrag}
           >
             <defs>
+              <filter id="selected-node-glow" x="-40%" y="-60%" width="180%" height="220%">
+                <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#1555c5" floodOpacity="0.5" />
+              </filter>
               <marker id="movement-arrow" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
                 <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155" />
               </marker>
@@ -1221,13 +1250,13 @@ export default function SyntaxTreeBuilder() {
               {visibleEdges.map((edge) => (
                 <line
                   key={`${edge.from}-${edge.to}`}
-                  className="branch-line"
+                  className={edge.from === selectedId || edge.to === selectedId ? 'branch-line selected-branch-line' : 'branch-line'}
                   x1={edge.x1}
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke="#24324a"
-                  strokeWidth="5.2"
+                  stroke={edge.from === selectedId || edge.to === selectedId ? '#1555c5' : '#24324a'}
+                  strokeWidth={edge.from === selectedId || edge.to === selectedId ? '6.4' : '5.2'}
                   strokeLinecap="round"
                 />
               ))}
