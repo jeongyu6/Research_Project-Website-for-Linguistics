@@ -1,7 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import utscLogo from '../../Pictures/UTSC_logo.png'
-
-
 //Got inspiration from the github: https://github.com/frekky/TreeForm.git
 
 
@@ -446,10 +444,13 @@ export default function SyntaxTreeBuilder() {
   const canvasWidth = Math.max(layout.width + canvasMargin * 2, 860)
   const canvasHeight = Math.max(layout.height + canvasMargin, 560)
   const canvasOffsetX = Math.max((canvasWidth - layout.width) / 2, canvasMargin)
-  const brandLogoSize = Math.min(canvasWidth, canvasHeight) * 0.44
-  const brandMarkX = canvasWidth - brandLogoSize / 2 - 28
-  const brandMarkY = canvasHeight - brandLogoSize / 2 - 8
-  const brandTextY = brandMarkY + brandLogoSize / 2 - 42
+  //Brand uses a wider rectangle for its shape
+  const brandLogoWidth = Math.min(330, canvasWidth * 0.38)
+  const brandLogoHeight = brandLogoWidth * 0.4
+  const brandPadding = 30
+  const brandTextGap = -20
+  const brandBlockX = canvasWidth - brandPadding - brandLogoWidth / 2
+  const brandBlockY = canvasHeight - brandPadding - brandTextGap - brandLogoHeight / 2
   //It calculates the visible area based on zoom. 
   const viewBoxWidth = canvasWidth / zoomLevel
   const viewBoxHeight = canvasHeight / zoomLevel
@@ -1014,21 +1015,45 @@ export default function SyntaxTreeBuilder() {
     URL.revokeObjectURL(url)
   }
 
-  function getSerializedSvg() {
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader()
+      reader.onload = () => resolve(reader.result)
+      reader.onerror = () => reject(new Error('Could not read image data.'))
+      reader.readAsDataURL(blob)
+    })
+  }
+
+  async function getImageDataUrl(href) {
+    const response = await fetch(new URL(href, window.location.href).href)
+    const blob = await response.blob()
+    return blobToDataUrl(blob)
+  }
+
+  async function getSerializedSvg({ inlineImages = false, screenshot = false } = {}) {
     if (!svgRef.current) return ''
     const clonedSvg = svgRef.current.cloneNode(true)
     clonedSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg')
     clonedSvg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink')
-    clonedSvg.querySelectorAll('image').forEach((image) => {
+
+    if (screenshot) {
+      const bounds = svgRef.current.getBoundingClientRect()
+      clonedSvg.setAttribute('width', String(Math.max(1, Math.round(bounds.width))))
+      clonedSvg.setAttribute('height', String(Math.max(1, Math.round(bounds.height))))
+    }
+
+    const imageElements = Array.from(clonedSvg.querySelectorAll('image'))
+    await Promise.all(imageElements.map(async (image) => {
       const href = image.getAttribute('href') || image.getAttribute('xlink:href')
-      if (href) image.setAttribute('href', new URL(href, window.location.href).href)
-    })
+      if (!href) return
+      image.setAttribute('href', inlineImages ? await getImageDataUrl(href) : new URL(href, window.location.href).href)
+    }))
 
     return new XMLSerializer().serializeToString(clonedSvg)
   }
 
-  function downloadSvg() {
-    const source = getSerializedSvg()
+  async function downloadSvg() {
+    const source = await getSerializedSvg()
     if (!source) return
     downloadBlob(new Blob([source], { type: 'image/svg+xml;charset=utf-8' }), 'syntax-tree.svg')
     setStatus('SVG downloaded.')
@@ -1040,41 +1065,45 @@ export default function SyntaxTreeBuilder() {
     setStatus('JSON downloaded.')
   }
 
-  function renderSvgToCanvas() {
+  function renderSvgToCanvas({ screenshot = false } = {}) {
     return new Promise((resolve, reject) => {
-      const source = getSerializedSvg()
-      if (!source) {
-        reject(new Error('No SVG canvas found.'))
-        return
-      }
+      getSerializedSvg({ inlineImages: true, screenshot }).then((source) => {
+        if (!source || !svgRef.current) {
+          reject(new Error('No SVG canvas found.'))
+          return
+        }
 
-      const image = new Image()
-      const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
-      const url = URL.createObjectURL(svgBlob)
+        const bounds = svgRef.current.getBoundingClientRect()
+        const outputWidth = screenshot ? Math.max(1, Math.round(bounds.width)) : canvasWidth
+        const outputHeight = screenshot ? Math.max(1, Math.round(bounds.height)) : canvasHeight
+        const image = new Image()
+        const svgBlob = new Blob([source], { type: 'image/svg+xml;charset=utf-8' })
+        const url = URL.createObjectURL(svgBlob)
 
-      image.onload = () => {
-        const canvas = document.createElement('canvas')
-        canvas.width = canvasWidth
-        canvas.height = canvasHeight
-        const context = canvas.getContext('2d')
-        context.fillStyle = '#ffffff'
-        context.fillRect(0, 0, canvas.width, canvas.height)
-        context.drawImage(image, 0, 0, canvas.width, canvas.height)
-        URL.revokeObjectURL(url)
-        resolve(canvas)
-      }
+        image.onload = () => {
+          const canvas = document.createElement('canvas')
+          canvas.width = outputWidth
+          canvas.height = outputHeight
+          const context = canvas.getContext('2d')
+          context.fillStyle = '#ffffff'
+          context.fillRect(0, 0, canvas.width, canvas.height)
+          context.drawImage(image, 0, 0, canvas.width, canvas.height)
+          URL.revokeObjectURL(url)
+          resolve(canvas)
+        }
 
-      image.onerror = () => {
-        URL.revokeObjectURL(url)
-        reject(new Error('Could not render the tree image.'))
-      }
+        image.onerror = () => {
+          URL.revokeObjectURL(url)
+          reject(new Error('Could not render the tree image.'))
+        }
 
-      image.src = url
+        image.src = url
+      }).catch(reject)
     })
   }
 
   async function downloadPng() {
-    const canvas = await renderSvgToCanvas()
+    const canvas = await renderSvgToCanvas({ screenshot: true })
     canvas.toBlob((blob) => {
       if (!blob) return
       downloadBlob(blob, 'syntax-tree.png')
@@ -1119,7 +1148,7 @@ export default function SyntaxTreeBuilder() {
   }
 
   async function downloadPdf() {
-    const canvas = await renderSvgToCanvas()
+    const canvas = await renderSvgToCanvas({ screenshot: true })
     const pdfBlob = createPdfFromJpeg(canvas.toDataURL('image/jpeg', 0.95), canvas.width, canvas.height)
     downloadBlob(pdfBlob, 'syntax-tree.pdf')
     setStatus('PDF downloaded.')
@@ -1132,7 +1161,7 @@ export default function SyntaxTreeBuilder() {
     }
 
     try {
-      if (format === 'svg') downloadSvg()
+      if (format === 'svg') await downloadSvg()
       if (format === 'png') await downloadPng()
       if (format === 'pdf') await downloadPdf()
       if (format === 'json') downloadJson()
@@ -1364,20 +1393,20 @@ export default function SyntaxTreeBuilder() {
               </marker>
             </defs>
             <rect width="100%" height="100%" fill="#ffffff" />
-            <g className="tree-brand-mark" transform={`translate(${brandMarkX}, ${brandMarkY})`} aria-hidden="true">
+            <g className="tree-brand-mark" transform={`translate(${brandBlockX}, ${brandBlockY})`} aria-hidden="true">
               <image
                 className="tree-brand-logo"
                 href={utscLogo}
-                x={-brandLogoSize / 2}
-                y={-brandLogoSize / 2}
-                width={brandLogoSize}
-                height={brandLogoSize}
+                x={-brandLogoWidth / 2}
+                y={-brandLogoHeight / 2}
+                width={brandLogoWidth}
+                height={brandLogoHeight}
                 preserveAspectRatio="xMidYMid meet"
               />
+              <text className="tree-brand-department" x="0" y={brandLogoHeight / 2 + brandTextGap} textAnchor="middle">
+                Department of Linguistic Studies
+              </text>
             </g>
-            <text className="tree-brand-department" x={canvasWidth - 24} y={brandTextY} textAnchor="end" aria-hidden="true">
-              Department of Linguistic Studies
-            </text>
             {!tree && (
               <text x="50%" y="50%" textAnchor="middle" fill="#64748b" fontSize="18" fontWeight="700">
                 Start with a root node or choose a template button.

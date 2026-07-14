@@ -1260,9 +1260,9 @@ main {
 .tree-brand-department {
   fill: #00204e;
   font-family: 'Open Sans', Arial, Helvetica, sans-serif;
-  font-size: 17px;
+  font-size: 10px;
   font-weight: 600;
-  letter-spacing: 0.04em;
+  letter-spacing: 0;
 }
 
 .tree-actions {
