@@ -1190,6 +1190,10 @@ main {
   min-height: 0;
 }
 
+.branch-line {
+  transition: stroke 0.18s ease, stroke-width 0.18s ease;
+}
+
 .movement-path {
   stroke: #334155;
   stroke-width: 4;
@@ -1226,6 +1230,12 @@ main {
 
 .movement-control-handle {
   fill: #38bdf8;
+}
+
+.tree-node rect,
+.tree-node polygon,
+.tree-node text {
+  transition: fill 0.18s ease, stroke 0.18s ease, stroke-width 0.18s ease;
 }
 
 .tree-node rect,
