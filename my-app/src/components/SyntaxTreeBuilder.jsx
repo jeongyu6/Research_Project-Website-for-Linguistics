@@ -415,6 +415,8 @@ export default function SyntaxTreeBuilder() {
   const [treeFontSize, setTreeFontSize] = useState(17)
   const [treeFontFamily, setTreeFontFamily] = useState("Georgia, 'Times New Roman', serif")
   const [treeFontWeight, setTreeFontWeight] = useState('700')
+  //The original state will be 100% for 1, 115% for 1.15, 85% for 0.85
+  const [zoomLevel, setZoomLevel] = useState(1)
   //undoStack stores older versions of the tree
   //redoStack stores versions versions you removed with undo to easily bring them back
   const [undoStack, setUndoStack] = useState([])
@@ -448,7 +450,12 @@ export default function SyntaxTreeBuilder() {
   const brandMarkX = canvasWidth - brandLogoSize / 2 - 28
   const brandMarkY = canvasHeight - brandLogoSize / 2 - 8
   const brandTextY = brandMarkY + brandLogoSize / 2 - 42
-  const viewBox = `0 0 ${canvasWidth} ${canvasHeight}`
+  //It calculates the visible area based on zoom. 
+  const viewBoxWidth = canvasWidth / zoomLevel
+  const viewBoxHeight = canvasHeight / zoomLevel
+  const viewBoxX = (canvasWidth - viewBoxWidth) / 2
+  const viewBoxY = (canvasHeight - viewBoxHeight) / 2
+  const viewBox = `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`
 
   //It saves the tree, movement arrows and etc and selected movement line. 
   function getEditorSnapshot() {
@@ -762,6 +769,33 @@ export default function SyntaxTreeBuilder() {
       return
     }
     canvasRef.current.requestFullscreen()
+  }
+
+  function autoArrangeTree() {
+    if (!tree) {
+      setStatus('Create a tree before auto arranging.')
+      return
+    }
+
+    setIsLectureMode(false)
+    setLectureStep(maxLectureStep)
+    setDraggedMovementHandle(null)
+    canvasRef.current?.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
+    setStatus('Auto arranged and re-centered the tree.')
+  }
+
+  function zoomIn() {
+    setZoomLevel((current) => Math.min(2.5, Number((current + 0.15).toFixed(2))))
+  }
+
+  function zoomOut() {
+    setZoomLevel((current) => Math.max(0.45, Number((current - 0.15).toFixed(2))))
+  }
+  //The resets zoom back to 100%, scrolls the canvas back to the top-left starting view and shows a status message
+  function fitToScreen() {
+    setZoomLevel(1)
+    canvasRef.current?.scrollTo({ left: 0, top: 0, behavior: 'smooth' })
+    setStatus('Fit tree to screen.')
   }
 
   function saveLabel() {
@@ -1279,6 +1313,11 @@ export default function SyntaxTreeBuilder() {
 
         <section ref={canvasRef} className="tree-canvas" aria-label="Syntax tree canvas">
           <div className="tree-presentation-tools">
+            <button type="button" onClick={autoArrangeTree}>Auto arrange</button>
+            <button type="button" onClick={zoomOut} aria-label="Zoom out">-</button>
+            <span>{Math.round(zoomLevel * 100)}%</span>
+            <button type="button" onClick={zoomIn} aria-label="Zoom in">+</button>
+            <button type="button" onClick={fitToScreen}>Fit</button>
             <button type="button" onClick={toggleCanvasFullscreen}>Full screen</button>
             <button type="button" aria-pressed={isLectureMode} onClick={toggleLectureMode}>
               {isLectureMode ? 'Lecture on' : 'Lecture off'}
