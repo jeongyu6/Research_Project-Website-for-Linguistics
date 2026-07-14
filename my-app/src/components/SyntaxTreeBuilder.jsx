@@ -234,8 +234,9 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
       />
       <text
         x="0"
-        y="5"
+        y="1"
         textAnchor="middle"
+        dominantBaseline="central"
         fill={isSelected ? '#ffffff' : textColor}
         fontFamily={fontFamily}
         fontSize={fontSize}
