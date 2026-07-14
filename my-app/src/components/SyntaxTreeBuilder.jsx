@@ -181,16 +181,16 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
   const isSelected = selectedId === node.id
   const textColor = node.color === '#101828' ? '#ffffff' : '#172033'
   const isTriangle = node.shape === 'triangle'
+  const nodeClassName = isSelected ? 'tree-node selected-tree-node' : 'tree-node'
 
   if (isTriangle) {
     return (
-      <g className="tree-node triangle-node" transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)}>
+      <g className={`${nodeClassName} triangle-node`} transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)}>
         <polygon
           points={`0,${-nodeHeight / 2} ${-nodeWidth / 2},${nodeHeight / 2} ${nodeWidth / 2},${nodeHeight / 2}`}
-          fill={isSelected ? '#eef6ff' : 'transparent'}
+          fill={isSelected ? '#1555c5' : 'transparent'}
           stroke={isSelected ? '#1555c5' : '#24324a'}
-          strokeWidth={isSelected ? '4' : '2.8'}
-          filter={isSelected ? 'url(#selected-node-glow)' : undefined}
+          strokeWidth={isSelected ? '4.8' : '3.2'}
         />
         <text
           x="0"
@@ -219,7 +219,7 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
   }
 
   return (
-    <g className="tree-node" transform={`translate(${node.x}, ${node.y})`}>
+    <g className={nodeClassName} transform={`translate(${node.x}, ${node.y})`}>
       <button type="button" aria-label={`Select ${node.label}`} tabIndex="-1" className="svg-button-reset" />
       <rect
         x={-nodeWidth / 2}
@@ -229,8 +229,7 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
         rx="6"
         fill={isSelected ? '#1555c5' : node.color}
         stroke={isSelected ? '#062d72' : '#24324a'}
-        strokeWidth={isSelected ? '4' : '2.6'}
-        filter={isSelected ? 'url(#selected-node-glow)' : undefined}
+        strokeWidth={isSelected ? '4.8' : '3'}
         onClick={() => onSelect(node.id)}
       />
       <text
@@ -1193,9 +1192,6 @@ export default function SyntaxTreeBuilder() {
             onMouseLeave={stopMovementHandleDrag}
           >
             <defs>
-              <filter id="selected-node-glow" x="-40%" y="-60%" width="180%" height="220%">
-                <feDropShadow dx="0" dy="0" stdDeviation="4" floodColor="#1555c5" floodOpacity="0.35" />
-              </filter>
               <marker id="movement-arrow" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
                 <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155" />
               </marker>
@@ -1222,7 +1218,17 @@ export default function SyntaxTreeBuilder() {
             )}
             <g transform={`translate(${canvasOffsetX}, 0)`}>
               {visibleEdges.map((edge) => (
-                <line key={`${edge.from}-${edge.to}`} x1={edge.x1} y1={edge.y1} x2={edge.x2} y2={edge.y2} stroke="#334155" strokeWidth="3.4" strokeLinecap="round" />
+                <line
+                  key={`${edge.from}-${edge.to}`}
+                  className="branch-line"
+                  x1={edge.x1}
+                  y1={edge.y1}
+                  x2={edge.x2}
+                  y2={edge.y2}
+                  stroke="#24324a"
+                  strokeWidth="5.2"
+                  strokeLinecap="round"
+                />
               ))}
               {visibleMovementPaths.map((movement) => (
                 <g key={movement.id} className="movement-layer">
