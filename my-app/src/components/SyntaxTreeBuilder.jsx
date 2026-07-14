@@ -188,22 +188,11 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
     return (
       //
       <g className={`${nodeClassName} triangle-node`} transform={`translate(${node.x}, ${node.y})`} onClick={() => onSelect(node.id)}>
-        {isSelected && (
-          <polygon
-            className="selected-node-halo"
-            points={`0,${-nodeHeight / 2 - 11} ${-nodeWidth / 2 - 14},${nodeHeight / 2 + 12} ${nodeWidth / 2 + 14},${nodeHeight / 2 + 12}`}
-            fill="rgba(21, 85, 197, 0.12)"
-            stroke="#38bdf8"
-            strokeWidth="3"
-            strokeLinejoin="round"
-          />
-        )}
         <polygon
           points={`0,${-nodeHeight / 2} ${-nodeWidth / 2},${nodeHeight / 2} ${nodeWidth / 2},${nodeHeight / 2}`}
-          fill={isSelected ? '#eef6ff' : 'transparent'}
+          fill={isSelected ? '#1555c5' : 'transparent'}
           stroke={isSelected ? '#1555c5' : '#24324a'}
           strokeWidth={isSelected ? '4.8' : '3.2'}
-          filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         />
         <text
           x="0"
@@ -234,19 +223,6 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
   return (
     <g className={nodeClassName} transform={`translate(${node.x}, ${node.y})`}>
       <button type="button" aria-label={`Select ${node.label}`} tabIndex="-1" className="svg-button-reset" />
-      {isSelected && (
-        <rect
-          className="selected-node-halo"
-          x={-nodeWidth / 2 - 11}
-          y={-nodeHeight / 2 - 11}
-          width={nodeWidth + 22}
-          height={nodeHeight + 22}
-          rx="12"
-          fill="rgba(21, 85, 197, 0.12)"
-          stroke="#38bdf8"
-          strokeWidth="3"
-        />
-      )}
       <rect
         x={-nodeWidth / 2}
         y={-nodeHeight / 2}
@@ -256,7 +232,6 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
         fill={isSelected ? '#1555c5' : node.color}
         stroke={isSelected ? '#062d72' : '#24324a'}
         strokeWidth={isSelected ? '4.8' : '3'}
-        filter={isSelected ? 'url(#selected-node-glow)' : undefined}
         onClick={() => onSelect(node.id)}
       />
       <text
@@ -440,9 +415,14 @@ export default function SyntaxTreeBuilder() {
   const [treeFontSize, setTreeFontSize] = useState(17)
   const [treeFontFamily, setTreeFontFamily] = useState("Georgia, 'Times New Roman', serif")
   const [treeFontWeight, setTreeFontWeight] = useState('700')
+  //undoStack stores older versions of the tree
+  //redoStack stores versions versions you removed with undo to easily bring them back
+  const [undoStack, setUndoStack] = useState([])
+  const [redoStack, setRedoStack] = useState([])
   const [status, setStatus] = useState('')
   const svgRef = useRef(null)
   const canvasRef = useRef(null)
+  const historyShortcutPressedRef = useRef(false)
 
   const selectedNode = findNode(tree, selectedId)
   const layout = useMemo(() => (tree ? layoutTree(tree) : { nodes: [], edges: [], width: 640, height: 420 }), [tree])
@@ -470,7 +450,79 @@ export default function SyntaxTreeBuilder() {
   const brandTextY = brandMarkY + brandLogoSize / 2 - 42
   const viewBox = `0 0 ${canvasWidth} ${canvasHeight}`
 
+  //It saves the tree, movement arrows and etc and selected movement line. 
+  function getEditorSnapshot() {
+    return {
+      tree: tree ? structuredClone(tree) : null,
+      movements: structuredClone(movements),
+      selectedId,
+      labelInput,
+      childInput,
+      featureInput,
+      editingFeatureIndex,
+      movementStartId,
+      selectedMovementId,
+    }
+  }
+
+  
+  function restoreEditorSnapshot(snapshot) {
+    setTree(snapshot.tree ? structuredClone(snapshot.tree) : null)
+    setMovements(structuredClone(snapshot.movements || []))
+    setSelectedId(snapshot.selectedId || '')
+    setLabelInput(snapshot.labelInput || 'S')
+    setChildInput(snapshot.childInput || 'XP')
+    setFeatureInput(snapshot.featureInput || '')
+    setEditingFeatureIndex(snapshot.editingFeatureIndex ?? null)
+    setMovementStartId(snapshot.movementStartId || '')
+    setSelectedMovementId(snapshot.selectedMovementId || '')
+    setDraggedMovementHandle(null)
+  }
+
+  //Function responsible for saving the current editor state
+  function recordHistory() {
+    setUndoStack((current) => [...current.slice(-49), getEditorSnapshot()])
+    setRedoStack([])
+  }
+
+  //Undoing the edits
+  function undoTreeEdit() {
+    //Case 1: If there is nothing in undostack, it says "Nothing to undo".
+    setUndoStack((current) => {
+      if (!current.length) {
+        setStatus('Nothing to undo.')
+        return current
+      }
+      //Case 2: Otherwise, it takes the latest saved version
+      //It saves the current version into redostack
+      //It restores the previous version
+      //It removes that previous version from undoStack
+      const previousSnapshot = current[current.length - 1]
+      setRedoStack((redoHistory) => [...redoHistory.slice(-49), getEditorSnapshot()])
+      restoreEditorSnapshot(previousSnapshot)
+      setStatus('Undid the last edit.')
+      return current.slice(0, -1)
+    })
+  }
+
+  function redoTreeEdit() {
+    //Case 1: If there is nothing on redoStack, it says nothing to redo
+    setRedoStack((current) => {
+      if (!current.length) {
+        setStatus('Nothing to redo.')
+        return current
+      }
+      //Case 2: it takes the latest saved version; it saves the current version into redoStack; It restores the previous version and removes the previous version from undoStack
+      const nextSnapshot = current[current.length - 1]
+      setUndoStack((undoHistory) => [...undoHistory.slice(-49), getEditorSnapshot()])
+      restoreEditorSnapshot(nextSnapshot)
+      setStatus('Redid the edit.')
+      return current.slice(0, -1)
+    })
+  }
+
   function createNewTree(label = labelInput.trim() || 'S') {
+    recordHistory()
     const root = createNode(label)
     setTree(root)
     setSelectedId(root.id)
@@ -488,6 +540,7 @@ export default function SyntaxTreeBuilder() {
         setStatus('Choose a different destination node for movement.')
         return
       }
+      recordHistory()
       movementCounter += 1
       const movementId = `movement-${Date.now()}-${movementCounter}`
       setMovements((current) => [...current, { id: movementId, from: movementStartId, to: id, offsetX: 0, offsetY: 0 }])
@@ -516,6 +569,7 @@ export default function SyntaxTreeBuilder() {
       setChildInput('XP')
       return
     }
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, children: [...(node.children || []), newNode] })))
     setSelectedId(newNode.id)
     setLabelInput(label)
@@ -525,6 +579,7 @@ export default function SyntaxTreeBuilder() {
 
   function addTemplateChild(templateNode, message) {
     if (!tree || !selectedId) {
+      recordHistory()
       setTree(templateNode)
       setSelectedId(templateNode.id)
       setLabelInput(templateNode.label)
@@ -534,6 +589,7 @@ export default function SyntaxTreeBuilder() {
       setStatus(`Created ${templateNode.label} as the root node.`)
       return
     }
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, children: [...(node.children || []), templateNode] })))
     setSelectedId(templateNode.id)
     setLabelInput(templateNode.label)
@@ -546,6 +602,7 @@ export default function SyntaxTreeBuilder() {
       return
     }
     const newFeatureIndex = selectedNode?.features?.length || 0
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: [...(node.features || []), feature] })))
     if (editNewFeature) {
       setFeatureInput(feature)
@@ -564,6 +621,7 @@ export default function SyntaxTreeBuilder() {
           createNewTree('XP')
           break
         }
+        recordHistory()
         const parent = createNode('XP', { children: [structuredClone(selectedNode)] })
         if (selectedId === tree.id) {
           setTree(parent)
@@ -636,6 +694,37 @@ export default function SyntaxTreeBuilder() {
   }
 
   useEffect(() => {
+    function handleHistoryShortcut(event) {
+      const isUndoRedoShortcut = (event.metaKey || event.ctrlKey) && !event.altKey && event.key.toLowerCase() === 'z'
+      if (!isUndoRedoShortcut) return
+
+      event.preventDefault()
+      if (event.repeat || historyShortcutPressedRef.current) return
+      historyShortcutPressedRef.current = true
+
+      if (event.shiftKey) {
+        redoTreeEdit()
+        return
+      }
+
+      undoTreeEdit()
+    }
+
+    function resetHistoryShortcut(event) {
+      if (event.key.toLowerCase() === 'z') {
+        historyShortcutPressedRef.current = false
+      }
+    }
+
+    window.addEventListener('keydown', handleHistoryShortcut)
+    window.addEventListener('keyup', resetHistoryShortcut)
+    return () => {
+      window.removeEventListener('keydown', handleHistoryShortcut)
+      window.removeEventListener('keyup', resetHistoryShortcut)
+    }
+  })
+
+  useEffect(() => {
     function handleTemplateShortcut(event) {
       if (event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return
       const template = treeTemplates.find((item) => item.key === event.key)
@@ -682,6 +771,7 @@ export default function SyntaxTreeBuilder() {
       createNewTree(label)
       return
     }
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, label })))
     setStatus(`Renamed node to ${label}.`)
   }
@@ -692,6 +782,7 @@ export default function SyntaxTreeBuilder() {
       return
     }
     if (selectedId === tree.id) {
+      recordHistory()
       setTree(null)
       setSelectedId('')
       setLabelInput('S')
@@ -702,6 +793,7 @@ export default function SyntaxTreeBuilder() {
       return
     }
     const deletedIds = collectNodeIds(selectedNode)
+    recordHistory()
     setTree((current) => removeNode(current, selectedId))
     setMovements((current) => current.filter((movement) => !deletedIds.has(movement.from) && !deletedIds.has(movement.to)))
     setMovementStartId('')
@@ -713,6 +805,7 @@ export default function SyntaxTreeBuilder() {
 
   function setNodeColor(color) {
     if (!tree || !selectedId) return
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, color })))
   }
 
@@ -724,6 +817,7 @@ export default function SyntaxTreeBuilder() {
       return
     }
     if (editingFeatureIndex !== null) {
+      recordHistory()
       setTree((current) => updateNode(current, selectedId, (node) => ({
         ...node,
         features: node.features.map((currentFeature, index) => (index === editingFeatureIndex ? feature : currentFeature)),
@@ -733,6 +827,7 @@ export default function SyntaxTreeBuilder() {
       setFeatureInput('')
       return
     }
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: [...(node.features || []), feature] })))
     setFeatureInput('')
   }
@@ -746,6 +841,7 @@ export default function SyntaxTreeBuilder() {
 
   function removeFeature(index) {
     if (!tree || !selectedId) return
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: node.features.filter((_, featureIndex) => featureIndex !== index) })))
     setEditingFeatureIndex(null)
     setFeatureInput('')
@@ -760,6 +856,7 @@ export default function SyntaxTreeBuilder() {
       setStatus('The selected node has no children to flip.')
       return
     }
+    recordHistory()
     setTree((current) => updateNode(current, selectedId, flipSubtree))
     setStatus(`Flipped the subtree under ${selectedNode.label}.`)
   }
@@ -789,6 +886,7 @@ export default function SyntaxTreeBuilder() {
   function startMovementHandleDrag(event, movementId, handle) {
     event.stopPropagation()
     selectMovement(movementId)
+    recordHistory()
     setDraggedMovementHandle({ movementId, handle })
     setStatus('Drag the blue handle to shape the movement line.')
   }
@@ -832,6 +930,7 @@ export default function SyntaxTreeBuilder() {
       setStatus('Select a movement line before adjusting it.')
       return
     }
+    recordHistory()
     setMovements((current) => current.map((movement) => (
       movement.id === selectedMovementId
         ? {
@@ -845,6 +944,7 @@ export default function SyntaxTreeBuilder() {
 
   function updateSelectedMovement(field, value) {
     if (!selectedMovementId) return
+    recordHistory()
     setMovements((current) => current.map((movement) => (
       movement.id === selectedMovementId ? { ...movement, [field]: Number(value), controlX: undefined, controlY: undefined } : movement
     )))
@@ -852,6 +952,7 @@ export default function SyntaxTreeBuilder() {
 
   function resetSelectedMovement() {
     if (!selectedMovementId) return
+    recordHistory()
     setMovements((current) => current.map((movement) => (
       movement.id === selectedMovementId
         ? {
@@ -1219,9 +1320,6 @@ export default function SyntaxTreeBuilder() {
             onMouseLeave={stopMovementHandleDrag}
           >
             <defs>
-              <filter id="selected-node-glow" x="-40%" y="-60%" width="180%" height="220%">
-                <feDropShadow dx="0" dy="0" stdDeviation="5" floodColor="#1555c5" floodOpacity="0.5" />
-              </filter>
               <marker id="movement-arrow" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
                 <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155" />
               </marker>
@@ -1250,13 +1348,13 @@ export default function SyntaxTreeBuilder() {
               {visibleEdges.map((edge) => (
                 <line
                   key={`${edge.from}-${edge.to}`}
-                  className={edge.from === selectedId || edge.to === selectedId ? 'branch-line selected-branch-line' : 'branch-line'}
+                  className="branch-line"
                   x1={edge.x1}
                   y1={edge.y1}
                   x2={edge.x2}
                   y2={edge.y2}
-                  stroke={edge.from === selectedId || edge.to === selectedId ? '#1555c5' : '#24324a'}
-                  strokeWidth={edge.from === selectedId || edge.to === selectedId ? '6.4' : '5.2'}
+                  stroke="#24324a"
+                  strokeWidth="5.2"
                   strokeLinecap="round"
                 />
               ))}
