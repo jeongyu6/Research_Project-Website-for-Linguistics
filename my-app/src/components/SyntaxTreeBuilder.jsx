@@ -10,6 +10,9 @@ const verticalGap = 98
 const nodeWidth = 82
 const nodeHeight = 36
 const canvasMargin = 220
+const branchStartClearance = 18
+const branchEndClearance = 10
+const minBranchDrop = 34
 let nodeCounter = 0
 let movementCounter = 0
 const commonConstituentLabels = ['NP', 'VP', 'TP', 'CP', 'DP', 'PP', 'AdjP', 'AdvP', 'IP', 'XP']
@@ -97,28 +100,111 @@ function measureTree(node) {
   return Math.max(horizontalGap, node.children.reduce((sum, child) => sum + measureTree(child), 0))
 }
 
-function layoutTree(node, left = 0, depth = 0, nodes = [], edges = []) {
+function getNodeVisualBottom(node) {
+  const featureCount = node.features?.length || 0
+
+  if (node.shape === 'triangle') {
+    const labelBottom = nodeHeight / 2 + 28
+    if (!featureCount) return labelBottom
+    return nodeHeight / 2 + 46 + (featureCount - 1) * 18
+  }
+
+  if (!featureCount) return nodeHeight / 2
+  return nodeHeight / 2 + 24 + (featureCount - 1) * 18
+}
+
+function getNodeVisualTop() {
+  return -nodeHeight / 2
+}
+
+function getDepthMetrics(node, depth = 0, metrics = []) {
+  const visualTop = getNodeVisualTop(node)
+  const visualBottom = getNodeVisualBottom(node)
+  const currentMetrics = metrics[depth] || { top: visualTop, bottom: visualBottom }
+  metrics[depth] = {
+    top: Math.min(currentMetrics.top, visualTop),
+    bottom: Math.max(currentMetrics.bottom, visualBottom),
+  }
+
+  for (const child of node.children || []) {
+    getDepthMetrics(child, depth + 1, metrics)
+  }
+
+  return metrics
+}
+
+function getDepthOffsets(depthMetrics) {
+  const offsets = [34]
+
+  for (let depth = 1; depth < depthMetrics.length; depth += 1) {
+    const previousMetrics = depthMetrics[depth - 1] || { top: -nodeHeight / 2, bottom: nodeHeight / 2 }
+    const currentMetrics = depthMetrics[depth] || { top: -nodeHeight / 2, bottom: nodeHeight / 2 }
+    const branchGap = previousMetrics.bottom - currentMetrics.top + branchStartClearance + branchEndClearance + minBranchDrop
+    const rowGap = Math.max(verticalGap, branchGap)
+    offsets[depth] = offsets[depth - 1] + rowGap
+  }
+
+  return offsets
+}
+
+function layoutTree(node, left = 0, depth = 0, nodes = [], edges = [], depthOffsets = getDepthOffsets(getDepthMetrics(node))) {
   const width = measureTree(node)
   const x = left + width / 2
-  const y = depth * verticalGap + 34
+  const y = depthOffsets[depth] || depth * verticalGap + 34
   nodes.push({ ...node, x, y, depth })
 
   let childLeft = left
   for (const child of node.children || []) {
     const childWidth = measureTree(child)
     const childX = childLeft + childWidth / 2
-    const childY = (depth + 1) * verticalGap + 34
-    edges.push({ from: node.id, to: child.id, x1: x, y1: y + nodeHeight / 2, x2: childX, y2: childY - nodeHeight / 2 })
-    layoutTree(child, childLeft, depth + 1, nodes, edges)
+    const childY = depthOffsets[depth + 1] || (depth + 1) * verticalGap + 34
+    edges.push({
+      from: node.id,
+      to: child.id,
+      x1: x,
+      y1: y + getNodeVisualBottom(node) + branchStartClearance,
+      x2: childX,
+      y2: childY + getNodeVisualTop(child) - branchEndClearance,
+    })
+    layoutTree(child, childLeft, depth + 1, nodes, edges, depthOffsets)
     childLeft += childWidth
   }
 
-  return { nodes, edges, width, height: (getDepth(node) + 1) * verticalGap + 70 }
+  const lastNodeBottom = nodes.reduce((bottom, currentNode) => Math.max(bottom, currentNode.y + getNodeVisualBottom(currentNode)), 0)
+  return { nodes, edges, width, height: lastNodeBottom + 70 }
 }
 
 function getDepth(node) {
   if (!node.children?.length) return 0
   return 1 + Math.max(...node.children.map(getDepth))
+}
+
+function parseFeatureInput(value) {
+  const features = []
+  let currentFeature = ''
+  let bracketDepth = 0
+  let angleDepth = 0
+
+  for (const character of value) {
+    if (character === '[') bracketDepth += 1
+    if (character === ']') bracketDepth = Math.max(0, bracketDepth - 1)
+    if (character === '<') angleDepth += 1
+    if (character === '>') angleDepth = Math.max(0, angleDepth - 1)
+
+    const isSeparator = (character === ',' || character === ';' || character === '\n') && bracketDepth === 0 && angleDepth === 0
+    if (isSeparator) {
+      const feature = currentFeature.trim()
+      if (feature) features.push(feature)
+      currentFeature = ''
+    } else {
+      currentFeature += character
+    }
+  }
+
+  const finalFeature = currentFeature.trim()
+  if (finalFeature) features.push(finalFeature)
+
+  return features
 }
 
 function FeatureLabel({ feature, y, onSelect, fontSize, fontFamily, fontWeight }) {
@@ -604,6 +690,18 @@ export default function SyntaxTreeBuilder() {
     setStatus(message)
   }
 
+  function addBranchChildren(children, message) {
+    if (!tree || !selectedId) {
+      addTemplateChild(createNode('XP', { children }), message)
+      return
+    }
+    recordHistory()
+    setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, children: [...(node.children || []), ...children] })))
+    setSelectedMovementId('')
+    setMovementStartId('')
+    setStatus(message)
+  }
+
   function addSelectedFeature(feature, message, editNewFeature = false) {
     if (!tree || !selectedId) {
       setStatus('Create or select a node before adding a feature.')
@@ -616,6 +714,17 @@ export default function SyntaxTreeBuilder() {
       setFeatureInput(feature)
       setEditingFeatureIndex(newFeatureIndex)
     }
+    setStatus(message)
+  }
+
+  function addSelectedFeatures(features, message) {
+    if (!tree || !selectedId) {
+      setStatus('Create or select a node before adding features.')
+      return
+    }
+    if (!features.length) return
+    recordHistory()
+    setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: [...(node.features || []), ...features] })))
     setStatus(message)
   }
 
@@ -656,22 +765,23 @@ export default function SyntaxTreeBuilder() {
         addSelectedFeature('<θ,θ>', 'Added theta-role notation to the selected node.')
         break
       case 'feature': {
-        const feature = featureInput.trim() || '+FEATURE'
-        addSelectedFeature(feature, `Added ${feature} to the selected node.`)
+        const features = parseFeatureInput(featureInput.trim() || '+FEATURE')
+        const message = features.length === 1 ? `Added ${features[0]} to the selected node.` : `Added ${features.length} features to the selected node.`
+        addSelectedFeatures(features, message)
         if (featureInput.trim()) setFeatureInput('')
         break
       }
       case 'unary':
-        addTemplateChild(createNode('XP', { children: [createNode('X')] }), 'Added a unary branch.')
+        addBranchChildren([createNode('X')], 'Added a unary branch under the selected node.')
         break
       case 'binary':
-        addTemplateChild(createNode('XP', { children: [createNode('X'), createNode('Y')] }), 'Added a binary branch.')
+        addBranchChildren([createNode('X'), createNode('Y')], 'Added a binary branch under the selected node.')
         break
       case 'ternary':
-        addTemplateChild(createNode('XP', { children: [createNode('X'), createNode('Y'), createNode('Z')] }), 'Added a ternary branch.')
+        addBranchChildren([createNode('X'), createNode('Y'), createNode('Z')], 'Added a ternary branch under the selected node.')
         break
       case 'adjunct':
-        addTemplateChild(createNode('XP', { children: [createNode('Adjunct'), createNode('XP')] }), 'Added an adjunct branch.')
+        addBranchChildren([createNode('Adjunct'), createNode('XP')], 'Added an adjunct branch under the selected node.')
         break
       case 'xbar':
         addTemplateChild(
@@ -845,8 +955,8 @@ export default function SyntaxTreeBuilder() {
   }
 
   function addFeature() {
-    const feature = featureInput.trim()
-    if (!feature) return
+    const featureText = featureInput.trim()
+    if (!featureText) return
     if (!tree || !selectedId) {
       setStatus('Create or select a node before adding a feature.')
       return
@@ -855,15 +965,18 @@ export default function SyntaxTreeBuilder() {
       recordHistory()
       setTree((current) => updateNode(current, selectedId, (node) => ({
         ...node,
-        features: node.features.map((currentFeature, index) => (index === editingFeatureIndex ? feature : currentFeature)),
+        features: node.features.map((currentFeature, index) => (index === editingFeatureIndex ? featureText : currentFeature)),
       })))
       setEditingFeatureIndex(null)
-      setStatus(`Updated feature to ${feature}.`)
+      setStatus(`Updated feature to ${featureText}.`)
       setFeatureInput('')
       return
     }
+    const features = parseFeatureInput(featureText)
+    if (!features.length) return
     recordHistory()
-    setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: [...(node.features || []), feature] })))
+    setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, features: [...(node.features || []), ...features] })))
+    setStatus(features.length === 1 ? `Added ${features[0]}.` : `Added ${features.length} stacked features.`)
     setFeatureInput('')
   }
 
