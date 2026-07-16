@@ -12,6 +12,15 @@ const canvasMargin = 220
 const branchStartClearance = 18
 const branchEndClearance = 10
 const minBranchDrop = 34
+const defaultMovementColor = '#334155'
+const movementColorOptions = [
+  { label: 'Slate', value: '#334155' },
+  { label: 'Blue', value: '#1555c5' },
+  { label: 'Red', value: '#b91c1c' },
+  { label: 'Green', value: '#15803d' },
+  { label: 'Purple', value: '#7c3aed' },
+  { label: 'Amber', value: '#b45309' },
+]
 let nodeCounter = 0
 let movementCounter = 0
 const commonConstituentLabels = ['NP', 'VP', 'TP', 'CP', 'DP', 'PP', 'AdjP', 'AdvP', 'IP', 'XP']
@@ -254,9 +263,18 @@ function getMovementPath(movement, nodePositions) {
   if (!anchors) return null
 
   return {
+    ...movement,
     ...anchors,
     d: `M ${anchors.startX} ${anchors.startY} Q ${anchors.controlX} ${anchors.controlY} ${anchors.endX} ${anchors.endY}`,
   }
+}
+
+function getMovementColor(movement) {
+  return movement.color || defaultMovementColor
+}
+
+function getMovementMarkerId(movementId) {
+  return `movement-arrow-${movementId.replace(/[^a-zA-Z0-9_-]/g, '-')}`
 }
 
 function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight }) {
@@ -638,7 +656,7 @@ export default function SyntaxTreeBuilder() {
       recordHistory()
       movementCounter += 1
       const movementId = `movement-${Date.now()}-${movementCounter}`
-      setMovements((current) => [...current, { id: movementId, from: movementStartId, to: id, offsetX: 0, offsetY: 0 }])
+      setMovements((current) => [...current, { id: movementId, from: movementStartId, to: id, offsetX: 0, offsetY: 0, color: defaultMovementColor }])
       setMovementStartId('')
       setSelectedMovementId(movementId)
       setSelectedId(id)
@@ -1012,6 +1030,15 @@ export default function SyntaxTreeBuilder() {
     setStatus('Movement line selected. Use the movement controls to reshape it.')
   }
 
+  function removeSelectedMovement() {
+    if (!selectedMovementId) return
+    recordHistory()
+    setMovements((current) => current.filter((movement) => movement.id !== selectedMovementId))
+    setSelectedMovementId('')
+    setDraggedMovementHandle(null)
+    setStatus('Movement arrow deleted.')
+  }
+
   function getSvgPoint(event) {
     if (!svgRef.current) return null
     const point = svgRef.current.createSVGPoint()
@@ -1089,6 +1116,15 @@ export default function SyntaxTreeBuilder() {
     setMovements((current) => current.map((movement) => (
       movement.id === selectedMovementId ? { ...movement, [field]: Number(value), controlX: undefined, controlY: undefined } : movement
     )))
+  }
+
+  function setSelectedMovementColor(color) {
+    if (!selectedMovementId) return
+    recordHistory()
+    setMovements((current) => current.map((movement) => (
+      movement.id === selectedMovementId ? { ...movement, color } : movement
+    )))
+    setStatus('Movement arrow color updated.')
   }
 
   function resetSelectedMovement() {
@@ -1407,9 +1443,50 @@ export default function SyntaxTreeBuilder() {
             )) : <em>{tree ? 'No features on this node' : 'Create a root node first'}</em>}
           </div>
 
+          {movements.length > 0 && (
+            <div className="tree-movement-list">
+              <span>Movement arrows</span>
+              {movements.map((movement, index) => {
+                const fromLabel = nodePositions.get(movement.from)?.label || 'source'
+                const toLabel = nodePositions.get(movement.to)?.label || 'target'
+                return (
+                  <button
+                    type="button"
+                    key={movement.id}
+                    className={movement.id === selectedMovementId ? 'active' : ''}
+                    onClick={() => selectMovement(movement.id)}
+                  >
+                    {index + 1}. {fromLabel} to {toLabel}
+                  </button>
+                )
+              })}
+            </div>
+          )}
+
           {selectedMovement && (
             <div className="tree-movement-controls">
               <span>Movement line</span>
+              <div className="movement-color-options" aria-label="Movement arrow color">
+                {movementColorOptions.map((colorOption) => (
+                  <button
+                    type="button"
+                    key={colorOption.value}
+                    className={getMovementColor(selectedMovement) === colorOption.value ? 'active' : ''}
+                    style={{ backgroundColor: colorOption.value }}
+                    aria-label={`Set movement color ${colorOption.label}`}
+                    onClick={() => setSelectedMovementColor(colorOption.value)}
+                  />
+                ))}
+                <label className="movement-custom-color">
+                  <span>Custom</span>
+                  <input
+                    type="color"
+                    value={getMovementColor(selectedMovement)}
+                    onChange={(event) => setSelectedMovementColor(event.target.value)}
+                    aria-label="Choose custom movement color"
+                  />
+                </label>
+              </div>
               <label className="movement-slider">
                 <span>Curve side</span>
                 <input
@@ -1439,6 +1516,7 @@ export default function SyntaxTreeBuilder() {
                 <button type="button" onClick={() => adjustSelectedMovement(0, 16)}>Down</button>
               </div>
               <button type="button" onClick={resetSelectedMovement}>Reset line</button>
+              <button type="button" className="movement-delete-button" onClick={removeSelectedMovement}>Delete arrow</button>
             </div>
           )}
 
@@ -1494,9 +1572,20 @@ export default function SyntaxTreeBuilder() {
             onMouseLeave={stopMovementHandleDrag}
           >
             <defs>
-              <marker id="movement-arrow" markerWidth="8" markerHeight="8" refX="6.5" refY="4" orient="auto" markerUnits="strokeWidth">
-                <path d="M 0 0 L 8 4 L 0 8 z" fill="#334155" />
-              </marker>
+              {visibleMovementPaths.map((movement) => (
+                <marker
+                  key={movement.id}
+                  id={getMovementMarkerId(movement.id)}
+                  markerWidth="16"
+                  markerHeight="16"
+                  refX="13.5"
+                  refY="8"
+                  orient="auto"
+                  markerUnits="userSpaceOnUse"
+                >
+                  <path d="M 0 0 L 16 8 L 0 16 z" fill={getMovementColor(movement)} />
+                </marker>
+              ))}
             </defs>
             <rect width="100%" height="100%" fill="#ffffff" />
             <g className="tree-brand-mark" transform={`translate(${brandBlockX}, ${brandBlockY})`} aria-hidden="true">
@@ -1538,6 +1627,8 @@ export default function SyntaxTreeBuilder() {
                     className={movement.id === selectedMovementId ? 'movement-path selected' : 'movement-path'}
                     d={movement.d}
                     fill="none"
+                    style={{ stroke: getMovementColor(movement) }}
+                    markerEnd={`url(#${getMovementMarkerId(movement.id)})`}
                     onClick={() => selectMovement(movement.id)}
                   />
                   {movement.id === selectedMovementId && (
