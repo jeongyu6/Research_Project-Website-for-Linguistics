@@ -499,6 +499,7 @@ export default function SyntaxTreeBuilder() {
   const [treeFontSize, setTreeFontSize] = useState(17)
   const [treeFontFamily, setTreeFontFamily] = useState("Georgia, 'Times New Roman', serif")
   const [treeFontWeight, setTreeFontWeight] = useState('700')
+  const [branchStrokeWidth, setBranchStrokeWidth] = useState(5.2)
   //The original state will be 100% for 1, 115% for 1.15, 85% for 0.85
   const [zoomLevel, setZoomLevel] = useState(1)
   //undoStack stores older versions of the tree
@@ -1145,6 +1146,10 @@ export default function SyntaxTreeBuilder() {
       const bounds = svgRef.current.getBoundingClientRect()
       clonedSvg.setAttribute('width', String(Math.max(1, Math.round(bounds.width))))
       clonedSvg.setAttribute('height', String(Math.max(1, Math.round(bounds.height))))
+    } else {
+      clonedSvg.setAttribute('width', String(canvasWidth))
+      clonedSvg.setAttribute('height', String(canvasHeight))
+      clonedSvg.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`)
     }
 
     const imageElements = Array.from(clonedSvg.querySelectorAll('image'))
@@ -1208,7 +1213,7 @@ export default function SyntaxTreeBuilder() {
   }
 
   async function downloadPng() {
-    const canvas = await renderSvgToCanvas({ screenshot: true })
+    const canvas = await renderSvgToCanvas()
     canvas.toBlob((blob) => {
       if (!blob) return
       downloadBlob(blob, 'syntax-tree.png')
@@ -1253,7 +1258,7 @@ export default function SyntaxTreeBuilder() {
   }
 
   async function downloadPdf() {
-    const canvas = await renderSvgToCanvas({ screenshot: true })
+    const canvas = await renderSvgToCanvas()
     const pdfBlob = createPdfFromJpeg(canvas.toDataURL('image/jpeg', 0.95), canvas.width, canvas.height)
     downloadBlob(pdfBlob, 'syntax-tree.pdf')
     setStatus('PDF downloaded.')
@@ -1370,6 +1375,18 @@ export default function SyntaxTreeBuilder() {
                 <option value="700">Bold</option>
                 <option value="800">Heavy</option>
               </select>
+            </label>
+            <label>
+              <span>Branch</span>
+              <input
+                type="range"
+                min="1.5"
+                max="9"
+                step="0.1"
+                value={branchStrokeWidth}
+                onChange={(event) => setBranchStrokeWidth(Number(event.target.value))}
+              />
+              <strong>{branchStrokeWidth.toFixed(1)}px</strong>
             </label>
           </div>
 
@@ -1511,7 +1528,7 @@ export default function SyntaxTreeBuilder() {
                   x2={edge.x2}
                   y2={edge.y2}
                   stroke="#24324a"
-                  strokeWidth="5.2"
+                  strokeWidth={branchStrokeWidth}
                   strokeLinecap="round"
                 />
               ))}
