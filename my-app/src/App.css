@@ -937,6 +937,45 @@ main {
   border-color: #991b1b;
 }
 
+.tree-movement-list {
+  display: grid;
+  gap: 8px;
+  padding: 12px;
+  border: 1px solid #d8e2ef;
+  border-radius: 10px;
+  background: #ffffff;
+}
+
+.tree-movement-list > span {
+  color: #102044;
+  font-size: 0.9rem;
+  font-weight: 800;
+}
+
+.tree-movement-list button {
+  min-height: 34px;
+  padding: 7px 10px;
+  border: 1px solid rgba(31, 95, 181, 0.32);
+  border-radius: 8px;
+  background: #ffffff;
+  color: #334155;
+  font: inherit;
+  font-size: 0.84rem;
+  font-weight: 800;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease, color 0.18s ease;
+}
+
+.tree-movement-list button:hover,
+.tree-movement-list button:focus-visible,
+.tree-movement-list button.active {
+  background: #1555c5;
+  border-color: #1555c5;
+  color: #ffffff;
+  outline: none;
+}
+
 .tree-movement-controls {
   display: grid;
   gap: 10px;
@@ -950,6 +989,51 @@ main {
   color: #102044;
   font-size: 0.9rem;
   font-weight: 800;
+}
+
+.movement-color-options {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+}
+
+.movement-color-options button {
+  width: 28px;
+  height: 28px;
+  min-height: 28px;
+  padding: 0;
+  border: 2px solid #ffffff;
+  border-radius: 999px;
+  box-shadow: 0 0 0 1px #94a3b8;
+}
+
+.movement-color-options button:hover,
+.movement-color-options button:focus-visible,
+.movement-color-options button.active {
+  box-shadow: 0 0 0 3px rgba(21, 85, 197, 0.24);
+  border-color: #ffffff;
+  outline: none;
+}
+
+.movement-custom-color {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 2px;
+  color: #334155;
+  font-size: 0.82rem;
+  font-weight: 800;
+}
+
+.movement-custom-color input {
+  width: 34px;
+  height: 28px;
+  padding: 0;
+  border: 1px solid #94a3b8;
+  border-radius: 8px;
+  background: #ffffff;
+  cursor: pointer;
 }
 
 .movement-slider {
@@ -991,6 +1075,18 @@ main {
   border-color: #1555c5;
   color: #ffffff;
   outline: none;
+}
+
+.tree-movement-controls .movement-delete-button {
+  border-color: rgba(185, 28, 28, 0.32);
+  color: #991b1b;
+}
+
+.tree-movement-controls .movement-delete-button:hover,
+.tree-movement-controls .movement-delete-button:focus-visible {
+  background: #991b1b;
+  border-color: #991b1b;
+  color: #ffffff;
 }
 
 .tree-canvas {
@@ -1179,7 +1275,6 @@ main {
 .movement-path {
   stroke: #334155;
   stroke-width: 4;
-  stroke-dasharray: 2 9;
   stroke-linecap: round;
   stroke-linejoin: round;
   cursor: pointer;
@@ -1187,8 +1282,7 @@ main {
 }
 
 .movement-path.selected {
-  stroke: #1555c5;
-  stroke-width: 4;
+  stroke-width: 5;
 }
 
 .movement-handles line {
