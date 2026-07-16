@@ -4,7 +4,6 @@ import utscLogo from '../../Pictures/UTSC_logo.png'
 
 
 
-const colorOptions = ['#ffffff', '#eef6ff', '#eafaf0', '#fff4d6', '#fdecef', '#f3eefc', '#edf2f7', '#101828']
 const horizontalGap = 112
 const verticalGap = 98
 const nodeWidth = 82
@@ -45,7 +44,6 @@ function createNode(label = 'XP', options = {}) {
   return {
     id: `node-${Date.now()}-${nodeCounter}`,
     label,
-    color: '#ffffff',
     features: [],
     children: [],
     ...options,
@@ -263,7 +261,6 @@ function getMovementPath(movement, nodePositions) {
 
 function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight }) {
   const isSelected = selectedId === node.id
-  const textColor = node.color === '#101828' ? '#ffffff' : '#172033'
   const isTriangle = node.shape === 'triangle'
   //Extra CSS class when the node isSelected; This it to allow for easier adding of special visual effects
   const nodeClassName = isSelected ? 'tree-node selected-tree-node' : 'tree-node'
@@ -313,7 +310,7 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
         width={nodeWidth}
         height={nodeHeight}
         rx="6"
-        fill={isSelected ? '#1555c5' : node.color}
+        fill={isSelected ? '#1555c5' : '#ffffff'}
         stroke={isSelected ? '#062d72' : '#24324a'}
         strokeWidth={isSelected ? '4.8' : '3'}
         onClick={() => onSelect(node.id)}
@@ -322,7 +319,7 @@ function TreeNode({ node, selectedId, onSelect, fontSize, fontFamily, fontWeight
         x="0"
         y="5"
         textAnchor="middle"
-        fill={isSelected ? '#ffffff' : textColor}
+        fill={isSelected ? '#ffffff' : '#172033'}
         fontFamily={fontFamily}
         fontSize={fontSize}
         fontWeight={fontWeight}
@@ -784,14 +781,12 @@ export default function SyntaxTreeBuilder() {
         addBranchChildren([createNode('Adjunct'), createNode('XP')], 'Added an adjunct branch under the selected node.')
         break
       case 'xbar':
-        addTemplateChild(
-          createNode('XP', {
-            children: [
-              createNode('Spec'),
-              createNode("X'", { children: [createNode('X'), createNode('Comp')] }),
-            ],
-          }),
-          'Added an X-bar template.',
+        addBranchChildren(
+          [
+            createNode('Spec'),
+            createNode("X'", { children: [createNode('X'), createNode('Comp')] }),
+          ],
+          'Added an X-bar branch under the selected node.',
         )
         break
       case 'movement':
@@ -946,12 +941,6 @@ export default function SyntaxTreeBuilder() {
     setSelectedId(tree.id)
     setLabelInput(tree.label)
     setStatus('Node deleted.')
-  }
-
-  function setNodeColor(color) {
-    if (!tree || !selectedId) return
-    recordHistory()
-    setTree((current) => updateNode(current, selectedId, (node) => ({ ...node, color })))
   }
 
   function addFeature() {
@@ -1348,22 +1337,6 @@ export default function SyntaxTreeBuilder() {
               <button type="button" onClick={addChild}>Add</button>
             </div>
           </label>
-
-          <div className="tree-field">
-            <span>Color</span>
-            <div className="tree-swatches">
-              {colorOptions.map((color) => (
-                <button
-                  type="button"
-                  key={color}
-                  aria-label={`Set node color ${color}`}
-                  className={selectedNode?.color === color ? 'active' : ''}
-                  style={{ backgroundColor: color }}
-                  onClick={() => setNodeColor(color)}
-                />
-              ))}
-            </div>
-          </div>
 
           <div className="tree-field tree-typography-controls">
             <span>Typography</span>
