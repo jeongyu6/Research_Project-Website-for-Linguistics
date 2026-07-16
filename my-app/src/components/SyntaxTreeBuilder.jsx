@@ -214,21 +214,44 @@ function parseFeatureInput(value) {
   return features
 }
 
+function getFeatureColor(feature) {
+  const normalized = feature.trim().toLowerCase()
+
+  if (normalized.includes('case')) return '#1555c5'
+  if (normalized.includes('θ') || normalized.includes('theta') || (normalized.startsWith('<') && normalized.endsWith('>'))) return '#7c3aed'
+  if (normalized.includes('wh') || normalized.includes('move')) return '#b45309'
+  if (normalized.includes('past') || normalized.includes('tense') || normalized.includes('asp') || normalized.includes('agr')) return '#15803d'
+  if (normalized.startsWith('+') || normalized.startsWith('[+')) return '#0f766e'
+  if (normalized.startsWith('-') || normalized.startsWith('[-')) return '#b91c1c'
+  return '#475569'
+}
+
+function getFeatureChipStyle(feature) {
+  const color = getFeatureColor(feature)
+  return {
+    borderColor: color,
+    backgroundColor: `${color}14`,
+    color,
+  }
+}
+
 function FeatureLabel({ feature, y, onSelect, fontSize, fontFamily, fontWeight }) {
+  const featureColor = getFeatureColor(feature)
+
   return (
     <g className="feature-label" onClick={onSelect}>
       <text
         x="0"
         y={y}
         textAnchor="middle"
-        fill="#475569"
+        fill={featureColor}
         fontFamily={fontFamily}
         fontSize={Math.max(11, fontSize - 4)}
         fontWeight={fontWeight === '400' ? '500' : fontWeight}
       >
         {feature}
       </text>
-      <line x1="-30" y1={y + 5} x2="30" y2={y + 5} stroke="#475569" strokeWidth="1.8" />
+      <line x1="-30" y1={y + 5} x2="30" y2={y + 5} stroke={featureColor} strokeWidth="1.8" />
     </g>
   )
 }
@@ -518,6 +541,7 @@ export default function SyntaxTreeBuilder() {
   const [treeFontFamily, setTreeFontFamily] = useState("Georgia, 'Times New Roman', serif")
   const [treeFontWeight, setTreeFontWeight] = useState('700')
   const [branchStrokeWidth, setBranchStrokeWidth] = useState(5.2)
+  const [isToolbarCollapsed, setIsToolbarCollapsed] = useState(false)
   //The original state will be 100% for 1, 115% for 1.15, 85% for 0.85
   const [zoomLevel, setZoomLevel] = useState(1)
   //undoStack stores older versions of the tree
@@ -1322,7 +1346,7 @@ export default function SyntaxTreeBuilder() {
   }
 
   return (
-    <div className="syntax-tree-builder">
+    <div className={isToolbarCollapsed ? 'syntax-tree-builder toolbar-collapsed' : 'syntax-tree-builder'}>
       <section className="tree-template-palette" aria-label="TreeForm template buttons">
         {treeTemplates.map((template) => (
           <button
@@ -1339,11 +1363,23 @@ export default function SyntaxTreeBuilder() {
       </section>
 
       <div className="tree-workspace">
-        <section className="tree-panel tree-editor" aria-label="Tree editing controls">
+        <aside className="tree-sidebar" aria-label="Tree editing toolbar">
+        <section className={isToolbarCollapsed ? 'tree-panel tree-editor tree-editor-collapsed' : 'tree-panel tree-editor'} aria-label="Tree editing controls">
           <div className="tree-panel-header">
             <span>Selected</span>
+            <button
+              type="button"
+              className="tree-toolbar-toggle"
+              aria-label={isToolbarCollapsed ? 'Show selected toolbar' : 'Hide selected toolbar'}
+              aria-expanded={!isToolbarCollapsed}
+              onClick={() => setIsToolbarCollapsed((isCollapsed) => !isCollapsed)}
+            >
+              {isToolbarCollapsed ? '>' : '<'}
+            </button>
           </div>
 
+          {!isToolbarCollapsed && (
+          <>
           <label className="tree-field">
             <span>{tree ? 'Label' : 'Root label'}</span>
             <div className="tree-inline-control tree-label-control">
@@ -1436,7 +1472,7 @@ export default function SyntaxTreeBuilder() {
 
           <div className="tree-feature-list">
             {selectedNode?.features?.length ? selectedNode.features.map((feature, index) => (
-              <span key={`${feature}-${index}`}>
+              <span key={`${feature}-${index}`} style={getFeatureChipStyle(feature)}>
                 <button type="button" className="tree-feature-value" onClick={() => editFeature(index)}>{feature}</button>
                 <button type="button" className="tree-feature-remove" aria-label={`Remove ${feature}`} onClick={() => removeFeature(index)}>x</button>
               </span>
@@ -1522,7 +1558,10 @@ export default function SyntaxTreeBuilder() {
 
           <button type="button" className="tree-secondary" onClick={flipSelectedSubtree}>Flip subtree</button>
           <button type="button" className="tree-danger" onClick={deleteSelected}>{tree ? 'Delete selected node' : 'Clear tree'}</button>
+          </>
+          )}
         </section>
+        </aside>
 
         <section ref={canvasRef} className="tree-canvas" aria-label="Syntax tree canvas">
           <div className="tree-presentation-tools">
