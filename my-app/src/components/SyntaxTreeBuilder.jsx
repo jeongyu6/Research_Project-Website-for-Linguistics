@@ -431,12 +431,15 @@ function TemplateDiagram({ template }) {
     case 'xbar':
       return (
         <>
-          <PreviewNode x={55} y={14} label="XP" tone="selected" />
-          <PreviewLine x1={55} y1={24} x2={31} y2={42} />
-          <PreviewLine x1={55} y1={24} x2={77} y2={42} />
-          <PreviewNode x={31} y={51} label="Spec" />
-          <PreviewNode x={77} y={51} label="X'" />
-          <PreviewLine x1={77} y1={60} x2={77} y2={70} />
+          <PreviewNode x={55} y={10} label="XP" tone="selected" />
+          <PreviewLine x1={55} y1={20} x2={32} y2={30} />
+          <PreviewLine x1={55} y1={20} x2={78} y2={30} />
+          <PreviewNode x={32} y={38} label="Spec" />
+          <PreviewNode x={78} y={38} label="X'" />
+          <PreviewLine x1={78} y1={48} x2={56} y2={56} />
+          <PreviewLine x1={78} y1={48} x2={92} y2={56} />
+          <PreviewNode x={56} y={66} label="X" />
+          <PreviewNode x={92} y={66} label="Comp" />
         </>
       )
     case 'movement':
