@@ -832,25 +832,6 @@ main {
   transform: translateY(-1px);
 }
 
-.tree-swatches {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.tree-swatches button {
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid #94a3b8;
-  border-radius: 999px;
-  cursor: pointer;
-}
-
-.tree-swatches button.active {
-  box-shadow: 0 0 0 3px rgba(21, 85, 197, 0.24);
-  border-color: #1555c5;
-}
-
 .tree-typography-controls {
   padding: 12px;
   border: 1px solid #d8e2ef;
