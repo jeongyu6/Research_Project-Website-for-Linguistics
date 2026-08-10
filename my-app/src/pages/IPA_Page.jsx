@@ -209,11 +209,36 @@ function IPAKeyboard() {
     }
   }
 
+  function updateSelectedArrows(command, shouldBeActive) {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection || selection.rangeCount === 0 || selection.isCollapsed) return
+
+    const range = selection.getRangeAt(0)
+    if (!editor.contains(range.commonAncestorContainer)) return
+
+    editor.querySelectorAll('.ipa-inserted-arrow').forEach((arrow) => {
+      if (!range.intersectsNode(arrow)) return
+
+      if (command === 'bold') {
+        arrow.classList.toggle('ipa-inserted-arrow-bold', shouldBeActive)
+        arrow.style.fontWeight = shouldBeActive ? '700' : '400'
+      } else if (command === 'italic') {
+        arrow.style.fontStyle = shouldBeActive ? 'italic' : 'normal'
+      } else if (command === 'underline') {
+        arrow.style.textDecoration = shouldBeActive ? 'underline' : 'none'
+      }
+    })
+  }
+
   function applyFormat(command) {
     focusEditor()
     recordSnapshot()
     const shouldBeActive = !activeFormats[command]
-    runProgrammaticEdit(() => forceFormatState(command, shouldBeActive))
+    runProgrammaticEdit(() => {
+      forceFormatState(command, shouldBeActive)
+      updateSelectedArrows(command, shouldBeActive)
+    })
     if (command === 'bold' || command === 'italic' || command === 'underline') {
       setActiveFormats((current) => ({ ...current, [command]: shouldBeActive }))
     }
