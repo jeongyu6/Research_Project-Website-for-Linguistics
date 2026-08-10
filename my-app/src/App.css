@@ -1534,6 +1534,20 @@ main {
   line-height: 1.65;
   text-decoration: none;
   text-align: left;
+  text-decoration-skip-ink: none;
+}
+
+.ipa-editor * {
+  text-decoration-skip-ink: none;
+}
+
+.ipa-editor .ipa-inserted-arrow {
+  font-family: 'Arial Unicode MS', 'Apple Symbols', 'Segoe UI Symbol', Arial, sans-serif;
+}
+
+.ipa-editor .ipa-inserted-arrow-bold {
+  -webkit-text-stroke: 0.55px currentColor;
+  paint-order: stroke fill;
 }
 
 .ipa-editor:focus {
