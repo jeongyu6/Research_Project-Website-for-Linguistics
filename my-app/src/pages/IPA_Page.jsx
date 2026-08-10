@@ -60,7 +60,7 @@ const consonantRecordings = {
 const vowelRecordings = {
   'i': [recordingUrl('Vowels/i-sheep.mp3')],
   'I': [recordingUrl('Vowels/ɪ-ship.mp3')],
-  'ʊ': [recordingUrl('Vowels/ʊ-book (1).mp3')],
+  'ʊ': [recordingUrl('Vowels/ʊ-put.mp3')],
   'u': [recordingUrl('Vowels/u-boot.mp3')],
   'ej': [recordingUrl('Vowels/ej-bait.mp3')],
   'ɛ': [recordingUrl('Vowels/ɛ-bet.mp3')],
