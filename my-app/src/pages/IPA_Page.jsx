@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 const keyboardGroups = [
   {
@@ -154,6 +154,46 @@ function IPAKeyboard() {
   const [copyLabel, setCopyLabel] = useState('Copy all')
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, underline: false })
 
+  useEffect(() => {
+    let syncFrame = 0
+
+    function syncFormattingState() {
+      window.cancelAnimationFrame(syncFrame)
+      syncFrame = window.requestAnimationFrame(() => {
+        const editor = editorRef.current
+        const selection = window.getSelection()
+        if (!editor || !selection || selection.rangeCount === 0) return
+
+        const range = selection.getRangeAt(0)
+        if (!editor.contains(range.commonAncestorContainer)) return
+
+        const selectedArrows = selection.isCollapsed
+          ? []
+          : [...editor.querySelectorAll('.ipa-inserted-arrow')].filter((arrow) => range.intersectsNode(arrow))
+
+        const nextFormats = {
+          bold: document.queryCommandState('bold') || selectedArrows.some((arrow) => arrow.classList.contains('ipa-inserted-arrow-bold')),
+          italic: document.queryCommandState('italic') || selectedArrows.some((arrow) => arrow.style.fontStyle === 'italic'),
+          underline: document.queryCommandState('underline') || selectedArrows.some((arrow) => arrow.style.textDecoration.includes('underline')),
+        }
+
+        setActiveFormats((current) => (
+          current.bold === nextFormats.bold
+          && current.italic === nextFormats.italic
+          && current.underline === nextFormats.underline
+            ? current
+            : nextFormats
+        ))
+      })
+    }
+
+    document.addEventListener('selectionchange', syncFormattingState)
+    return () => {
+      document.removeEventListener('selectionchange', syncFormattingState)
+      window.cancelAnimationFrame(syncFrame)
+    }
+  }, [])
+
   function focusEditor() {
     editorRef.current?.focus()
   }
@@ -192,6 +232,9 @@ function IPAKeyboard() {
     editorRef.current.innerHTML = previous.html
     setActiveFormats(previous.formats)
     placeCursorAtEnd()
+    runProgrammaticEdit(() => {
+      Object.entries(previous.formats).forEach(([command, isActive]) => forceFormatState(command, isActive))
+    })
   }
 
   function redoEditor() {
@@ -201,6 +244,9 @@ function IPAKeyboard() {
     editorRef.current.innerHTML = next.html
     setActiveFormats(next.formats)
     placeCursorAtEnd()
+    runProgrammaticEdit(() => {
+      Object.entries(next.formats).forEach(([command, isActive]) => forceFormatState(command, isActive))
+    })
   }
 
   function forceFormatState(command, shouldBeActive) {
@@ -256,7 +302,25 @@ function IPAKeyboard() {
           activeFormats.underline ? 'text-decoration: underline' : 'text-decoration: none',
         ].join('; ')
         const arrowClass = activeFormats.bold ? 'ipa-inserted-arrow ipa-inserted-arrow-bold' : 'ipa-inserted-arrow'
-        document.execCommand('insertHTML', false, `<span class="${arrowClass}" style="${arrowStyles}">→</span>`)
+        const selection = window.getSelection()
+        if (!selection || selection.rangeCount === 0) return
+
+        const range = selection.getRangeAt(0)
+        const arrow = document.createElement('span')
+        arrow.className = arrowClass
+        arrow.contentEditable = 'false'
+        arrow.style.cssText = arrowStyles
+        arrow.textContent = '→'
+
+        range.deleteContents()
+        range.insertNode(arrow)
+
+        const nextRange = document.createRange()
+        nextRange.setStartAfter(arrow)
+        nextRange.collapse(true)
+        selection.removeAllRanges()
+        selection.addRange(nextRange)
+        Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
       } else {
         document.execCommand('insertText', false, symbol)
       }
