@@ -1524,6 +1524,7 @@ main {
   min-height: 150px;
   padding: 16px;
   overflow-wrap: anywhere;
+  caret-color: #1f5fb5;
   border: 1px solid #b9cce4;
   border-radius: 10px;
   background: #ffffff;
