@@ -167,14 +167,10 @@ function IPAKeyboard() {
         const range = selection.getRangeAt(0)
         if (!editor.contains(range.commonAncestorContainer)) return
 
-        const selectedArrows = selection.isCollapsed
-          ? []
-          : [...editor.querySelectorAll('.ipa-inserted-arrow')].filter((arrow) => range.intersectsNode(arrow))
-
         const nextFormats = {
-          bold: document.queryCommandState('bold') || selectedArrows.some((arrow) => arrow.classList.contains('ipa-inserted-arrow-bold')),
-          italic: document.queryCommandState('italic') || selectedArrows.some((arrow) => arrow.style.fontStyle === 'italic'),
-          underline: document.queryCommandState('underline') || selectedArrows.some((arrow) => arrow.style.textDecoration.includes('underline')),
+          bold: document.queryCommandState('bold'),
+          italic: document.queryCommandState('italic'),
+          underline: document.queryCommandState('underline'),
         }
 
         setActiveFormats((current) => (
@@ -255,35 +251,12 @@ function IPAKeyboard() {
     }
   }
 
-  function updateSelectedArrows(command, shouldBeActive) {
-    const editor = editorRef.current
-    const selection = window.getSelection()
-    if (!editor || !selection || selection.rangeCount === 0 || selection.isCollapsed) return
-
-    const range = selection.getRangeAt(0)
-    if (!editor.contains(range.commonAncestorContainer)) return
-
-    editor.querySelectorAll('.ipa-inserted-arrow').forEach((arrow) => {
-      if (!range.intersectsNode(arrow)) return
-
-      if (command === 'bold') {
-        arrow.classList.toggle('ipa-inserted-arrow-bold', shouldBeActive)
-        arrow.style.fontWeight = shouldBeActive ? '700' : '400'
-      } else if (command === 'italic') {
-        arrow.style.fontStyle = shouldBeActive ? 'italic' : 'normal'
-      } else if (command === 'underline') {
-        arrow.style.textDecoration = shouldBeActive ? 'underline' : 'none'
-      }
-    })
-  }
-
   function applyFormat(command) {
     focusEditor()
     recordSnapshot()
     const shouldBeActive = !activeFormats[command]
     runProgrammaticEdit(() => {
       forceFormatState(command, shouldBeActive)
-      updateSelectedArrows(command, shouldBeActive)
     })
     if (command === 'bold' || command === 'italic' || command === 'underline') {
       setActiveFormats((current) => ({ ...current, [command]: shouldBeActive }))
@@ -295,38 +268,7 @@ function IPAKeyboard() {
     recordSnapshot()
     runProgrammaticEdit(() => {
       Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
-      if (symbol === '→') {
-        const arrowStyles = [
-          activeFormats.bold ? 'font-weight: 700' : 'font-weight: 400',
-          activeFormats.italic ? 'font-style: italic' : 'font-style: normal',
-          activeFormats.underline ? 'text-decoration: underline' : 'text-decoration: none',
-        ].join('; ')
-        const arrowClass = activeFormats.bold ? 'ipa-inserted-arrow ipa-inserted-arrow-bold' : 'ipa-inserted-arrow'
-        const selection = window.getSelection()
-        if (!selection || selection.rangeCount === 0) return
-
-        const range = selection.getRangeAt(0)
-        const arrow = document.createElement('span')
-        arrow.className = arrowClass
-        arrow.contentEditable = 'false'
-        arrow.style.cssText = arrowStyles
-        arrow.textContent = '→'
-
-        range.deleteContents()
-        range.insertNode(arrow)
-
-        const typingBoundary = document.createTextNode('\u200B')
-        arrow.after(typingBoundary)
-
-        const nextRange = document.createRange()
-        nextRange.setStart(typingBoundary, 0)
-        nextRange.collapse(true)
-        selection.removeAllRanges()
-        selection.addRange(nextRange)
-        Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
-      } else {
-        document.execCommand('insertText', false, symbol)
-      }
+      document.execCommand('insertText', false, symbol)
     })
   }
 
@@ -374,11 +316,11 @@ function IPAKeyboard() {
 
   async function copyAll() {
     const editor = editorRef.current
-    const text = (editor?.innerText ?? '').replaceAll('\u200B', '')
+    const text = editor?.innerText ?? ''
     if (!text.trim()) return
 
     try {
-      const html = editor.innerHTML.replaceAll('\u200B', '')
+      const html = editor.innerHTML
       const clipboardItem = new ClipboardItem({
         'text/plain': new Blob([text], { type: 'text/plain' }),
         'text/html': new Blob([html], { type: 'text/html' }),
