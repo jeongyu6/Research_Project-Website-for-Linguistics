@@ -3,14 +3,14 @@ import { useRef, useState } from 'react'
 const keyboardGroups = [
   {
     label: 'Consonants',
-    symbols: ['p', 'b', 't', 'd', 'k', 'g', 'ʔ', 'f', 'v', 'θ', 'ð', 's', 'z', 'ʃ', 'ʒ', 'h', 'tʃ', 'dʒ', 'm', 'n', 'ŋ', 'r', 'w', 'j', 'l'],
+    symbols: ['p', 'b', 't', 'd', 'k', 'g', 'ʔ', 'f', 'v', 'θ', 'ð', 's', 'z', 'ʃ', 'ʒ', 'h', 'tʃ', 'dʒ', 'm', 'n', 'ŋ', 'r', 'w', 'j', 'l', 'ɾ', 'ʍ'],
   },
   {
     label: 'Vowels',
-    symbols: ['i', 'I', 'ʊ', 'u', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'ɔ', 'æ', 'aj', 'aw', 'ɑ'],
+    symbols: ['i', 'I', 'ʊ', 'u', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'ɔ', 'æ', 'aj', 'aw', 'a', 'ɚ'],
   },
   {
-    label: 'Others',
+    label: 'Diacritics & Transcription',
     symbols: ['ˈ', 'ˌ', 'ː', 'ʰ', '̃', '̥', '̟', '̠', '→'],
   },
 ]
@@ -87,7 +87,7 @@ const vowelRecordings = {
   'æ': [recordingUrl('Vowels/æ-bat.mp3')],
   'aj': [recordingUrl('Vowels/aj-buy.mp3')],
   'aw': [recordingUrl('Vowels/aw-cow.mp3')],
-  'ɑ': [recordingUrl('Vowels/ɑ-father.mp3')],
+  'a': [recordingUrl('Vowels/a-father.mp3')],
 }
 
 function PulmonicSymbols({ cell, rowLabel, columnLabel, selectedSymbol, onSelect }) {
@@ -224,8 +224,51 @@ function IPAKeyboard() {
     recordSnapshot()
     runProgrammaticEdit(() => {
       Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
-      document.execCommand('insertText', false, symbol)
+      if (symbol === '→') {
+        const arrowStyles = [
+          activeFormats.bold ? 'font-weight: 700' : 'font-weight: 400',
+          activeFormats.italic ? 'font-style: italic' : 'font-style: normal',
+          activeFormats.underline ? 'text-decoration: underline' : 'text-decoration: none',
+        ].join('; ')
+        const arrowClass = activeFormats.bold ? 'ipa-inserted-arrow ipa-inserted-arrow-bold' : 'ipa-inserted-arrow'
+        document.execCommand('insertHTML', false, `<span class="${arrowClass}" style="${arrowStyles}">→</span>`)
+      } else {
+        document.execCommand('insertText', false, symbol)
+      }
     })
+  }
+
+  function wrapSelection(opening, closing) {
+    focusEditor()
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection) return
+
+    let range = selection.rangeCount > 0 ? selection.getRangeAt(0) : null
+    if (!range || !editor.contains(range.commonAncestorContainer)) {
+      range = document.createRange()
+      range.selectNodeContents(editor)
+      range.collapse(false)
+    }
+
+    recordSnapshot()
+    const selectedContent = range.extractContents()
+    const hadSelection = selectedContent.hasChildNodes()
+    const openingNode = document.createTextNode(opening)
+    const closingNode = document.createTextNode(closing)
+    const fragment = document.createDocumentFragment()
+    fragment.append(openingNode, selectedContent, closingNode)
+    range.insertNode(fragment)
+
+    selection.removeAllRanges()
+    const nextRange = document.createRange()
+    if (hadSelection) {
+      nextRange.setStartAfter(closingNode)
+    } else {
+      nextRange.setStart(openingNode, openingNode.length)
+    }
+    nextRange.collapse(true)
+    selection.addRange(nextRange)
   }
 
   function clearEditor() {
@@ -274,10 +317,12 @@ function IPAKeyboard() {
         <button type="button" className="ipa-format-italic" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('italic')} aria-label="Italicize selected text" aria-pressed={activeFormats.italic}>I</button>
         <button type="button" className="ipa-format-underline" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('underline')} aria-label="Underline selected text" aria-pressed={activeFormats.underline}>U</button>
         <span className="ipa-toolbar-divider" aria-hidden="true" />
-        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={undoEditor} aria-label="Undo one step" title="Undo one step">←</button>
-        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={redoEditor} aria-label="Redo one step" title="Redo one step">→</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={undoEditor} aria-label="Undo one step" title="Undo one step">↶</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={redoEditor} aria-label="Redo one step" title="Redo one step">↷</button>
         <button type="button" className="ipa-toolbar-text-button" onClick={clearEditor}>Clear</button>
         <button type="button" className="ipa-toolbar-text-button" onClick={copyAll}>{copyLabel}</button>
+        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => wrapSelection('/', '/')} aria-label="Wrap selected text in slashes" title="Wrap selected text in slashes">/…/</button>
+        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => wrapSelection('[', ']')} aria-label="Wrap selected text in square brackets" title="Wrap selected text in square brackets">[…]</button>
         <label htmlFor="ipa-editor-size">Text size</label>
         <select id="ipa-editor-size" value={fontSize} onChange={(event) => setFontSize(event.target.value)}>
           <option value="small">Small</option>
@@ -401,7 +446,7 @@ export default function IPA_Page({ onBack }) {
             <VowelSymbol x={356} y={476} text="æ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={548} y={494} text="aj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={652} y={494} text="aw" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={866} y={494} text="ɑ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
+            <VowelSymbol x={866} y={494} text="a" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
           </svg>
         </div>
         {selectedVowelRecordings.length > 0 && (
