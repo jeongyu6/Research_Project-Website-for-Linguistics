@@ -315,8 +315,11 @@ function IPAKeyboard() {
         range.deleteContents()
         range.insertNode(arrow)
 
+        const typingBoundary = document.createTextNode('\u200B')
+        arrow.after(typingBoundary)
+
         const nextRange = document.createRange()
-        nextRange.setStartAfter(arrow)
+        nextRange.setStart(typingBoundary, 0)
         nextRange.collapse(true)
         selection.removeAllRanges()
         selection.addRange(nextRange)
@@ -371,11 +374,11 @@ function IPAKeyboard() {
 
   async function copyAll() {
     const editor = editorRef.current
-    const text = editor?.innerText ?? ''
+    const text = (editor?.innerText ?? '').replaceAll('\u200B', '')
     if (!text.trim()) return
 
     try {
-      const html = editor.innerHTML
+      const html = editor.innerHTML.replaceAll('\u200B', '')
       const clipboardItem = new ClipboardItem({
         'text/plain': new Blob([text], { type: 'text/plain' }),
         'text/html': new Blob([html], { type: 'text/html' }),
