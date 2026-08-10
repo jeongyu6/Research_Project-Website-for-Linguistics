@@ -1,4 +1,19 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
+
+const keyboardGroups = [
+  {
+    label: 'Consonants',
+    symbols: ['p', 'b', 't', 'd', 'k', 'g', 'ʔ', 'f', 'v', 'θ', 'ð', 's', 'z', 'ʃ', 'ʒ', 'h', 'tʃ', 'dʒ', 'm', 'n', 'ŋ', 'r', 'w', 'j', 'l'],
+  },
+  {
+    label: 'Vowels',
+    symbols: ['i', 'I', 'ʊ', 'u', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'ɔ', 'æ', 'aj', 'aw', 'ɑ'],
+  },
+  {
+    label: 'Others',
+    symbols: ['ˈ', 'ˌ', 'ː', 'ʰ', '̃', '̥', '̟', '̠', '→'],
+  },
+]
 
 const pulmonicColumns = [
   'Bilabial',
@@ -127,6 +142,186 @@ function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
       <rect className="vowel-hitbox" x={-textWidth / 2 - 10} y="-32" width={textWidth + 20} height="64" rx="0" />
       <text textAnchor="middle" dominantBaseline="central">{text}</text>
     </g>
+  )
+}
+
+function IPAKeyboard() {
+  const editorRef = useRef(null)
+  const undoStackRef = useRef([])
+  const redoStackRef = useRef([])
+  const isProgrammaticEditRef = useRef(false)
+  const [fontSize, setFontSize] = useState('medium')
+  const [copyLabel, setCopyLabel] = useState('Copy all')
+  const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, underline: false })
+
+  function focusEditor() {
+    editorRef.current?.focus()
+  }
+
+  function recordSnapshot() {
+    const html = editorRef.current?.innerHTML ?? ''
+    const stack = undoStackRef.current
+    const last = stack[stack.length - 1]
+    const formatsChanged = !last || Object.keys(activeFormats).some((key) => last.formats[key] !== activeFormats[key])
+    if (!last || last.html !== html || formatsChanged) stack.push({ html, formats: activeFormats })
+    redoStackRef.current = []
+  }
+
+  function runProgrammaticEdit(action) {
+    isProgrammaticEditRef.current = true
+    action()
+    isProgrammaticEditRef.current = false
+  }
+
+  function placeCursorAtEnd() {
+    const editor = editorRef.current
+    if (!editor) return
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    range.collapse(false)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    editor.focus()
+  }
+
+  function undoEditor() {
+    const previous = undoStackRef.current.pop()
+    if (previous === undefined || !editorRef.current) return
+    redoStackRef.current.push({ html: editorRef.current.innerHTML, formats: activeFormats })
+    editorRef.current.innerHTML = previous.html
+    setActiveFormats(previous.formats)
+    placeCursorAtEnd()
+  }
+
+  function redoEditor() {
+    const next = redoStackRef.current.pop()
+    if (next === undefined || !editorRef.current) return
+    undoStackRef.current.push({ html: editorRef.current.innerHTML, formats: activeFormats })
+    editorRef.current.innerHTML = next.html
+    setActiveFormats(next.formats)
+    placeCursorAtEnd()
+  }
+
+  function forceFormatState(command, shouldBeActive) {
+    if (document.queryCommandState(command) !== shouldBeActive) {
+      document.execCommand(command, false)
+    }
+  }
+
+  function applyFormat(command) {
+    focusEditor()
+    recordSnapshot()
+    const shouldBeActive = !activeFormats[command]
+    runProgrammaticEdit(() => forceFormatState(command, shouldBeActive))
+    if (command === 'bold' || command === 'italic' || command === 'underline') {
+      setActiveFormats((current) => ({ ...current, [command]: shouldBeActive }))
+    }
+  }
+
+  function insertSymbol(symbol) {
+    focusEditor()
+    recordSnapshot()
+    runProgrammaticEdit(() => {
+      Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
+      document.execCommand('insertText', false, symbol)
+    })
+  }
+
+  function clearEditor() {
+    if (!editorRef.current) return
+    recordSnapshot()
+    editorRef.current.innerHTML = ''
+    focusEditor()
+    Object.keys(activeFormats).forEach((command) => forceFormatState(command, false))
+    setActiveFormats({ bold: false, italic: false, underline: false })
+  }
+
+  async function copyAll() {
+    const editor = editorRef.current
+    const text = editor?.innerText ?? ''
+    if (!text.trim()) return
+
+    try {
+      const html = editor.innerHTML
+      const clipboardItem = new ClipboardItem({
+        'text/plain': new Blob([text], { type: 'text/plain' }),
+        'text/html': new Blob([html], { type: 'text/html' }),
+      })
+      await navigator.clipboard.write([clipboardItem])
+      setCopyLabel('Copied!')
+      window.setTimeout(() => setCopyLabel('Copy all'), 1600)
+    } catch {
+      const selection = window.getSelection()
+      const range = document.createRange()
+      range.selectNodeContents(editor)
+      selection.removeAllRanges()
+      selection.addRange(range)
+      document.execCommand('copy')
+      selection.removeAllRanges()
+    }
+  }
+
+  return (
+    <section className="ipa-chart-section ipa-keyboard-section">
+      <div className="ipa-section-heading">
+        <h2>IPA Keyboard</h2>
+        <p>Type in the editor or select an IPA symbol to insert it at the cursor.</p>
+      </div>
+
+      <div className="ipa-editor-toolbar" role="toolbar" aria-label="Text formatting">
+        <button type="button" className="ipa-format-bold" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('bold')} aria-label="Bold selected text" aria-pressed={activeFormats.bold}>B</button>
+        <button type="button" className="ipa-format-italic" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('italic')} aria-label="Italicize selected text" aria-pressed={activeFormats.italic}>I</button>
+        <button type="button" className="ipa-format-underline" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('underline')} aria-label="Underline selected text" aria-pressed={activeFormats.underline}>U</button>
+        <span className="ipa-toolbar-divider" aria-hidden="true" />
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={undoEditor} aria-label="Undo one step" title="Undo one step">←</button>
+        <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={redoEditor} aria-label="Redo one step" title="Redo one step">→</button>
+        <button type="button" className="ipa-toolbar-text-button" onClick={clearEditor}>Clear</button>
+        <button type="button" className="ipa-toolbar-text-button" onClick={copyAll}>{copyLabel}</button>
+        <label htmlFor="ipa-editor-size">Text size</label>
+        <select id="ipa-editor-size" value={fontSize} onChange={(event) => setFontSize(event.target.value)}>
+          <option value="small">Small</option>
+          <option value="medium">Medium</option>
+          <option value="large">Large</option>
+        </select>
+      </div>
+
+      <div className="ipa-keyboard" aria-label="International Phonetic Alphabet keyboard">
+        {keyboardGroups.map((group) => (
+          <div className="ipa-keyboard-group" key={group.label}>
+            <h3>{group.label}</h3>
+            <div className="ipa-keyboard-keys">
+              {group.symbols.map((symbol, index) => (
+                <button
+                  type="button"
+                  className="ipa-key"
+                  key={`${group.label}-${symbol}-${index}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => insertSymbol(symbol)}
+                  aria-label={`Insert IPA symbol ${symbol}`}
+                >
+                  {symbol}
+                </button>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      <div
+        ref={editorRef}
+        className={`ipa-editor ipa-editor-${fontSize}`}
+        contentEditable
+        role="textbox"
+        aria-multiline="true"
+        aria-label="IPA transcription editor"
+        data-placeholder="Type or insert IPA symbols here…"
+        onBeforeInput={() => {
+          if (!isProgrammaticEditRef.current) recordSnapshot()
+        }}
+        suppressContentEditableWarning
+      />
+    </section>
   )
 }
 
@@ -271,6 +466,8 @@ export default function IPA_Page({ onBack }) {
           </div>
         )}
       </section>
+
+      <IPAKeyboard />
 
     </div>
   )

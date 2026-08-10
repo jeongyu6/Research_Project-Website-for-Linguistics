@@ -1437,6 +1437,200 @@ main {
   line-height: 1.55;
 }
 
+.ipa-keyboard {
+  display: grid;
+  gap: 18px;
+  padding: 20px;
+  border: 1px solid #d7e3f2;
+  border-radius: 14px;
+  background: #f7fbff;
+}
+
+.ipa-editor-toolbar {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 1px solid #c8d8ec;
+  border-radius: 10px;
+  background: #f7fbff;
+}
+
+.ipa-editor-toolbar button,
+.ipa-editor-toolbar select {
+  min-width: 42px;
+  min-height: 38px;
+  padding: 6px 10px;
+  border: 1px solid #b9cce4;
+  border-radius: 7px;
+  background: #ffffff;
+  color: #001747;
+  font: inherit;
+  cursor: pointer;
+}
+
+.ipa-editor-toolbar button:hover,
+.ipa-editor-toolbar button:focus-visible,
+.ipa-editor-toolbar select:focus-visible {
+  border-color: #1f5fb5;
+  outline: 2px solid rgba(31, 95, 181, 0.18);
+  outline-offset: 1px;
+}
+
+.ipa-editor-toolbar button[aria-pressed='true'] {
+  border-color: #1f5fb5;
+  background: #1f5fb5;
+  color: #ffffff;
+  box-shadow: 0 4px 10px rgba(31, 95, 181, 0.2);
+}
+
+.ipa-format-bold {
+  font-weight: 800 !important;
+}
+
+.ipa-format-italic {
+  font-family: Georgia, serif !important;
+  font-style: italic !important;
+}
+
+.ipa-format-underline {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.ipa-editor-toolbar .ipa-toolbar-text-button {
+  width: auto;
+  padding-inline: 13px;
+  font-size: 0.84rem;
+  font-weight: 800;
+}
+
+.ipa-toolbar-divider {
+  align-self: stretch;
+  width: 1px;
+  margin: 3px 2px;
+  background: #c8d8ec;
+}
+
+.ipa-editor-toolbar label {
+  margin-left: 6px;
+  color: #001747;
+  font-size: 0.88rem;
+  font-weight: 800;
+}
+
+.ipa-editor {
+  min-height: 150px;
+  padding: 16px;
+  overflow-wrap: anywhere;
+  border: 1px solid #b9cce4;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #001747;
+  font-family: 'Charis SIL', 'Doulos SIL', 'Noto Sans', 'Segoe UI Symbol', serif;
+  font-style: normal;
+  font-weight: 400;
+  line-height: 1.65;
+  text-decoration: none;
+  text-align: left;
+}
+
+.ipa-editor:focus {
+  border-color: #1f5fb5;
+  box-shadow: 0 0 0 3px rgba(31, 95, 181, 0.12);
+  outline: none;
+}
+
+.ipa-editor:empty::before {
+  color: #7b8799;
+  content: attr(data-placeholder);
+  pointer-events: none;
+}
+
+.ipa-editor-small {
+  font-size: 0.85rem;
+}
+
+.ipa-editor-medium {
+  font-size: 1.1rem;
+}
+
+.ipa-editor-large {
+  font-size: 1.45rem;
+}
+
+.ipa-keyboard-group {
+  display: grid;
+  grid-template-columns: minmax(150px, 190px) minmax(0, 1fr);
+  align-items: start;
+  gap: 16px;
+}
+
+.ipa-keyboard-group h3 {
+  margin: 0;
+  padding-top: 9px;
+  color: #001747;
+  font-size: 0.85rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1.35;
+  text-transform: uppercase;
+}
+
+.ipa-keyboard-keys {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  gap: 7px;
+}
+
+.ipa-key {
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  min-height: 44px;
+  padding: 6px;
+  border: 1px solid #c8d8ec;
+  border-radius: 8px;
+  background: #ffffff;
+  color: #001747;
+  font-family: 'Charis SIL', 'Doulos SIL', 'Noto Sans', 'Segoe UI Symbol', serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1;
+  box-shadow: 0 2px 5px rgba(20, 48, 92, 0.05);
+  cursor: pointer;
+  transition: color 0.16s ease, background 0.16s ease, border-color 0.16s ease, transform 0.16s ease;
+}
+
+.ipa-key:hover,
+.ipa-key:focus-visible {
+  border-color: #1f5fb5;
+  background: #1f5fb5;
+  color: #ffffff;
+  outline: none;
+  transform: translateY(-1px);
+}
+
+@media (max-width: 720px) {
+  .ipa-keyboard {
+    padding: 14px;
+  }
+
+  .ipa-keyboard-group {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .ipa-keyboard-group h3 {
+    padding-top: 0;
+  }
+
+  .ipa-keyboard-keys {
+    grid-template-columns: repeat(auto-fill, minmax(40px, 1fr));
+  }
+}
+
 .vowel-chart {
   overflow-x: auto;
   padding: 18px;
