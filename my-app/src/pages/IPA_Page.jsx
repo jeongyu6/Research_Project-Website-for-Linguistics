@@ -156,6 +156,7 @@ export function IPAKeyboard() {
   const [fontSize, setFontSize] = useState('medium')
   const [copyLabel, setCopyLabel] = useState('Copy all')
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, underline: false })
+  const [formatIndicators, setFormatIndicators] = useState({ bold: false, italic: false, underline: false })
 
   function focusEditor() {
     editorRef.current?.focus()
@@ -238,6 +239,47 @@ export function IPAKeyboard() {
     }
   }
 
+  function syncFormatsFromSelection() {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    if (!editor.contains(range.commonAncestorContainer)) return
+
+    const selectors = {
+      bold: 'strong, b',
+      italic: 'em, i',
+      underline: 'u',
+    }
+    const elementForNode = (node) => (
+      node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement
+    )
+    const startElement = elementForNode(range.startContainer)
+    const endElement = elementForNode(range.endContainer)
+    const nextFormats = Object.fromEntries(
+      Object.entries(selectors).map(([format, selector]) => {
+        const startWrapper = startElement?.closest(selector)
+        const endWrapper = endElement?.closest(selector)
+        const isFormatted = Boolean(
+          startWrapper
+          && endWrapper
+          && editor.contains(startWrapper)
+          && editor.contains(endWrapper)
+        )
+        return [format, isFormatted]
+      }),
+    )
+
+    setActiveFormats(nextFormats)
+    setFormatIndicators(nextFormats)
+  }
+
+  function saveSelectionAndSyncFormats() {
+    saveEditorSelection()
+    syncFormatsFromSelection()
+  }
+
   function saveSelectionFromPointer(event) {
     const editor = editorRef.current
     if (!editor) return
@@ -251,6 +293,7 @@ export function IPAKeyboard() {
       ) {
         savedSelectionRef.current = selectedRange.cloneRange()
         saveOffsetsForRange(selectedRange)
+        syncFormatsFromSelection()
         return
       }
     }
@@ -268,7 +311,7 @@ export function IPAKeyboard() {
     }
 
     if (!range || !editor.contains(range.commonAncestorContainer)) {
-      saveEditorSelection()
+      saveSelectionAndSyncFormats()
       return
     }
 
@@ -277,6 +320,7 @@ export function IPAKeyboard() {
     selection.addRange(range)
     savedSelectionRef.current = range.cloneRange()
     saveOffsetsForRange(range)
+    syncFormatsFromSelection()
   }
 
   function saveOffsetsForRange(range) {
@@ -355,6 +399,7 @@ export function IPAKeyboard() {
       Object.keys(activeFormats).forEach((command) => forceFormatState(command, false))
     })
     setActiveFormats({ bold: false, italic: false, underline: false })
+    setFormatIndicators({ bold: false, italic: false, underline: false })
   }
 
   function forceFormatState(command, shouldBeActive) {
@@ -371,23 +416,58 @@ export function IPAKeyboard() {
       && selection.rangeCount > 0
       && !selection.getRangeAt(0).collapsed
     )
+    const selectedOffsets = hadSelection && savedOffsetsRef.current
+      ? { ...savedOffsetsRef.current }
+      : null
     recordSnapshot()
-    const shouldBeActive = !activeFormats[command]
+    const shouldBeActive = hadSelection
+      ? !document.queryCommandState(command)
+      : !activeFormats[command]
     runProgrammaticEdit(() => {
       forceFormatState(command, shouldBeActive)
     })
-    if (hadSelection && selection.rangeCount > 0) {
-      const collapsedRange = selection.getRangeAt(0).cloneRange()
-      collapsedRange.collapse(false)
+    if (hadSelection && selectedOffsets) {
+      const formattedRange = createRangeFromOffsets(selectedOffsets)
+      if (!formattedRange) return
       selection.removeAllRanges()
-      selection.addRange(collapsedRange)
-      savedSelectionRef.current = collapsedRange.cloneRange()
-      saveOffsetsForRange(collapsedRange)
-      resetTypingFormats()
+      selection.addRange(formattedRange)
+      savedSelectionRef.current = formattedRange.cloneRange()
+      saveOffsetsForRange(formattedRange)
+      setActiveFormats({ bold: false, italic: false, underline: false })
+      setFormatIndicators((current) => ({ ...current, [command]: shouldBeActive }))
     } else if (command === 'bold' || command === 'italic' || command === 'underline') {
       setActiveFormats((current) => ({ ...current, [command]: shouldBeActive }))
+      setFormatIndicators((current) => ({ ...current, [command]: shouldBeActive }))
     }
     saveEditorSelection()
+  }
+
+  function moveCaretOutsideInactiveFormatting(range) {
+    if (!range.collapsed) return
+
+    const formatSelectors = {
+      bold: 'strong, b',
+      italic: 'em, i',
+      underline: 'u',
+    }
+    const container = range.startContainer
+    const element = container.nodeType === Node.ELEMENT_NODE
+      ? container
+      : container.parentElement
+
+    Object.entries(formatSelectors).forEach(([format, selector]) => {
+      if (activeFormats[format] || !element) return
+      const wrapper = element.closest(selector)
+      if (!wrapper || !editorRef.current?.contains(wrapper)) return
+
+      const contentBeforeCaret = document.createRange()
+      contentBeforeCaret.selectNodeContents(wrapper)
+      contentBeforeCaret.setEnd(range.startContainer, range.startOffset)
+      if (contentBeforeCaret.toString().length === wrapper.textContent.length) {
+        range.setStartAfter(wrapper)
+        range.collapse(true)
+      }
+    })
   }
 
   function insertSymbol(symbol) {
@@ -403,6 +483,7 @@ export function IPAKeyboard() {
 
     const range = selection.getRangeAt(0)
     if (!editor.contains(range.commonAncestorContainer)) return
+    moveCaretOutsideInactiveFormatting(range)
     const insertionStart = savedOffsetsRef.current?.start ?? editor.textContent.length
 
     range.deleteContents()
@@ -427,6 +508,29 @@ export function IPAKeyboard() {
       end: insertionStart + symbol.length,
     }
     editorPointerActiveRef.current = false
+  }
+
+  function handleBeforeInput(event) {
+    if (isProgrammaticEditRef.current) return
+
+    const nativeEvent = event.nativeEvent
+    if (
+      nativeEvent.inputType === 'insertText'
+      && nativeEvent.data
+      && !nativeEvent.isComposing
+    ) {
+      event.preventDefault()
+      setFormatIndicators(activeFormats)
+      insertSymbol(nativeEvent.data)
+      return
+    }
+
+    recordSnapshot()
+  }
+
+  function handleEditorInput() {
+    setFormatIndicators(activeFormats)
+    saveEditorSelection()
   }
 
   function wrapSelection(opening, closing) {
@@ -469,6 +573,7 @@ export function IPAKeyboard() {
     focusEditor()
     Object.keys(activeFormats).forEach((command) => forceFormatState(command, false))
     setActiveFormats({ bold: false, italic: false, underline: false })
+    setFormatIndicators({ bold: false, italic: false, underline: false })
   }
 
   async function copyAll() {
@@ -504,9 +609,9 @@ export function IPAKeyboard() {
       </div>
 
       <div className="ipa-editor-toolbar" role="toolbar" aria-label="Text formatting">
-        <button type="button" className="ipa-format-bold" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('bold')} aria-label="Bold selected text" aria-pressed={activeFormats.bold}>B</button>
-        <button type="button" className="ipa-format-italic" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('italic')} aria-label="Italicize selected text" aria-pressed={activeFormats.italic}>I</button>
-        <button type="button" className="ipa-format-underline" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('underline')} aria-label="Underline selected text" aria-pressed={activeFormats.underline}>U</button>
+        <button type="button" className="ipa-format-bold" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('bold')} aria-label="Bold selected text" aria-pressed={formatIndicators.bold}>B</button>
+        <button type="button" className="ipa-format-italic" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('italic')} aria-label="Italicize selected text" aria-pressed={formatIndicators.italic}>I</button>
+        <button type="button" className="ipa-format-underline" onMouseDown={(event) => event.preventDefault()} onClick={() => applyFormat('underline')} aria-label="Underline selected text" aria-pressed={formatIndicators.underline}>U</button>
         <span className="ipa-toolbar-divider" aria-hidden="true" />
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={undoEditor} aria-label="Undo one step" title="Undo one step">↶</button>
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={redoEditor} aria-label="Redo one step" title="Redo one step">↷</button>
@@ -559,11 +664,9 @@ export function IPAKeyboard() {
         aria-multiline="true"
         aria-label="IPA transcription editor"
         data-placeholder="Type or insert IPA symbols here…"
-        onBeforeInput={() => {
-          if (!isProgrammaticEditRef.current) recordSnapshot()
-        }}
-        onInput={saveEditorSelection}
-        onKeyUp={saveEditorSelection}
+        onBeforeInput={handleBeforeInput}
+        onInput={handleEditorInput}
+        onKeyUp={saveSelectionAndSyncFormats}
         onPointerUp={saveSelectionFromPointer}
         onMouseUp={saveSelectionFromPointer}
         onPointerDown={() => {

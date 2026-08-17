@@ -1,6 +1,6 @@
 import '@testing-library/jest-dom/vitest'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { cleanup, render, screen } from '@testing-library/react'
+import { cleanup, fireEvent, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { IPAKeyboard } from './IPA_Page.jsx'
 
@@ -656,8 +656,9 @@ describe('IPAKeyboard', () => {
       await user.click(screen.getByRole('button', { name: buttonName }))
 
       expect(document.execCommand).toHaveBeenCalledWith(command, false)
-      expect(selection.isCollapsed).toBe(true)
-      expect(screen.getByRole('button', { name: buttonName })).toHaveAttribute('aria-pressed', 'false')
+      expect(selection.isCollapsed).toBe(false)
+      expect(selection.toString()).toBe('bcd')
+      expect(screen.getByRole('button', { name: buttonName })).toHaveAttribute('aria-pressed', 'true')
     })
 
     it('preserves the exact highlighted portion rather than collapsing to the release point', () => {
@@ -849,7 +850,7 @@ describe('IPAKeyboard', () => {
       ['bold', /bold selected text/i],
       ['italic', /italicize selected text/i],
       ['underline', /underline selected text/i],
-    ])('clears the blue selection and %s typing mode after formatting selected text', async (
+    ])('keeps the blue selection available after applying %s', async (
       _command,
       buttonName,
     ) => {
@@ -871,13 +872,152 @@ describe('IPAKeyboard', () => {
       const formatButton = screen.getByRole('button', { name: buttonName })
       await user.click(formatButton)
 
-      expect(selection.isCollapsed).toBe(true)
-      expect(selection.toString()).toBe('')
-      expect(formatButton).toHaveAttribute('aria-pressed', 'false')
+      expect(selection.isCollapsed).toBe(false)
+      expect(selection.toString()).toBe('bcd')
+      expect(formatButton).toHaveAttribute('aria-pressed', 'true')
+    })
 
-      await user.keyboard('x')
-      expect(editor).toHaveTextContent('abcdxef')
-      expect(formatButton).toHaveAttribute('aria-pressed', 'false')
+    it('applies bold, italic, and underline to one selection without reselecting it', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'abcdef'
+      editor.focus()
+
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 1)
+      range.setEnd(editor.firstChild, 4)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      for (const name of [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+      ]) {
+        await user.click(screen.getByRole('button', { name }))
+        expect(selection.toString()).toBe('bcd')
+      }
+
+      expect(document.execCommand).toHaveBeenCalledWith('bold', false)
+      expect(document.execCommand).toHaveBeenCalledWith('italic', false)
+      expect(document.execCommand).toHaveBeenCalledWith('underline', false)
+    })
+
+    const formatButtons = {
+      bold: /bold selected text/i,
+      italic: /italicize selected text/i,
+      underline: /underline selected text/i,
+    }
+
+    it.each([
+      ['bold → italic → underline', ['bold', 'italic', 'underline']],
+      ['bold → underline → italic', ['bold', 'underline', 'italic']],
+      ['italic → bold → underline', ['italic', 'bold', 'underline']],
+      ['italic → underline → bold', ['italic', 'underline', 'bold']],
+      ['underline → bold → italic', ['underline', 'bold', 'italic']],
+      ['underline → italic → bold', ['underline', 'italic', 'bold']],
+    ])('preserves one selection while applying formats in the order %s', async (
+      _description,
+      order,
+    ) => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      const originalText = 'tʃdʒmnŋrwjləawɔj'
+      editor.textContent = originalText
+      editor.focus()
+
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 4)
+      range.setEnd(editor.firstChild, 12)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      for (const format of order) {
+        await user.click(screen.getByRole('button', { name: formatButtons[format] }))
+        expect(selection.toString()).toBe('mnŋrwjlə')
+        expect(editor).toHaveTextContent(originalText)
+      }
+
+      for (const format of Object.keys(formatButtons)) {
+        expect(screen.getByRole('button', { name: formatButtons[format] }))
+          .toHaveAttribute('aria-pressed', 'true')
+      }
+    })
+
+    it.each([
+      ['bold', ['italic', 'underline']],
+      ['italic', ['bold', 'underline']],
+      ['underline', ['bold', 'italic']],
+    ])('can turn off only %s while retaining the selection and other formats', async (
+      formatToRemove,
+      formatsToKeep,
+    ) => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'abcdef'
+      editor.focus()
+
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 1)
+      range.setEnd(editor.firstChild, 5)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      for (const format of Object.keys(formatButtons)) {
+        await user.click(screen.getByRole('button', { name: formatButtons[format] }))
+      }
+      await user.click(screen.getByRole('button', { name: formatButtons[formatToRemove] }))
+
+      expect(selection.toString()).toBe('bcde')
+      expect(screen.getByRole('button', { name: formatButtons[formatToRemove] }))
+        .toHaveAttribute('aria-pressed', 'false')
+      for (const format of formatsToKeep) {
+        expect(screen.getByRole('button', { name: formatButtons[format] }))
+          .toHaveAttribute('aria-pressed', 'true')
+      }
+    })
+
+    it.each([
+      ['beginning', 0, 8],
+      ['middle', 12, 25],
+      ['end', 29, 37],
+    ])('stacks all formats on a selection at the %s of a long IPA string', async (
+      _position,
+      start,
+      end,
+    ) => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      const originalText = 'udɔjɔjɔjʒʍ→→tʃdʒmnnŋɔjɾhŋŋŋr→→əowɔj→→'
+      editor.textContent = originalText
+      editor.focus()
+
+      const range = document.createRange()
+      range.setStart(editor.firstChild, start)
+      range.setEnd(editor.firstChild, end)
+      const expectedSelection = originalText.slice(start, end)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      for (const format of Object.keys(formatButtons)) {
+        await user.click(screen.getByRole('button', { name: formatButtons[format] }))
+        expect(selection.toString()).toBe(expectedSelection)
+      }
+
+      expect(editor).toHaveTextContent(originalText)
+      expect(selection.isCollapsed).toBe(false)
     })
 
   })
@@ -943,6 +1083,37 @@ describe('IPAKeyboard', () => {
     expect(button).toHaveAttribute('aria-pressed', 'true')
     await user.click(button)
     expect(button).toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it.each([
+    ['strong', /bold selected text/i],
+    ['em', /italicize selected text/i],
+    ['u', /underline selected text/i],
+  ])('updates the %s indicator when the caret moves between formatted and plain text', (
+    tagName,
+    accessibleName,
+  ) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = `<${tagName}>formatted</${tagName}> plain`
+    const formattedText = editor.querySelector(tagName).firstChild
+    const plainText = editor.lastChild
+    const selection = window.getSelection()
+    const range = document.createRange()
+
+    range.setStart(formattedText, 3)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    fireEvent.mouseUp(editor)
+    expect(screen.getByRole('button', { name: accessibleName })).toHaveAttribute('aria-pressed', 'true')
+
+    range.setStart(plainText, 2)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    fireEvent.mouseUp(editor)
+    expect(screen.getByRole('button', { name: accessibleName })).toHaveAttribute('aria-pressed', 'false')
   })
 
   it('wraps selected text in phonemic slashes', async () => {
