@@ -906,6 +906,45 @@ describe('IPAKeyboard', () => {
       expect(document.execCommand).toHaveBeenCalledWith('underline', false)
     })
 
+    it('keeps every active indicator visible when formatting commands emit input events', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'aaaa'
+      editor.focus()
+
+      const range = document.createRange()
+      range.selectNodeContents(editor)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      document.execCommand.mockImplementation((command) => {
+        if (command in formatState) {
+          formatState[command] = !formatState[command]
+          fireEvent.input(editor, { inputType: 'formatBold' })
+        }
+        return true
+      })
+
+      for (const name of [
+        /underline selected text/i,
+        /italicize selected text/i,
+        /bold selected text/i,
+      ]) {
+        await user.click(screen.getByRole('button', { name }))
+      }
+
+      expect(screen.getByRole('button', { name: /bold selected text/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByRole('button', { name: /italicize selected text/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByRole('button', { name: /underline selected text/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+      expect(selection.toString()).toBe('aaaa')
+    })
+
     const formatButtons = {
       bold: /bold selected text/i,
       italic: /italicize selected text/i,
@@ -1116,6 +1155,254 @@ describe('IPAKeyboard', () => {
     expect(screen.getByRole('button', { name: accessibleName })).toHaveAttribute('aria-pressed', 'false')
   })
 
+  it.each([
+    ['immediately before', 1, true],
+    ['immediately after', 2, true],
+    ['before all content', 0, false],
+    ['after all content', 3, false],
+  ])('shows underline as %s the underlined element', (
+    _position,
+    editorOffset,
+    expectedActive,
+  ) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = 'plain<u>underlined</u>plain'
+    const range = document.createRange()
+    range.setStart(editor, editorOffset)
+    range.collapse(true)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', String(expectedActive))
+  })
+
+  it('shows underline as active with the caret inside underlined text', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = 'plain<u>underlined</u>plain'
+    const underlinedText = editor.querySelector('u').firstChild
+    const range = document.createRange()
+    range.setStart(underlinedText, 5)
+    range.collapse(true)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it.each([
+    ['text-decoration', '<span style="text-decoration: underline">underlined</span>'],
+    ['text-decoration-line', '<span style="text-decoration-line: underline">underlined</span>'],
+    ['inserted text', '<ins>underlined</ins>'],
+  ])('detects browser underline markup using %s for a highlighted selection', (
+    _markupType,
+    markup,
+  ) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = `plain${markup}plain`
+    const underlinedElement = editor.children[0]
+    const range = document.createRange()
+    range.selectNodeContents(underlinedElement)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(selection.toString()).toBe('underlined')
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('detects a caret inside browser-generated inline underline styling', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = 'plain<span style="text-decoration: underline">underlined</span>plain'
+    const underlinedText = editor.querySelector('span').firstChild
+    const range = document.createRange()
+    range.setStart(underlinedText, 4)
+    range.collapse(true)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it.each([
+    ['before', 1],
+    ['after', 2],
+  ])('detects underline immediately %s an inline-styled underline span', (
+    _position,
+    offset,
+  ) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = 'plain<span style="text-decoration-line: underline">underlined</span>plain'
+    const range = document.createRange()
+    range.setStart(editor, offset)
+    range.collapse(true)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('detects underline through nested bold and italic elements', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<span style="text-decoration: underline"><strong><em>n̥ã</em></strong></span>'
+    const range = document.createRange()
+    range.selectNodeContents(editor.querySelector('em'))
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /bold selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /italicize selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('recognizes a selection split across different underline markup types', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<u>abc</u><span style="text-decoration: underline">def</span><ins>ghi</ins>'
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(selection.toString()).toBe('abcdefghi')
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+  })
+
+  it('does not activate underline for a mixed underlined and plain selection', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<u>underlined</u>plain'
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it.each([
+    ['underline offset only', 'text-underline-offset: 3px'],
+    ['underline custom property only', '--underline-color: blue'],
+  ])('does not falsely activate underline for %s', (_description, style) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = `<span style="${style}">plain</span>`
+    const range = document.createRange()
+    range.selectNodeContents(editor.querySelector('span'))
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'false')
+  })
+
+  it('keeps all format indicators active when selection boundaries use outer elements', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<strong><em><u>mnŋrwjlə</u></em></strong> plain'
+    const strong = editor.querySelector('strong')
+    const range = document.createRange()
+    range.selectNodeContents(strong)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /bold selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /italicize selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(selection.toString()).toBe('mnŋrwjlə')
+  })
+
+  it('does not replace toolbar buttons while the user changes a text selection', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<strong>bold</strong> plain'
+    const boldButton = screen.getByRole('button', { name: /bold selected text/i })
+    const originalButton = boldButton
+    const selection = window.getSelection()
+    const range = document.createRange()
+
+    range.selectNodeContents(editor.querySelector('strong'))
+    selection.removeAllRanges()
+    selection.addRange(range)
+    fireEvent.mouseUp(editor)
+    expect(selection.toString()).toBe('bold')
+    expect(screen.getByRole('button', { name: /bold selected text/i })).toBe(originalButton)
+
+    range.selectNodeContents(editor.lastChild)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    fireEvent.mouseUp(editor)
+    expect(selection.toString()).toBe(' plain')
+    expect(screen.getByRole('button', { name: /bold selected text/i })).toBe(originalButton)
+  })
+
+  it('shows only formats shared by every character in a mixed selection', () => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.innerHTML = '<strong>bold</strong><strong><em>both</em></strong>'
+    const range = document.createRange()
+    range.selectNodeContents(editor)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: /bold selected text/i }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: /italicize selected text/i }))
+      .toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: /underline selected text/i }))
+      .toHaveAttribute('aria-pressed', 'false')
+  })
+
   it('wraps selected text in phonemic slashes', async () => {
     const user = userEvent.setup()
     render(<IPAKeyboard />)
@@ -1233,6 +1520,371 @@ describe('IPAKeyboard', () => {
     }
 
     expect(editor).toHaveTextContent(expectedText)
+  })
+
+  it.each([
+    ['slashes', /wrap selected text in slashes/i, '/mnŋ/', 'mnŋ'],
+    ['brackets', /wrap selected text in square brackets/i, '[mnŋ]', 'mnŋ'],
+  ])('highlights the %s button and removes its delimiters when clicked again', async (
+    _wrapper,
+    buttonName,
+    wrappedText,
+    originalText,
+  ) => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = originalText
+    selectEditorText(editor)
+    fireEvent.mouseUp(editor)
+    const button = screen.getByRole('button', { name: buttonName })
+
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+    await user.click(button)
+    expect(editor).toHaveTextContent(wrappedText)
+    expect(button).toHaveAttribute('aria-pressed', 'true')
+    expect(window.getSelection().toString()).toBe(originalText)
+
+    await user.click(button)
+    expect(editor).toHaveTextContent(originalText)
+    expect(button).toHaveAttribute('aria-pressed', 'false')
+    expect(window.getSelection().toString()).toBe(originalText)
+  })
+
+  it.each([
+    ['outer slashes', /wrap selected text in slashes/i, '[əowɔj]', /wrap selected text in square brackets/i],
+    ['inner brackets', /wrap selected text in square brackets/i, '/əowɔj/', /wrap selected text in slashes/i],
+  ])('removes only %s from nested wrappers and leaves the other active', async (
+    _removedWrapper,
+    removeButtonName,
+    expectedText,
+    remainingButtonName,
+  ) => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = 'əowɔj'
+    selectEditorText(editor)
+    fireEvent.mouseUp(editor)
+
+    const slashButton = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+    const bracketButton = screen.getByRole('button', { name: /wrap selected text in square brackets/i })
+    await user.click(slashButton)
+    await user.click(bracketButton)
+    expect(slashButton).toHaveAttribute('aria-pressed', 'true')
+    expect(bracketButton).toHaveAttribute('aria-pressed', 'true')
+
+    await user.click(screen.getByRole('button', { name: removeButtonName }))
+
+    expect(editor).toHaveTextContent(expectedText)
+    expect(screen.getByRole('button', { name: removeButtonName }))
+      .toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByRole('button', { name: remainingButtonName }))
+      .toHaveAttribute('aria-pressed', 'true')
+    expect(window.getSelection().toString()).toBe('əowɔj')
+  })
+
+  it.each([
+    ['slashes', '/abc/', 1, 4, /wrap selected text in slashes/i],
+    ['brackets', '[abc]', 1, 4, /wrap selected text in square brackets/i],
+  ])('detects existing %s when the enclosed text is selected', (
+    _wrapper,
+    text,
+    start,
+    end,
+    buttonName,
+  ) => {
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = text
+    const range = document.createRange()
+    range.setStart(editor.firstChild, start)
+    range.setEnd(editor.firstChild, end)
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+
+    fireEvent.mouseUp(editor)
+
+    expect(screen.getByRole('button', { name: buttonName })).toHaveAttribute('aria-pressed', 'true')
+  })
+
+  describe('adversarial formatting and selection cases', () => {
+    it('survives repeated pointer and mouse release events without collapsing the selection', () => {
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'tʃdʒmnŋrwjlə'
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 2)
+      range.setEnd(editor.firstChild, 10)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      for (let index = 0; index < 10; index += 1) {
+        fireEvent.pointerUp(editor)
+        fireEvent.mouseUp(editor)
+        expect(selection.toString()).toBe('dʒmnŋrwj')
+      }
+    })
+
+    it('keeps a selection through rapid format off-on cycles', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'aaaa'
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+      const selection = window.getSelection()
+
+      for (const name of [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+      ]) {
+        const button = screen.getByRole('button', { name })
+        await user.click(button)
+        await user.click(button)
+        await user.click(button)
+        expect(button).toHaveAttribute('aria-pressed', 'true')
+        expect(selection.toString()).toBe('aaaa')
+      }
+    })
+
+    it('can repeatedly add and remove nested wrappers without changing the text', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'mnŋ'
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+      const slash = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+      const brackets = screen.getByRole('button', { name: /wrap selected text in square brackets/i })
+
+      for (let cycle = 0; cycle < 3; cycle += 1) {
+        await user.click(slash)
+        await user.click(brackets)
+        expect(editor).toHaveTextContent('/[mnŋ]/')
+        await user.click(slash)
+        expect(editor).toHaveTextContent('[mnŋ]')
+        await user.click(brackets)
+        expect(editor).toHaveTextContent('mnŋ')
+        expect(window.getSelection().toString()).toBe('mnŋ')
+      }
+    })
+
+    it('resets every format and wrapper indicator when Clear is used', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'abc'
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+      const controls = [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+        /wrap selected text in slashes/i,
+        /wrap selected text in square brackets/i,
+      ]
+      for (const name of controls) {
+        await user.click(screen.getByRole('button', { name }))
+      }
+
+      await user.click(screen.getByRole('button', { name: 'Clear' }))
+
+      expect(editor).toBeEmptyDOMElement()
+      for (const name of controls) {
+        expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'false')
+      }
+    })
+
+    it('undoes and redoes a wrapper without leaving a stale active indicator', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'abc'
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+      const slash = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+
+      await user.click(slash)
+      expect(editor).toHaveTextContent('/abc/')
+      expect(slash).toHaveAttribute('aria-pressed', 'true')
+      await user.click(screen.getByRole('button', { name: /undo one step/i }))
+      expect(editor).toHaveTextContent('abc')
+      expect(slash).toHaveAttribute('aria-pressed', 'false')
+      await user.click(screen.getByRole('button', { name: /redo one step/i }))
+      expect(editor).toHaveTextContent('/abc/')
+      expect(slash).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('preserves a selection containing combining marks while stacking every control', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      const text = 'n̥ãtʃə'
+      editor.textContent = text
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+
+      for (const name of [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+        /wrap selected text in slashes/i,
+        /wrap selected text in square brackets/i,
+      ]) {
+        await user.click(screen.getByRole('button', { name }))
+        expect(window.getSelection().toString()).toBe(text)
+      }
+      expect(editor).toHaveTextContent(`/[${text}]/`)
+    })
+
+    it('does not treat slash characters inside a selection as a surrounding wrapper', () => {
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'a/b/c'
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 0)
+      range.setEnd(editor.firstChild, 5)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+
+      expect(screen.getByRole('button', { name: /wrap selected text in slashes/i }))
+        .toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('adds and removes an empty slash pair around a collapsed caret', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      await user.click(editor)
+      const slash = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+
+      await user.click(slash)
+      expect(editor).toHaveTextContent('//')
+      expect(slash).toHaveAttribute('aria-pressed', 'true')
+
+      await user.click(slash)
+      expect(editor).toBeEmptyDOMElement()
+      expect(slash).toHaveAttribute('aria-pressed', 'false')
+    })
+
+    it('detects both existing nested wrapper layers around one selection', () => {
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = '/[abc]/'
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 2)
+      range.setEnd(editor.firstChild, 5)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      fireEvent.mouseUp(editor)
+
+      expect(screen.getByRole('button', { name: /wrap selected text in slashes/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+      expect(screen.getByRole('button', { name: /wrap selected text in square brackets/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+      expect(selection.toString()).toBe('abc')
+    })
+
+    it('recognizes outer slashes when the selected transcription contains slashes', () => {
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = '/a/b/c/'
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 1)
+      range.setEnd(editor.firstChild, 6)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+
+      fireEvent.mouseUp(editor)
+
+      expect(selection.toString()).toBe('a/b/c')
+      expect(screen.getByRole('button', { name: /wrap selected text in slashes/i }))
+        .toHaveAttribute('aria-pressed', 'true')
+    })
+
+    it('keeps formatting indicators active while a wrapper is added and removed', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.innerHTML = '<strong><em><u>abc</u></em></strong>'
+      const range = document.createRange()
+      range.selectNodeContents(editor.querySelector('u'))
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+      const slash = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+      const formats = [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+      ]
+
+      await user.click(slash)
+      await user.click(slash)
+
+      for (const name of formats) {
+        expect(screen.getByRole('button', { name })).toHaveAttribute('aria-pressed', 'true')
+      }
+      expect(selection.toString()).toBe('abc')
+      expect(editor).toHaveTextContent('abc')
+    })
+
+    it('preserves surrounding unselected text through wrapper toggle cycles', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'before mnŋ after'
+      const range = document.createRange()
+      range.setStart(editor.firstChild, 7)
+      range.setEnd(editor.firstChild, 10)
+      const selection = window.getSelection()
+      selection.removeAllRanges()
+      selection.addRange(range)
+      fireEvent.mouseUp(editor)
+      const brackets = screen.getByRole('button', { name: /wrap selected text in square brackets/i })
+
+      for (let cycle = 0; cycle < 4; cycle += 1) {
+        await user.click(brackets)
+        expect(editor).toHaveTextContent('before [mnŋ] after')
+        await user.click(brackets)
+        expect(editor).toHaveTextContent('before mnŋ after')
+        expect(selection.toString()).toBe('mnŋ')
+      }
+    })
+
+    it('keeps a wrapper active after applying and removing each text format', async () => {
+      const user = userEvent.setup()
+      render(<IPAKeyboard />)
+      const editor = getEditor()
+      editor.textContent = 'abc'
+      selectEditorText(editor)
+      fireEvent.mouseUp(editor)
+      const slash = screen.getByRole('button', { name: /wrap selected text in slashes/i })
+      await user.click(slash)
+
+      for (const name of [
+        /bold selected text/i,
+        /italicize selected text/i,
+        /underline selected text/i,
+      ]) {
+        const button = screen.getByRole('button', { name })
+        await user.click(button)
+        await user.click(button)
+        expect(slash).toHaveAttribute('aria-pressed', 'true')
+        expect(window.getSelection().toString()).toBe('abc')
+      }
+      expect(editor).toHaveTextContent('/abc/')
+    })
   })
 
   it('undoes and redoes an inserted IPA symbol', async () => {

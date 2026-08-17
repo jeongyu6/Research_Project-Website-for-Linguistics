@@ -157,6 +157,7 @@ export function IPAKeyboard() {
   const [copyLabel, setCopyLabel] = useState('Copy all')
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, underline: false })
   const [formatIndicators, setFormatIndicators] = useState({ bold: false, italic: false, underline: false })
+  const [wrapperIndicators, setWrapperIndicators] = useState({ slashes: false, brackets: false })
 
   function focusEditor() {
     editorRef.current?.focus()
@@ -250,29 +251,73 @@ export function IPAKeyboard() {
     const selectors = {
       bold: 'strong, b',
       italic: 'em, i',
-      underline: 'u',
+      underline: 'u, ins',
     }
-    const elementForNode = (node) => (
-      node.nodeType === Node.ELEMENT_NODE ? node : node.parentElement
-    )
-    const startElement = elementForNode(range.startContainer)
-    const endElement = elementForNode(range.endContainer)
+    const elementHasFormat = (element, format, selector) => {
+      if (!element) return false
+      if (format !== 'underline') return Boolean(element.closest(selector))
+
+      let current = element
+      while (current && editor.contains(current)) {
+        if (current.matches('u, ins')) return true
+        const decoration = `${current.style.textDecoration} ${current.style.textDecorationLine}`
+        if (decoration.includes('underline')) return true
+        if (current === editor) break
+        current = current.parentElement
+      }
+      return false
+    }
+    const selectedTextNodes = []
+    if (!range.collapsed) {
+      const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT)
+      let textNode = walker.nextNode()
+      while (textNode) {
+        if (textNode.data && range.intersectsNode(textNode)) selectedTextNodes.push(textNode)
+        textNode = walker.nextNode()
+      }
+    }
+    const caretElement = range.startContainer.nodeType === Node.ELEMENT_NODE
+      ? range.startContainer
+      : range.startContainer.parentElement
+    const caretHasFormat = (format, selector) => {
+      if (elementHasFormat(caretElement, format, selector)) return true
+
+      const container = range.startContainer
+      const offset = range.startOffset
+      const neighbors = []
+      if (container.nodeType === Node.ELEMENT_NODE) {
+        neighbors.push(container.childNodes[offset - 1], container.childNodes[offset])
+      } else {
+        if (offset === 0) neighbors.push(container.previousSibling)
+        if (offset === container.data.length) neighbors.push(container.nextSibling)
+      }
+
+      return neighbors.filter(Boolean).some((node) => {
+        if (node.nodeType === Node.ELEMENT_NODE) {
+          if (elementHasFormat(node, format, selector)) return true
+          return Array.from(node.querySelectorAll('*'))
+            .some((descendant) => elementHasFormat(descendant, format, selector))
+        }
+        return elementHasFormat(node.parentElement, format, selector)
+      })
+    }
     const nextFormats = Object.fromEntries(
       Object.entries(selectors).map(([format, selector]) => {
-        const startWrapper = startElement?.closest(selector)
-        const endWrapper = endElement?.closest(selector)
-        const isFormatted = Boolean(
-          startWrapper
-          && endWrapper
-          && editor.contains(startWrapper)
-          && editor.contains(endWrapper)
-        )
+        const isFormatted = range.collapsed
+          ? caretHasFormat(format, selector)
+          : selectedTextNodes.length > 0 && selectedTextNodes.every((node) => (
+            elementHasFormat(node.parentElement, format, selector)
+          ))
         return [format, isFormatted]
       }),
     )
 
     setActiveFormats(nextFormats)
     setFormatIndicators(nextFormats)
+    saveOffsetsForRange(range)
+    const offsets = savedOffsetsRef.current
+    const text = editor.textContent
+    setWrapperIndicators(getWrapperState(text, offsets))
   }
 
   function saveSelectionAndSyncFormats() {
@@ -400,6 +445,7 @@ export function IPAKeyboard() {
     })
     setActiveFormats({ bold: false, italic: false, underline: false })
     setFormatIndicators({ bold: false, italic: false, underline: false })
+    setWrapperIndicators({ slashes: false, brackets: false })
   }
 
   function forceFormatState(command, shouldBeActive) {
@@ -448,7 +494,7 @@ export function IPAKeyboard() {
     const formatSelectors = {
       bold: 'strong, b',
       italic: 'em, i',
-      underline: 'u',
+      underline: 'u, ins, [style*="underline"]',
     }
     const container = range.startContainer
     const element = container.nodeType === Node.ELEMENT_NODE
@@ -529,8 +575,9 @@ export function IPAKeyboard() {
   }
 
   function handleEditorInput() {
-    setFormatIndicators(activeFormats)
     saveEditorSelection()
+    if (isProgrammaticEditRef.current) return
+    setFormatIndicators(activeFormats)
   }
 
   function wrapSelection(opening, closing) {
@@ -569,6 +616,77 @@ export function IPAKeyboard() {
     saveOffsetsForRange(nextRange)
   }
 
+  function getWrapperLayers(text, offsets) {
+    if (!offsets) return []
+    const layers = []
+    let start = offsets.start
+    let end = offsets.end
+
+    while (start > 0 && end < text.length) {
+      const opening = text[start - 1]
+      const closing = text[end]
+      const indicator = opening === '/' && closing === '/'
+        ? 'slashes'
+        : opening === '[' && closing === ']'
+          ? 'brackets'
+          : null
+      if (!indicator) break
+      layers.push({ indicator, opening: start - 1, closing: end })
+      start -= 1
+      end += 1
+    }
+
+    return layers
+  }
+
+  function getWrapperState(text, offsets) {
+    const layers = getWrapperLayers(text, offsets)
+    return {
+      slashes: layers.some((layer) => layer.indicator === 'slashes'),
+      brackets: layers.some((layer) => layer.indicator === 'brackets'),
+    }
+  }
+
+  function removeWrapper(layer, offsets) {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection) return
+
+    const closingRange = createRangeFromOffsets({ start: layer.closing, end: layer.closing + 1 })
+    closingRange?.deleteContents()
+    const openingRange = createRangeFromOffsets({ start: layer.opening, end: layer.opening + 1 })
+    openingRange?.deleteContents()
+    editor.normalize()
+
+    const restoredRange = createRangeFromOffsets({
+      start: offsets.start - 1,
+      end: offsets.end - 1,
+    })
+    if (!restoredRange) return
+    selection.removeAllRanges()
+    selection.addRange(restoredRange)
+    savedSelectionRef.current = restoredRange.cloneRange()
+    saveOffsetsForRange(restoredRange)
+  }
+
+  function toggleWrapper(opening, closing, indicator) {
+    if (!restoreEditorSelection()) focusEditor()
+    const offsets = savedOffsetsRef.current
+    const text = editorRef.current?.textContent ?? ''
+    const layer = getWrapperLayers(text, offsets)
+      .find((candidate) => candidate.indicator === indicator)
+
+    if (layer) {
+      recordSnapshot()
+      removeWrapper(layer, offsets)
+      setWrapperIndicators((current) => ({ ...current, [indicator]: false }))
+      return
+    }
+
+    wrapSelection(opening, closing)
+    setWrapperIndicators((current) => ({ ...current, [indicator]: true }))
+  }
+
   function clearEditor() {
     if (!editorRef.current) return
     recordSnapshot()
@@ -577,6 +695,7 @@ export function IPAKeyboard() {
     Object.keys(activeFormats).forEach((command) => forceFormatState(command, false))
     setActiveFormats({ bold: false, italic: false, underline: false })
     setFormatIndicators({ bold: false, italic: false, underline: false })
+    setWrapperIndicators({ slashes: false, brackets: false })
   }
 
   async function copyAll() {
@@ -620,8 +739,8 @@ export function IPAKeyboard() {
         <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={redoEditor} aria-label="Redo one step" title="Redo one step">↷</button>
         <button type="button" className="ipa-toolbar-text-button" onClick={clearEditor}>Clear</button>
         <button type="button" className="ipa-toolbar-text-button" onClick={copyAll}>{copyLabel}</button>
-        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => wrapSelection('/', '/')} aria-label="Wrap selected text in slashes" title="Wrap selected text in slashes">/…/</button>
-        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => wrapSelection('[', ']')} aria-label="Wrap selected text in square brackets" title="Wrap selected text in square brackets">[…]</button>
+        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => toggleWrapper('/', '/', 'slashes')} aria-label="Wrap selected text in slashes" title="Wrap selected text in slashes" aria-pressed={wrapperIndicators.slashes}>/…/</button>
+        <button type="button" className="ipa-toolbar-text-button" onMouseDown={(event) => event.preventDefault()} onClick={() => toggleWrapper('[', ']', 'brackets')} aria-label="Wrap selected text in square brackets" title="Wrap selected text in square brackets" aria-pressed={wrapperIndicators.brackets}>[…]</button>
         <label htmlFor="ipa-editor-size">Text size</label>
         <select id="ipa-editor-size" value={fontSize} onChange={(event) => setFontSize(event.target.value)}>
           <option value="small">Small</option>
