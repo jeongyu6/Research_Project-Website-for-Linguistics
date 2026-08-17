@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 const keyboardGroups = [
   {
@@ -145,50 +145,17 @@ function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
   )
 }
 
-function IPAKeyboard() {
+export function IPAKeyboard() {
   const editorRef = useRef(null)
+  const savedSelectionRef = useRef(null)
+  const savedOffsetsRef = useRef(null)
+  const editorPointerActiveRef = useRef(false)
   const undoStackRef = useRef([])
   const redoStackRef = useRef([])
   const isProgrammaticEditRef = useRef(false)
   const [fontSize, setFontSize] = useState('medium')
   const [copyLabel, setCopyLabel] = useState('Copy all')
   const [activeFormats, setActiveFormats] = useState({ bold: false, italic: false, underline: false })
-
-  useEffect(() => {
-    let syncFrame = 0
-
-    function syncFormattingState() {
-      window.cancelAnimationFrame(syncFrame)
-      syncFrame = window.requestAnimationFrame(() => {
-        const editor = editorRef.current
-        const selection = window.getSelection()
-        if (!editor || !selection || selection.rangeCount === 0) return
-
-        const range = selection.getRangeAt(0)
-        if (!editor.contains(range.commonAncestorContainer)) return
-
-        const nextFormats = {
-          bold: document.queryCommandState('bold'),
-          italic: document.queryCommandState('italic'),
-          underline: document.queryCommandState('underline'),
-        }
-
-        setActiveFormats((current) => (
-          current.bold === nextFormats.bold
-          && current.italic === nextFormats.italic
-          && current.underline === nextFormats.underline
-            ? current
-            : nextFormats
-        ))
-      })
-    }
-
-    document.addEventListener('selectionchange', syncFormattingState)
-    return () => {
-      document.removeEventListener('selectionchange', syncFormattingState)
-      window.cancelAnimationFrame(syncFrame)
-    }
-  }, [])
 
   function focusEditor() {
     editorRef.current?.focus()
@@ -218,7 +185,151 @@ function IPAKeyboard() {
     const selection = window.getSelection()
     selection.removeAllRanges()
     selection.addRange(range)
+    savedSelectionRef.current = range.cloneRange()
+    saveOffsetsForRange(range)
     editor.focus()
+  }
+
+  function restoreEditorSelection() {
+    const editor = editorRef.current
+    if (!editor) return false
+
+    const offsetRange = createRangeFromOffsets(savedOffsetsRef.current)
+    const range = offsetRange ?? savedSelectionRef.current
+    if (!range || !editor.contains(range.commonAncestorContainer)) return false
+
+    editor.focus()
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    savedSelectionRef.current = range.cloneRange()
+    saveOffsetsForRange(range)
+    return true
+  }
+
+  function useCurrentOrSavedSelection() {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (editor && selection && selection.rangeCount > 0) {
+      const currentRange = selection.getRangeAt(0)
+      if (editor.contains(currentRange.commonAncestorContainer)) {
+        const rangeToRestore = currentRange.cloneRange()
+        saveOffsetsForRange(rangeToRestore)
+        editor.focus()
+        selection.removeAllRanges()
+        selection.addRange(rangeToRestore)
+        savedSelectionRef.current = rangeToRestore.cloneRange()
+        return true
+      }
+    }
+
+    return restoreEditorSelection()
+  }
+
+  function saveEditorSelection() {
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    if (editor.contains(range.commonAncestorContainer)) {
+      savedSelectionRef.current = range.cloneRange()
+      saveOffsetsForRange(range)
+    }
+  }
+
+  function saveSelectionFromPointer(event) {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const currentSelection = window.getSelection()
+    if (currentSelection && currentSelection.rangeCount > 0) {
+      const selectedRange = currentSelection.getRangeAt(0)
+      if (
+        !selectedRange.collapsed
+        && editor.contains(selectedRange.commonAncestorContainer)
+      ) {
+        savedSelectionRef.current = selectedRange.cloneRange()
+        saveOffsetsForRange(selectedRange)
+        return
+      }
+    }
+
+    let range = null
+    if (document.caretPositionFromPoint) {
+      const position = document.caretPositionFromPoint(event.clientX, event.clientY)
+      if (position) {
+        range = document.createRange()
+        range.setStart(position.offsetNode, position.offset)
+        range.collapse(true)
+      }
+    } else if (document.caretRangeFromPoint) {
+      range = document.caretRangeFromPoint(event.clientX, event.clientY)
+    }
+
+    if (!range || !editor.contains(range.commonAncestorContainer)) {
+      saveEditorSelection()
+      return
+    }
+
+    const selection = window.getSelection()
+    selection.removeAllRanges()
+    selection.addRange(range)
+    savedSelectionRef.current = range.cloneRange()
+    saveOffsetsForRange(range)
+  }
+
+  function saveOffsetsForRange(range) {
+    const editor = editorRef.current
+    if (!editor) return
+
+    const beforeStart = document.createRange()
+    beforeStart.selectNodeContents(editor)
+    beforeStart.setEnd(range.startContainer, range.startOffset)
+
+    const beforeEnd = document.createRange()
+    beforeEnd.selectNodeContents(editor)
+    beforeEnd.setEnd(range.endContainer, range.endOffset)
+
+    savedOffsetsRef.current = {
+      start: beforeStart.toString().length,
+      end: beforeEnd.toString().length,
+    }
+  }
+
+  function createRangeFromOffsets(offsets) {
+    const editor = editorRef.current
+    if (!editor || !offsets) return null
+
+    const range = document.createRange()
+    const walker = document.createTreeWalker(editor, NodeFilter.SHOW_TEXT)
+    let node = walker.nextNode()
+    let traversed = 0
+    let startPoint = null
+    let endPoint = null
+
+    while (node) {
+      const nextTotal = traversed + node.data.length
+      if (!startPoint && offsets.start <= nextTotal) {
+        startPoint = [node, Math.max(0, offsets.start - traversed)]
+      }
+      if (!endPoint && offsets.end <= nextTotal) {
+        endPoint = [node, Math.max(0, offsets.end - traversed)]
+        break
+      }
+      traversed = nextTotal
+      node = walker.nextNode()
+    }
+
+    if (!startPoint || !endPoint) {
+      range.selectNodeContents(editor)
+      range.collapse(false)
+      return range
+    }
+
+    range.setStart(...startPoint)
+    range.setEnd(...endPoint)
+    return range
   }
 
   function undoEditor() {
@@ -226,11 +337,8 @@ function IPAKeyboard() {
     if (previous === undefined || !editorRef.current) return
     redoStackRef.current.push({ html: editorRef.current.innerHTML, formats: activeFormats })
     editorRef.current.innerHTML = previous.html
-    setActiveFormats(previous.formats)
     placeCursorAtEnd()
-    runProgrammaticEdit(() => {
-      Object.entries(previous.formats).forEach(([command, isActive]) => forceFormatState(command, isActive))
-    })
+    resetTypingFormats()
   }
 
   function redoEditor() {
@@ -238,11 +346,15 @@ function IPAKeyboard() {
     if (next === undefined || !editorRef.current) return
     undoStackRef.current.push({ html: editorRef.current.innerHTML, formats: activeFormats })
     editorRef.current.innerHTML = next.html
-    setActiveFormats(next.formats)
     placeCursorAtEnd()
+    resetTypingFormats()
+  }
+
+  function resetTypingFormats() {
     runProgrammaticEdit(() => {
-      Object.entries(next.formats).forEach(([command, isActive]) => forceFormatState(command, isActive))
+      Object.keys(activeFormats).forEach((command) => forceFormatState(command, false))
     })
+    setActiveFormats({ bold: false, italic: false, underline: false })
   }
 
   function forceFormatState(command, shouldBeActive) {
@@ -252,24 +364,69 @@ function IPAKeyboard() {
   }
 
   function applyFormat(command) {
-    focusEditor()
+    if (!restoreEditorSelection()) focusEditor()
+    const selection = window.getSelection()
+    const hadSelection = Boolean(
+      selection
+      && selection.rangeCount > 0
+      && !selection.getRangeAt(0).collapsed
+    )
     recordSnapshot()
     const shouldBeActive = !activeFormats[command]
     runProgrammaticEdit(() => {
       forceFormatState(command, shouldBeActive)
     })
-    if (command === 'bold' || command === 'italic' || command === 'underline') {
+    if (hadSelection && selection.rangeCount > 0) {
+      const collapsedRange = selection.getRangeAt(0).cloneRange()
+      collapsedRange.collapse(false)
+      selection.removeAllRanges()
+      selection.addRange(collapsedRange)
+      savedSelectionRef.current = collapsedRange.cloneRange()
+      saveOffsetsForRange(collapsedRange)
+      resetTypingFormats()
+    } else if (command === 'bold' || command === 'italic' || command === 'underline') {
       setActiveFormats((current) => ({ ...current, [command]: shouldBeActive }))
     }
+    saveEditorSelection()
   }
 
   function insertSymbol(symbol) {
-    focusEditor()
     recordSnapshot()
-    runProgrammaticEdit(() => {
-      Object.entries(activeFormats).forEach(([command, isActive]) => forceFormatState(command, isActive))
-      document.execCommand('insertText', false, symbol)
+    const restoredSavedPosition = savedOffsetsRef.current
+      ? restoreEditorSelection()
+      : useCurrentOrSavedSelection()
+    if (!restoredSavedPosition) placeCursorAtEnd()
+
+    const editor = editorRef.current
+    const selection = window.getSelection()
+    if (!editor || !selection || selection.rangeCount === 0) return
+
+    const range = selection.getRangeAt(0)
+    if (!editor.contains(range.commonAncestorContainer)) return
+    const insertionStart = savedOffsetsRef.current?.start ?? editor.textContent.length
+
+    range.deleteContents()
+    let insertedNode = document.createTextNode(symbol)
+
+    const formatElements = { bold: 'strong', italic: 'em', underline: 'u' }
+    Object.entries(activeFormats).forEach(([format, isActive]) => {
+      if (!isActive) return
+      const wrapper = document.createElement(formatElements[format])
+      wrapper.append(insertedNode)
+      insertedNode = wrapper
     })
+
+    range.insertNode(insertedNode)
+    range.setStartAfter(insertedNode)
+    range.collapse(true)
+    selection.removeAllRanges()
+    selection.addRange(range)
+    savedSelectionRef.current = range.cloneRange()
+    savedOffsetsRef.current = {
+      start: insertionStart + symbol.length,
+      end: insertionStart + symbol.length,
+    }
+    editorPointerActiveRef.current = false
   }
 
   function wrapSelection(opening, closing) {
@@ -375,8 +532,15 @@ function IPAKeyboard() {
                   type="button"
                   className="ipa-key"
                   key={`${group.label}-${symbol}-${index}`}
+                  onPointerDown={(event) => {
+                    if (editorPointerActiveRef.current) saveEditorSelection()
+                    event.preventDefault()
+                    insertSymbol(symbol)
+                  }}
                   onMouseDown={(event) => event.preventDefault()}
-                  onClick={() => insertSymbol(symbol)}
+                  onClick={(event) => {
+                    if (event.detail === 0) insertSymbol(symbol)
+                  }}
                   aria-label={`Insert IPA symbol ${symbol}`}
                 >
                   {symbol}
@@ -397,6 +561,16 @@ function IPAKeyboard() {
         data-placeholder="Type or insert IPA symbols here…"
         onBeforeInput={() => {
           if (!isProgrammaticEditRef.current) recordSnapshot()
+        }}
+        onInput={saveEditorSelection}
+        onKeyUp={saveEditorSelection}
+        onPointerUp={saveSelectionFromPointer}
+        onMouseUp={saveSelectionFromPointer}
+        onPointerDown={() => {
+          editorPointerActiveRef.current = true
+        }}
+        onMouseDown={() => {
+          editorPointerActiveRef.current = true
         }}
         suppressContentEditableWarning
       />
