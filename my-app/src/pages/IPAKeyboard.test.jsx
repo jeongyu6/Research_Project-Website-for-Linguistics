@@ -1126,6 +1126,7 @@ describe('IPAKeyboard', () => {
     await user.click(screen.getByRole('button', { name: /wrap selected text in slashes/i }))
 
     expect(editor).toHaveTextContent('/test/')
+    expect(window.getSelection().toString()).toBe('test')
   })
 
   it('wraps selected text in phonetic square brackets', async () => {
@@ -1138,6 +1139,100 @@ describe('IPAKeyboard', () => {
     await user.click(screen.getByRole('button', { name: /wrap selected text in square brackets/i }))
 
     expect(editor).toHaveTextContent('[test]')
+    expect(window.getSelection().toString()).toBe('test')
+  })
+
+  it.each([
+    ['slashes', /wrap selected text in slashes/i, '/mnŋrwjlə/'],
+    ['brackets', /wrap selected text in square brackets/i, '[mnŋrwjlə]'],
+  ])('keeps text selected while combining all formats with %s', async (
+    _wrapper,
+    wrapperButton,
+    expectedText,
+  ) => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = 'mnŋrwjlə'
+    selectEditorText(editor)
+    fireEvent.mouseUp(editor)
+
+    for (const name of [
+      /bold selected text/i,
+      /italicize selected text/i,
+      /underline selected text/i,
+      wrapperButton,
+    ]) {
+      await user.click(screen.getByRole('button', { name }))
+      expect(window.getSelection().toString()).toBe('mnŋrwjlə')
+    }
+
+    expect(editor).toHaveTextContent(expectedText)
+    expect(document.execCommand).toHaveBeenCalledWith('bold', false)
+    expect(document.execCommand).toHaveBeenCalledWith('italic', false)
+    expect(document.execCommand).toHaveBeenCalledWith('underline', false)
+  })
+
+  it.each([
+    ['slashes', /wrap selected text in slashes/i, '/tʃdʒmnŋ/'],
+    ['brackets', /wrap selected text in square brackets/i, '[tʃdʒmnŋ]'],
+  ])('can apply %s before adding bold, italic, and underline', async (
+    _wrapper,
+    wrapperButton,
+    expectedText,
+  ) => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = 'tʃdʒmnŋ'
+    selectEditorText(editor)
+    fireEvent.mouseUp(editor)
+
+    await user.click(screen.getByRole('button', { name: wrapperButton }))
+    for (const name of [
+      /bold selected text/i,
+      /italicize selected text/i,
+      /underline selected text/i,
+    ]) {
+      await user.click(screen.getByRole('button', { name }))
+      expect(window.getSelection().toString()).toBe('tʃdʒmnŋ')
+    }
+
+    expect(editor).toHaveTextContent(expectedText)
+  })
+
+  it.each([
+    ['slashes then brackets', [
+      /wrap selected text in slashes/i,
+      /wrap selected text in square brackets/i,
+    ], '/[əowɔj]/'],
+    ['brackets then slashes', [
+      /wrap selected text in square brackets/i,
+      /wrap selected text in slashes/i,
+    ], '[/əowɔj/]'],
+  ])('combines all formats with nested %s without losing the selection', async (
+    _order,
+    wrapperButtons,
+    expectedText,
+  ) => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+    editor.textContent = 'əowɔj'
+    selectEditorText(editor)
+    fireEvent.mouseUp(editor)
+
+    for (const name of [
+      /bold selected text/i,
+      /italicize selected text/i,
+      /underline selected text/i,
+      ...wrapperButtons,
+    ]) {
+      await user.click(screen.getByRole('button', { name }))
+      expect(window.getSelection().toString()).toBe('əowɔj')
+    }
+
+    expect(editor).toHaveTextContent(expectedText)
   })
 
   it('undoes and redoes an inserted IPA symbol', async () => {

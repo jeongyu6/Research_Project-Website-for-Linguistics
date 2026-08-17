@@ -558,12 +558,15 @@ export function IPAKeyboard() {
     selection.removeAllRanges()
     const nextRange = document.createRange()
     if (hadSelection) {
-      nextRange.setStartAfter(closingNode)
+      nextRange.setStartAfter(openingNode)
+      nextRange.setEndBefore(closingNode)
     } else {
       nextRange.setStart(openingNode, openingNode.length)
+      nextRange.collapse(true)
     }
-    nextRange.collapse(true)
     selection.addRange(nextRange)
+    savedSelectionRef.current = nextRange.cloneRange()
+    saveOffsetsForRange(nextRange)
   }
 
   function clearEditor() {
