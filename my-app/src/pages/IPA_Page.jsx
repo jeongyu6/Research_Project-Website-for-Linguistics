@@ -3,11 +3,11 @@ import { useRef, useState } from 'react'
 const keyboardGroups = [
   {
     label: 'Consonants',
-    symbols: ['p', 'b', 't', 'd', 'k', 'g', 'ʔ', 'f', 'v', 'θ', 'ð', 's', 'z', 'ʃ', 'ʒ', 'h', 'tʃ', 'dʒ', 'm', 'n', 'ŋ', 'r', 'w', 'j', 'l', 'ɾ', 'ʍ'],
+    symbols: ['p', 'b', 't', 'd', 'k', 'g', 'ʔ', 'f', 'v', 'θ', 'ð', 's', 'z', 'ʃ', 'ʒ', 'h', 'tʃ', 'dʒ', 'm', 'n', 'ŋ', 'ɹ', 'w', 'j', 'l', 'ɾ', 'ʍ'],
   },
   {
     label: 'Vowels',
-    symbols: ['i', 'I', 'ʊ', 'u', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'ɔ', 'æ', 'aj', 'aw', 'a', 'ɚ'],
+    symbols: ['i', 'I', 'ʊ', 'u', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'ɔ', 'æ', 'aj', 'aw', 'ɑ', 'ɚ'],
   },
   {
     label: 'Diacritics & Transcription',
@@ -27,11 +27,11 @@ const pulmonicColumns = [
 ]
 
 const pulmonicRows = [
-  ['Oral Stop', ['p b', '', '', 't d', '', '', 'k g', 'ʔ']],
+  ['Oral Stop', ['p b', '', '', 't d', '', '', 'k g', '']],
   ['Fricative', ['', 'f v', 'θ ð', 's z', 'ʃ ʒ', '', '', 'h']],
   ['Affricate', ['', '', '', '', 'tʃ dʒ', '', '', '']],
   ['Nasal', ['m', '', '', 'n', '', '', 'ŋ', '']],
-  ['Retroflex Approximant', ['', '', '', 'r', '', '', '', '']],
+  ['Retroflex Approximant', ['', '', '', 'ɹ', '', '', '', '']],
   ['Glides', ['w', '', '', '', '', 'j', 'w', '']],
   ['Lateral Approximant', ['', '', '', 'l', '', '', '', '']],
 ]
@@ -66,7 +66,7 @@ const consonantRecordings = {
   'm': [recordingUrl('Consonants/m-mom.mp3')],
   'n': [recordingUrl('Consonants/n-new.mp3')],
   'ŋ': [recordingUrl('Consonants/ŋ-sing.mp3')],
-  'r': [recordingUrl('Consonants/r-road.mp3')],
+  'ɹ': [recordingUrl('Consonants/r-road.mp3')],
   'w': [recordingUrl('Consonants/W-whisper.mp3')],
   'j': [recordingUrl('Consonants/j-yellow.mp3')],
   'l': [recordingUrl('Consonants/L-leg.mp3')],
@@ -874,13 +874,25 @@ export default function IPA_Page({ onBack }) {
             <VowelSymbol x={880} y={244} text="ow" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={558} y={390} text="ʌ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={790} y={390} text="ɔj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={882} y={390} text="ɔ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
 
             <VowelSymbol x={356} y={476} text="æ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={548} y={494} text="aj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={652} y={494} text="aw" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={866} y={494} text="a" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
           </svg>
+          <p className="vowel-chart-note">
+            Note: [
+            <button
+              type="button"
+              className="vowel-note-symbol"
+              aria-label="Play recording for ɔ"
+              aria-pressed={selectedVowel === 'canadian-english-before-r-ɔ'}
+              onClick={() => handleVowelSelect('canadian-english-before-r-ɔ', 'ɔ', vowelRecordings['ɔ'])}
+            >
+              ɔ
+            </button>
+            ] can be heard in Canadian English before [ɹ]
+          </p>
         </div>
         {selectedVowelRecordings.length > 0 && (
           <div className="recording-player">
@@ -931,6 +943,19 @@ export default function IPA_Page({ onBack }) {
             </tbody>
           </table>
         </div>
+        <p className="consonant-chart-note">
+          Note: you can hear [
+          <button
+            type="button"
+            className="vowel-note-symbol"
+            aria-label="Play recording for ʔ"
+            aria-pressed={selectedPulmonic === 'canadian-english-words-glottal-stop'}
+            onClick={() => handlePulmonicSelect('canadian-english-words-glottal-stop', 'ʔ', consonantRecordings['ʔ'])}
+          >
+            ʔ
+          </button>
+          ] in words such as 'button' and 'Latin'.
+        </p>
         {selectedPulmonicRecordings.length > 0 && (
           <div className="recording-player">
             <span>

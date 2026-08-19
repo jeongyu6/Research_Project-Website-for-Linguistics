@@ -122,6 +122,35 @@ describe('IPAKeyboard', () => {
     expect(getEditor()).toHaveTextContent('ʃəŋ')
   })
 
+  it('uses the same keyboard class for ɑ and the other IPA characters', () => {
+    render(<IPAKeyboard />)
+
+    const alphaKey = screen.getByRole('button', { name: 'Insert IPA symbol ɑ' })
+    const epsilonKey = screen.getByRole('button', { name: 'Insert IPA symbol ɛ' })
+    const turnedRKey = screen.getByRole('button', { name: 'Insert IPA symbol ɹ' })
+
+    expect(alphaKey).toHaveClass('ipa-key')
+    expect(epsilonKey).toHaveClass('ipa-key')
+    expect(turnedRKey).toHaveClass('ipa-key')
+    expect(alphaKey.className).toBe(epsilonKey.className)
+    expect(alphaKey.className).toBe(turnedRKey.className)
+  })
+
+  it('inserts ɑ and following symbols as consistently formatted plain text', async () => {
+    const user = userEvent.setup()
+    render(<IPAKeyboard />)
+    const editor = getEditor()
+
+    for (const symbol of ['ɑ', 'j', 'ə', 'ɹ', 'ow', 'ɛ']) {
+      await user.click(screen.getByRole('button', { name: `Insert IPA symbol ${symbol}` }))
+    }
+
+    expect(editor).toHaveTextContent('ɑjəɹowɛ')
+    expect(editor.querySelector('.ipa-editor-plain-alpha')).not.toBeInTheDocument()
+    expect(editor.querySelector('[style]')).not.toBeInTheDocument()
+    expect(editor.querySelector('span')).not.toBeInTheDocument()
+  })
+
   it('adds an IPA symbol to the end of existing text', async () => {
     const user = userEvent.setup()
     render(<IPAKeyboard />)
@@ -286,10 +315,10 @@ describe('IPAKeyboard', () => {
     render(<IPAKeyboard />)
     const editor = getEditor()
 
-    for (const symbol of ['t', 'ʒ', 'h', 'h', 'dʒ', 'm', 'n', 'ŋ', 'r', 'w', 'j', 'l', 'ʊ', 'ʊ', 'ʊ']) {
+    for (const symbol of ['t', 'ʒ', 'h', 'h', 'dʒ', 'm', 'n', 'ŋ', 'ɹ', 'w', 'j', 'l', 'ʊ', 'ʊ', 'ʊ']) {
       await user.click(screen.getByRole('button', { name: `Insert IPA symbol ${symbol}` }))
     }
-    expect(editor).toHaveTextContent('tʒhhdʒmnŋrwjlʊʊʊ')
+    expect(editor).toHaveTextContent('tʒhhdʒmnŋɹwjlʊʊʊ')
 
     const range = document.createRange()
     range.setStartAfter(editor.firstChild)
@@ -308,7 +337,7 @@ describe('IPAKeyboard', () => {
     selection.addRange(incorrectEndRange)
     await user.click(schwaButton)
 
-    expect(editor).toHaveTextContent('təʒhhdʒmnŋrwjlʊʊʊ')
+    expect(editor).toHaveTextContent('təʒhhdʒmnŋɹwjlʊʊʊ')
   })
 
   it('uses the visual pointer location after the editor has been idle', async () => {
@@ -365,10 +394,10 @@ describe('IPAKeyboard', () => {
     render(<IPAKeyboard />)
     const editor = getEditor()
 
-    for (const symbol of ['dʒ', 'm', 'm', 'r']) {
+    for (const symbol of ['dʒ', 'm', 'm', 'ɹ']) {
       await user.click(screen.getByRole('button', { name: `Insert IPA symbol ${symbol}` }))
     }
-    expect(editor).toHaveTextContent('dʒmmr')
+    expect(editor).toHaveTextContent('dʒmmɹ')
 
     const staleRange = document.createRange()
     staleRange.setStart(editor.firstChild, 1)
@@ -378,9 +407,9 @@ describe('IPAKeyboard', () => {
     selection.addRange(staleRange)
     document.dispatchEvent(new Event('selectionchange'))
 
-    await user.click(screen.getByRole('button', { name: 'Insert IPA symbol r' }))
+    await user.click(screen.getByRole('button', { name: 'Insert IPA symbol ɹ' }))
 
-    expect(editor).toHaveTextContent('dʒmmrr')
+    expect(editor).toHaveTextContent('dʒmmɹɹ')
   })
 
   it('does not corrupt the next insertion position when focus briefly moves', async () => {
@@ -388,10 +417,10 @@ describe('IPAKeyboard', () => {
     render(<IPAKeyboard />)
     const editor = getEditor()
 
-    for (const symbol of ['dʒ', 'm', 'm', 'r', 'r']) {
+    for (const symbol of ['dʒ', 'm', 'm', 'ɹ', 'ɹ']) {
       await user.click(screen.getByRole('button', { name: `Insert IPA symbol ${symbol}` }))
     }
-    expect(editor).toHaveTextContent('dʒmmrr')
+    expect(editor).toHaveTextContent('dʒmmɹɹ')
 
     const misleadingRange = document.createRange()
     misleadingRange.setStart(editor.firstChild, 1)
@@ -404,7 +433,7 @@ describe('IPAKeyboard', () => {
     await user.click(screen.getByRole('button', { name: 'Insert IPA symbol n' }))
     await user.click(screen.getByRole('button', { name: 'Insert IPA symbol m' }))
 
-    expect(editor).toHaveTextContent('dʒmmrrnm')
+    expect(editor).toHaveTextContent('dʒmmɹɹnm')
   })
 
   it('captures a manually moved live caret immediately before an IPA key click', async () => {
@@ -435,7 +464,7 @@ describe('IPAKeyboard', () => {
     expect(editor).toHaveTextContent('abʃcdef')
   })
 
-  it('keeps a moved cursor between m and n even if the editor blurs before inserting a', async () => {
+  it('keeps a moved cursor between m and n even if the editor blurs before inserting ɑ', async () => {
     const user = userEvent.setup()
     render(<IPAKeyboard />)
     const editor = getEditor()
@@ -448,9 +477,9 @@ describe('IPAKeyboard', () => {
     finishPointerSelection(editor)
     editor.dispatchEvent(new FocusEvent('blur', { bubbles: true }))
 
-    await user.click(screen.getByRole('button', { name: 'Insert IPA symbol a' }))
+    await user.click(screen.getByRole('button', { name: 'Insert IPA symbol ɑ' }))
 
-    expect(editor).toHaveTextContent('dʒmanŋrɑɑɑ')
+    expect(editor).toHaveTextContent('dʒmɑnŋrɑɑɑ')
   })
 
   it('keeps the user-selected offset when formatting state moves the live selection elsewhere', async () => {
@@ -504,7 +533,7 @@ describe('IPAKeyboard', () => {
     it.each([
       ['m', 'abmcdef'],
       ['n', 'abncdef'],
-      ['r', 'abrcdef'],
+      ['ɹ', 'abɹcdef'],
       ['ʃ', 'abʃcdef'],
       ['ŋ', 'abŋcdef'],
       ['ə', 'abəcdef'],
@@ -526,11 +555,11 @@ describe('IPAKeyboard', () => {
     })
 
     it.each([
-      ['dʒmmrr', 'r'],
-      ['dʒmmrr', 'm'],
-      ['dʒmmrr', 'n'],
-      ['mnŋrrmmnn', 'ŋ'],
-      ['tʃdʒmnŋrwjl', 'm'],
+      ['dʒmmɹɹ', 'ɹ'],
+      ['dʒmmɹɹ', 'm'],
+      ['dʒmmɹɹ', 'n'],
+      ['mnŋɹɹmmnn', 'ŋ'],
+      ['tʃdʒmnŋɹwjl', 'm'],
     ])('keeps the end of %s after an idle stale selection when inserting %s', async (initial, symbol) => {
       const user = userEvent.setup()
       render(<IPAKeyboard />)
@@ -597,8 +626,8 @@ describe('IPAKeyboard', () => {
       editor.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }))
       setCaretOffset(editor, 2)
       finishPointerSelection(editor)
-      await user.click(screen.getByRole('button', { name: 'Insert IPA symbol r' }))
-      expect(editor).toHaveTextContent('anrbmcdef')
+      await user.click(screen.getByRole('button', { name: 'Insert IPA symbol ɹ' }))
+      expect(editor).toHaveTextContent('anɹbmcdef')
     })
 
     it('continues appending many consonants despite repeated stale idle selections', async () => {
@@ -606,7 +635,7 @@ describe('IPAKeyboard', () => {
       render(<IPAKeyboard />)
       const editor = getEditor()
 
-      for (const symbol of ['dʒ', 'm', 'm', 'r', 'r', 'n', 'm', 'ŋ', 'r', 'm', 'n']) {
+      for (const symbol of ['dʒ', 'm', 'm', 'ɹ', 'ɹ', 'n', 'm', 'ŋ', 'ɹ', 'm', 'n']) {
         await user.click(screen.getByRole('button', { name: `Insert IPA symbol ${symbol}` }))
 
         const staleRange = document.createRange()
@@ -618,7 +647,7 @@ describe('IPAKeyboard', () => {
         document.dispatchEvent(new Event('selectionchange'))
       }
 
-      expect(editor).toHaveTextContent('dʒmmrrnmŋrmn')
+      expect(editor).toHaveTextContent('dʒmmɹɹnmŋɹmn')
     })
   })
 
