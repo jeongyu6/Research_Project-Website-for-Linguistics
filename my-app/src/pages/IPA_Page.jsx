@@ -87,7 +87,7 @@ const vowelRecordings = {
   'æ': [recordingUrl('Vowels/æ-bat.mp3')],
   'aj': [recordingUrl('Vowels/aj-buy.mp3')],
   'aw': [recordingUrl('Vowels/aw-cow.mp3')],
-  'a': [recordingUrl('Vowels/a-father.mp3')],
+  'ɑ': [recordingUrl('Vowels/a-father.mp3')],
 }
 
 function PulmonicSymbols({ cell, rowLabel, columnLabel, selectedSymbol, onSelect }) {
@@ -140,7 +140,13 @@ function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
       }}
     >
       <rect className="vowel-hitbox" x={-textWidth / 2 - 10} y="-32" width={textWidth + 20} height="64" rx="0" />
-      <text textAnchor="middle" dominantBaseline="central">{text}</text>
+      <text
+        className={text === 'ɑ' ? 'vowel-symbol-keyboard-alpha' : undefined}
+        textAnchor="middle"
+        dominantBaseline="central"
+      >
+        {text}
+      </text>
     </g>
   )
 }
@@ -878,7 +884,7 @@ export default function IPA_Page({ onBack }) {
             <VowelSymbol x={356} y={476} text="æ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={548} y={494} text="aj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
             <VowelSymbol x={652} y={494} text="aw" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={866} y={494} text="a" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
+            <VowelSymbol x={866} y={494} text="ɑ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
           </svg>
           <p className="vowel-chart-note">
             Note: [

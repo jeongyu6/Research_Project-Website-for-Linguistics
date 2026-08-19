@@ -1694,6 +1694,10 @@ main {
   transition: fill 0.18s ease, text-decoration-color 0.18s ease;
 }
 
+.vowel-symbol text.vowel-symbol-keyboard-alpha {
+  font-family: Menlo, Monaco, 'Courier New', monospace;
+}
+
 .vowel-symbol {
   cursor: pointer;
   outline: none;
