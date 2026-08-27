@@ -1,4 +1,5 @@
 import IPAKeyboard from './keyboard/index.js'
+import PracticeSpace from './practice_space/index.js'
 import { Consonants, Vowels } from './sound_listening/index.js'
 
 export { IPAKeyboard } from './keyboard/index.js'
@@ -16,6 +17,7 @@ export default function IPA_Page({ onBack }) {
       <Vowels />
       <Consonants />
       <IPAKeyboard />
+      <PracticeSpace />
     </div>
   )
 }
