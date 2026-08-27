@@ -22,6 +22,6 @@ describe('PracticeSpace', () => {
     await user.click(screen.getByRole('tab', { name: 'Activity #3: Vowel Map Drop' }))
 
     expect(screen.getByRole('tabpanel', { name: 'Activity #3: Vowel Map Drop' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { name: 'Vowel Map Drop' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Activity 3: Vowel Map Drop' })).toBeInTheDocument()
   })
 })

@@ -660,6 +660,63 @@ main {
   cursor: pointer;
 }
 
+.vowel-map-activity {
+  display: grid;
+  gap: 22px;
+  padding: clamp(20px, 4vw, 38px);
+  border: 1px solid #cbdaf0;
+  border-radius: 16px;
+  background: #f7faff;
+}
+
+.vowel-map-bank { display: flex; flex-wrap: wrap; gap: 10px; }
+
+.vowel-bank-symbol {
+  min-width: 70px;
+  padding: 11px 15px;
+  border: 2px solid #b7c8df;
+  border-radius: 10px;
+  background: #ffffff;
+  color: #001747;
+  font-size: 1.3rem;
+  cursor: grab;
+}
+
+.vowel-bank-symbol:hover,
+.vowel-bank-symbol:focus-visible,
+.vowel-bank-symbol-selected { border-color: #1f5fb5; background: #eaf2ff; outline: none; }
+
+.vowel-map-chart { overflow-x: auto; padding: 10px; border: 1px solid #dbe6f5; border-radius: 14px; background: #ffffff; }
+.vowel-drop-diagram { min-width: 680px; }
+.vowel-drop-target { cursor: pointer; }
+.vowel-drop-target circle { fill: #ffffff; stroke: #8ea9cc; stroke-width: 3; stroke-dasharray: 7 5; }
+.vowel-drop-target:hover circle,
+.vowel-drop-target:focus-visible circle { fill: #eaf2ff; stroke: #1f5fb5; outline: none; }
+.vowel-drop-target-filled circle { fill: #e6f7ee; stroke: #16834b; stroke-dasharray: none; }
+.vowel-drop-target-correct circle { fill: #e6f7ee; stroke: #16834b; }
+.vowel-drop-target-incorrect circle { fill: #fdebed; stroke: #b72e3b; }
+.vowel-drop-target text { fill: #001747; font-size: 31px; font-weight: 800; }
+.vowel-map-complete { margin: 0; padding: 14px 18px; border-radius: 10px; background: #e6f7ee; color: #11623a; font-weight: 800; }
+
+.vowel-map-check-button {
+  justify-self: end;
+  min-height: 48px;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 11px;
+  background: #1f5fb5;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.vowel-map-check-button:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.vowel-map-review { padding: 20px; border: 1px solid #dbe6f5; border-radius: 12px; background: #ffffff; }
+.vowel-map-review h4 { margin: 0 0 12px; color: #001747; font-size: 1.25rem; }
+.vowel-map-review p { margin: 0; color: #334463; }
+.vowel-map-review ul { display: grid; gap: 8px; margin: 16px 0 0; padding-left: 24px; color: #91222d; }
+
 @media (max-width: 600px) {
   .sound-activity-header,
   .sound-activity-actions,
