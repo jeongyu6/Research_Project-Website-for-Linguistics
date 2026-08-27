@@ -1,8 +1,8 @@
 import { useState } from 'react'
 import './App.css'
 import utLogo from '../Pictures/UofT_logo.png'
-import IPA_Page from './pages/IPA_Page.jsx'
-import Treeform_Page from './pages/Treeform_Page.jsx'
+import { IPA_Page } from './pages/ipa/index.js'
+import { Treeform_Page } from './pages/treeform/index.js'
 
 
 // This is the main structure/content of the website.

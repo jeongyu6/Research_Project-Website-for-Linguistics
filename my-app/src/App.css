@@ -455,6 +455,33 @@ main {
   text-align: left;
 }
 
+.practice-space-workspace {
+  display: grid;
+  gap: 22px;
+  padding: 28px;
+  border: 1px solid #dbe6f5;
+  border-radius: 18px;
+  background: #ffffff;
+  box-shadow: 0 16px 38px rgba(20, 48, 92, 0.05);
+}
+
+.practice-space-editor {
+  width: 100%;
+  min-height: 420px;
+  resize: vertical;
+  padding: 22px;
+  border: 1.5px solid #b9c9df;
+  border-radius: 14px;
+  background: #fbfdff;
+  color: #121a35;
+  font: 1.15rem/1.7 'Open Sans', Arial, Helvetica, sans-serif;
+}
+
+.practice-space-editor:focus {
+  border-color: #1f5fb5;
+  outline: 3px solid rgba(31, 95, 181, 0.14);
+}
+
 .ipa-page-header {
   display: grid;
   gap: 22px;
