@@ -607,9 +607,63 @@ main {
 
 .sound-activity-actions button:disabled { cursor: not-allowed; opacity: 0.45; }
 
+.activity-summary {
+  display: grid;
+  gap: 22px;
+  padding: clamp(20px, 4vw, 38px);
+  border: 1px solid #cbdaf0;
+  border-radius: 16px;
+  background: #f7faff;
+}
+
+.activity-summary-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+}
+
+.activity-summary-header h3 { margin: 5px 0 0; color: #001747; font-size: clamp(1.5rem, 3vw, 2rem); }
+.activity-summary-header > strong { color: #1f5fb5; font-size: 1.15rem; }
+.activity-summary > p { margin: 0; color: #334463; font-weight: 700; }
+
+.activity-summary-list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.activity-summary-list > li { padding: 18px; border: 1.5px solid; border-radius: 12px; background: #ffffff; }
+.activity-summary-list > li.summary-answer-correct { border-color: #9bd1b5; }
+.activity-summary-list > li.summary-answer-incorrect { border-color: #e3a7ad; background: #fff8f8; }
+.summary-question-heading { display: flex; justify-content: space-between; gap: 14px; }
+.summary-question-heading span { font-weight: 800; }
+.summary-answer-correct .summary-question-heading span { color: #16834b; }
+.summary-answer-incorrect .summary-question-heading span { color: #b72e3b; }
+.activity-summary-list p { margin: 10px 0; color: #243653; }
+.activity-summary-list dl { display: flex; flex-wrap: wrap; gap: 12px 28px; margin: 0; }
+.activity-summary-list dl div { display: flex; gap: 8px; }
+.activity-summary-list dt { color: #596a84; font-weight: 700; }
+.activity-summary-list dd { margin: 0; color: #001747; font-weight: 800; }
+
+.activity-restart-button {
+  justify-self: end;
+  min-height: 48px;
+  padding: 11px 22px;
+  border: 0;
+  border-radius: 11px;
+  background: #1f5fb5;
+  color: #ffffff;
+  font-weight: 800;
+  cursor: pointer;
+}
+
 @media (max-width: 600px) {
   .sound-activity-header,
-  .sound-activity-actions { align-items: flex-start; flex-direction: column; }
+  .sound-activity-actions,
+  .activity-summary-header { align-items: flex-start; flex-direction: column; }
   .sound-choice { flex: 1 1 40%; }
 }
 

@@ -43,4 +43,18 @@ describe('Activity1BuildTheSound', () => {
     expect(screen.getByRole('status')).toHaveTextContent('The correct answer is /θ/.')
     expect(screen.getByText('Score: 0/2')).toBeInTheDocument()
   })
+
+  it('shows a review summary before starting a new session', async () => {
+    const user = userEvent.setup()
+    render(<Activity1BuildTheSound initialQuestions={[testQuestions[0]]} />)
+
+    await user.click(screen.getByRole('button', { name: '/f/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: 'View summary' }))
+
+    expect(screen.getByRole('heading', { name: 'Build the Sound Summary' })).toBeInTheDocument()
+    expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('/f/')
+    expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/θ/')
+    expect(screen.getByRole('button', { name: 'Start a new session' })).toBeInTheDocument()
+  })
 })

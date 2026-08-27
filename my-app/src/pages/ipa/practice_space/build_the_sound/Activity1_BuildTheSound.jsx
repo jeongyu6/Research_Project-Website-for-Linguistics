@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import QuizSummary from '../QuizSummary.jsx'
 import { consonantInventory, createQuestionSession } from './questions.js'
 
 export default function Activity1BuildTheSound({ initialQuestions }) {
@@ -8,6 +9,8 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [isChecked, setIsChecked] = useState(false)
   const [score, setScore] = useState(0)
+  const [responses, setResponses] = useState([])
+  const [showSummary, setShowSummary] = useState(false)
   const question = questions[questionIndex]
   const isCorrect = selectedAnswer === question.answer
   const isLastQuestion = questionIndex === questions.length - 1
@@ -16,28 +19,41 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
     if (!selectedAnswer || isChecked) return
     setIsChecked(true)
     if (isCorrect) setScore((currentScore) => currentScore + 1)
+    setResponses((currentResponses) => [
+      ...currentResponses,
+      { id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect },
+    ])
   }
 
   function advanceActivity() {
     if (isLastQuestion) {
-      setQuestions(startQuestionSession())
-      setQuestionIndex(0)
-      setScore(0)
-    } else {
-      setQuestionIndex((currentIndex) => currentIndex + 1)
+      setShowSummary(true)
+      return
     }
+    setQuestionIndex((currentIndex) => currentIndex + 1)
     setSelectedAnswer('')
     setIsChecked(false)
+  }
+
+  function restartActivity() {
+    setQuestions(startQuestionSession())
+    setQuestionIndex(0)
+    setSelectedAnswer('')
+    setIsChecked(false)
+    setScore(0)
+    setResponses([])
+    setShowSummary(false)
+  }
+
+  if (showSummary) {
+    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={responses} onRestart={restartActivity} />
   }
 
   return (
     <section aria-label="Activity 1: Build the Sound">
       <div className="sound-activity">
         <div className="sound-activity-header">
-          <div>
-            <span className="sound-activity-kicker">Activity 1</span>
-            <h3>Build the Sound</h3>
-          </div>
+          <h3>Activity 1: Build the Sound</h3>
           <span className="sound-activity-progress">
             Question {questionIndex + 1} of {questions.length}
           </span>
@@ -78,7 +94,7 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
         <div className="sound-activity-actions">
           <span>Score: {score}/{questions.length}</span>
           {isChecked ? (
-            <button type="button" onClick={advanceActivity}>{isLastQuestion ? 'Try again' : 'Next question'}</button>
+            <button type="button" onClick={advanceActivity}>{isLastQuestion ? 'View summary' : 'Next question'}</button>
           ) : (
             <button type="button" onClick={checkAnswer} disabled={!selectedAnswer}>Check answer</button>
           )}
