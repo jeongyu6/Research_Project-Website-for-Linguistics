@@ -35,8 +35,7 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
       <div className="sound-activity">
         <div className="sound-activity-header">
           <div>
-            <span className="sound-activity-kicker">Activity 1</span>
-            <h3>Build the Sound</h3>
+            <h3>Activity 1: Build the Sound</h3>
           </div>
           <span className="sound-activity-progress">
             Question {questionIndex + 1} of {questions.length}

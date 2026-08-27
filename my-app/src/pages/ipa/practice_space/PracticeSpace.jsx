@@ -23,13 +23,12 @@ export default function PracticeSpace() {
       </div>
       <div className="practice-activity-tabs" role="tablist" aria-label="Practice activities">
         {activities.map((activity, index) => (
-          <button type="button" role="tab" aria-label={`Activity ${index + 1}: ${activity.name}`} aria-selected={activeActivity === index} key={activity.name} onClick={() => setActiveActivity(index)}>
-            <span>Activity {index + 1}</span>
-            {activity.name}
+          <button type="button" role="tab" aria-selected={activeActivity === index} key={activity.name} onClick={() => setActiveActivity(index)}>
+            Activity #{index + 1}: {activity.name}
           </button>
         ))}
       </div>
-      <div role="tabpanel" aria-label={`Activity ${activeActivity + 1}`}>
+      <div role="tabpanel" aria-label={`Activity #${activeActivity + 1}: ${activities[activeActivity].name}`}>
         <ActiveActivity />
       </div>
     </section>
