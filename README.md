@@ -8,7 +8,7 @@ The website currently includes:
 - A Canadian English consonant chart with audio recordings
 - An interactive IPA keyboard and transcription editor
 - A Practice Space containing four phonetics activities
-- A syntax tree builder, which is planned for later removal
+- A syntax tree builder app
 
 ## Technology
 
@@ -93,7 +93,7 @@ Linguistics_Programming_Website/
 │   │       │           ├── questions.js
 │   │       │           ├── questions.test.js
 │   │       │           └── index.js
-│   │       └── treeform/
+│   │       └── treeform/.               # For edit later throughout the work
 │   │           ├── Treeform_Page.jsx
 │   │           ├── SyntaxTreeBuilder.jsx
 │   │           └── index.js
@@ -106,7 +106,7 @@ Linguistics_Programming_Website/
 `IPA_Page.jsx` is a small page-level component that arranges four feature areas:
 
 ```text
-Vowels → Consonants → IPA Keyboard → Practice Space
+Vowels, Consonants,  IPA Keyboard, Practice Space
 ```
 
 Each major feature is stored in its own folder with a local `index.js`. Tests are colocated with the components or data they verify.
