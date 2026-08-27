@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { vowelRecordings } from './ipaData.js'
+import { vowelChartPositions } from './vowelChartPositions.js'
 
 function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
   const textWidth = Math.max(42, text.length * 24)
@@ -70,22 +71,9 @@ export default function Vowels() {
               <text x="820" y="50">Back</text>
             </g>
 
-            <VowelSymbol x={168} y={112} text="i" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={205} y={146} text="I" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={828} y={112} text="ʊ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={882} y={108} text="u" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-
-            <VowelSymbol x={238} y={244} text="ej" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={287} y={278} text="ɛ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={558} y={318} text="ə" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={880} y={244} text="ow" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={558} y={390} text="ʌ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={790} y={390} text="ɔj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-
-            <VowelSymbol x={356} y={476} text="æ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={548} y={494} text="aj" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={652} y={494} text="aw" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
-            <VowelSymbol x={866} y={494} text="ɑ" selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
+            {vowelChartPositions.map(({ text, x, y }) => (
+              <VowelSymbol key={`${text}-${x}-${y}`} x={x} y={y} text={text} selectedSymbol={selectedVowel} onSelect={handleVowelSelect} />
+            ))}
           </svg>
           <p className="vowel-chart-note">
             Note: [
