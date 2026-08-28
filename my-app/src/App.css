@@ -722,6 +722,46 @@ main {
   .sound-activity-actions,
   .activity-summary-header { align-items: flex-start; flex-direction: column; }
   .sound-choice { flex: 1 1 40%; }
+
+  .practice-space-workspace {
+    gap: 14px;
+    padding: 14px;
+  }
+
+  .vowel-map-activity {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .vowel-map-bank {
+    gap: 6px;
+  }
+
+  .vowel-bank-symbol {
+    flex: 1 1 48px;
+    min-width: 48px;
+    padding: 7px 8px;
+    font-size: 1rem;
+  }
+
+  .vowel-map-chart {
+    overflow: hidden;
+    padding: 4px;
+  }
+
+  .vowel-drop-diagram {
+    min-width: 0;
+  }
+
+  .vowel-drop-target circle {
+    stroke-width: 5;
+  }
+
+  .vowel-map-check-button,
+  .activity-restart-button {
+    min-height: 42px;
+    padding: 8px 14px;
+  }
 }
 
 .ipa-page-header {
@@ -2122,6 +2162,116 @@ main {
 
 .pulmonic-symbol-button[aria-pressed='true'] .ipa-symbol {
   color: #ffffff;
+}
+
+/* Keep the complete sound charts visible on tablets and phones. */
+@media (max-width: 900px) {
+  .vowel-chart {
+    overflow: hidden;
+    padding: 8px;
+  }
+
+  .vowel-diagram {
+    min-width: 0;
+  }
+
+  .vowel-chart-note {
+    position: static;
+    margin: 6px 4px 0;
+    font-size: 0.9rem;
+    text-align: left;
+  }
+
+  .ipa-table-wrap {
+    overflow: hidden;
+  }
+
+  .ipa-table {
+    min-width: 0;
+    table-layout: fixed;
+  }
+
+  .ipa-table th,
+  .ipa-table td {
+    padding: 5px 2px;
+  }
+
+  .ipa-table thead th {
+    font-size: clamp(0.42rem, 1.35vw, 0.7rem);
+    overflow-wrap: anywhere;
+  }
+
+  .ipa-table thead th:first-child,
+  .ipa-table tbody th {
+    width: 13%;
+  }
+
+  .ipa-table tbody th {
+    font-size: clamp(0.48rem, 1.55vw, 0.75rem);
+    line-height: 1.05;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+
+  .ipa-table td {
+    min-width: 0;
+    height: 42px;
+  }
+
+  .pulmonic-symbols {
+    gap: 1px;
+    width: 100%;
+  }
+
+  .pulmonic-symbol-button {
+    flex: 1 1 0;
+    min-width: 0;
+    min-height: 30px;
+    padding: 2px 1px;
+    border-radius: 5px;
+  }
+
+  .pulmonic-symbol-button .ipa-symbol {
+    font-size: clamp(0.78rem, 2.2vw, 1.15rem);
+  }
+}
+
+@media (max-width: 480px) {
+  .ipa-page {
+    gap: 18px;
+    padding-top: 20px;
+  }
+
+  .ipa-chart-section {
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .ipa-section-heading p,
+  .sound-activity-instruction {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .ipa-table th,
+  .ipa-table td {
+    padding: 3px 1px;
+  }
+
+  .ipa-table td {
+    height: 34px;
+  }
+
+  .pulmonic-symbol-button {
+    min-height: 26px;
+    border-width: 1px;
+  }
+
+  .consonant-chart-note {
+    margin-top: 6px;
+    font-size: 0.88rem;
+    text-align: left;
+  }
 }
 
 .recording-player {
