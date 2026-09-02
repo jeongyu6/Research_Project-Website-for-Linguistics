@@ -1,4 +1,4 @@
-import SyntaxTreeBuilder from '../components/SyntaxTreeBuilder.jsx'
+import SyntaxTreeBuilder from './SyntaxTreeBuilder.jsx'
 
 export default function Treeform_Page({ onBack }) {
   return (

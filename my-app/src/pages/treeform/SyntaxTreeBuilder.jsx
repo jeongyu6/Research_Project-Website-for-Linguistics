@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
-import utscLogo from '../../Pictures/UTSC_logo.png'
+import utscLogo from '../../../Pictures/UTSC_logo.png'
 //Got inspiration from the github: https://github.com/frekky/TreeForm.git
 
 
