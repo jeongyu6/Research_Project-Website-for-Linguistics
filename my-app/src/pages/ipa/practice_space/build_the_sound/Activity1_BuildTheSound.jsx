@@ -6,47 +6,35 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
   const startQuestionSession = () => initialQuestions ?? createQuestionSession(consonantInventory, 10)
   const [questions, setQuestions] = useState(startQuestionSession)
   const [questionIndex, setQuestionIndex] = useState(0)
-  const [selectedAnswer, setSelectedAnswer] = useState('')
-  const [isChecked, setIsChecked] = useState(false)
-  const [score, setScore] = useState(0)
-  const [responses, setResponses] = useState([])
+  const [selectedAnswers, setSelectedAnswers] = useState({})
+  const [responses, setResponses] = useState({})
   const [showSummary, setShowSummary] = useState(false)
   const question = questions[questionIndex]
-  const isCorrect = selectedAnswer === question.answer
-  const isLastQuestion = questionIndex === questions.length - 1
+  const selectedAnswer = selectedAnswers[question.id] ?? ''
+  const response = responses[question.id]
+  const isChecked = Boolean(response)
+  const isCorrect = response?.isCorrect ?? selectedAnswer === question.answer
+  const score = Object.values(responses).filter(({ isCorrect: answerIsCorrect }) => answerIsCorrect).length
+  const allQuestionsAnswered = Object.keys(responses).length === questions.length
 
   function checkAnswer() {
     if (!selectedAnswer || isChecked) return
-    setIsChecked(true)
-    if (isCorrect) setScore((currentScore) => currentScore + 1)
-    setResponses((currentResponses) => [
+    setResponses((currentResponses) => ({
       ...currentResponses,
-      { id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect },
-    ])
-  }
-
-  function advanceActivity() {
-    if (isLastQuestion) {
-      setShowSummary(true)
-      return
-    }
-    setQuestionIndex((currentIndex) => currentIndex + 1)
-    setSelectedAnswer('')
-    setIsChecked(false)
+      [question.id]: { id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect },
+    }))
   }
 
   function restartActivity() {
     setQuestions(startQuestionSession())
     setQuestionIndex(0)
-    setSelectedAnswer('')
-    setIsChecked(false)
-    setScore(0)
-    setResponses([])
+    setSelectedAnswers({})
+    setResponses({})
     setShowSummary(false)
   }
 
   if (showSummary) {
-    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={responses} onRestart={restartActivity} />
+    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} />
   }
 
   return (
@@ -73,7 +61,7 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
                 type="button"
                 className={`sound-choice${selectedAnswer === choice ? ' sound-choice-selected' : ''}${choiceIsCorrect ? ' sound-choice-correct' : ''}${choiceIsIncorrect ? ' sound-choice-incorrect' : ''}`}
                 key={choice}
-                onClick={() => !isChecked && setSelectedAnswer(choice)}
+                onClick={() => !isChecked && setSelectedAnswers((answers) => ({ ...answers, [question.id]: choice }))}
                 aria-pressed={selectedAnswer === choice}
                 disabled={isChecked}
               >
@@ -91,13 +79,16 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
           </p>
         )}
 
+        <div className="question-navigation" aria-label="Question navigation">
+          <button type="button" aria-label="Previous question" onClick={() => setQuestionIndex((index) => index - 1)} disabled={questionIndex === 0}>‹ Previous</button>
+          <button type="button" aria-label="Next question" onClick={() => setQuestionIndex((index) => index + 1)} disabled={questionIndex === questions.length - 1}>Next ›</button>
+        </div>
+
         <div className="sound-activity-actions">
           <span>Score: {score}/{questions.length}</span>
-          {isChecked ? (
-            <button type="button" onClick={advanceActivity}>{isLastQuestion ? 'View summary' : 'Next question'}</button>
-          ) : (
-            <button type="button" onClick={checkAnswer} disabled={!selectedAnswer}>Check answer</button>
-          )}
+          {allQuestionsAnswered
+            ? <button type="button" onClick={() => setShowSummary(true)}>View summary</button>
+            : !isChecked && <button type="button" onClick={checkAnswer} disabled={!selectedAnswer}>Check answer</button>}
         </div>
       </div>
     </section>

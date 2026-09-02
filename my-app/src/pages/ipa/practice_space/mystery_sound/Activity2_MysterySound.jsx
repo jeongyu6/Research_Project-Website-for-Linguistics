@@ -1,30 +1,34 @@
 import { useState } from 'react'
-import { createMysteryChoices, createMysteryClues, createMysterySound } from './questions.js'
+import { createMysteryChoices, createMysteryClueOrder, createMysteryClues, createMysterySound } from './questions.js'
 
 const pointsByClueCount = { 1: 300, 2: 200, 3: 100 }
 
-export default function Activity2MysterySound({ initialSound }) {
+export default function Activity2MysterySound({ initialSound, initialChoices, initialClueOrder }) {
   const startMystery = () => initialSound ?? createMysterySound()
   const [mystery, setMystery] = useState(startMystery)
-  const [choices, setChoices] = useState(createMysteryChoices)
+  const [clueOrder, setClueOrder] = useState(() => initialClueOrder ?? createMysteryClueOrder())
+  const makeChoices = (sound, order) => initialChoices ?? createMysteryChoices(sound, order)
+  const [choices, setChoices] = useState(() => makeChoices(mystery, clueOrder))
   const [revealedClues, setRevealedClues] = useState(1)
   const [selectedAnswer, setSelectedAnswer] = useState('')
   const [attemptedAnswers, setAttemptedAnswers] = useState([])
   const [feedback, setFeedback] = useState('')
   const [isSolved, setIsSolved] = useState(false)
+  const [isSkipped, setIsSkipped] = useState(false)
   const [score, setScore] = useState(0)
   const [round, setRound] = useState(1)
-  const clues = createMysteryClues(mystery)
+  const clues = createMysteryClues(mystery, clueOrder)
+  const isRoundComplete = isSolved || isSkipped
 
   function revealNextClue() {
-    if (revealedClues >= clues.length || isSolved) return
+    if (revealedClues >= clues.length || isRoundComplete) return
     setRevealedClues((count) => count + 1)
     setSelectedAnswer('')
     setFeedback('')
   }
 
   function submitGuess() {
-    if (!selectedAnswer || isSolved) return
+    if (!selectedAnswer || isRoundComplete) return
     if (selectedAnswer === mystery.symbol) {
       const points = pointsByClueCount[revealedClues]
       setScore((currentScore) => currentScore + points)
@@ -43,14 +47,25 @@ export default function Activity2MysterySound({ initialSound }) {
     }
   }
 
+  function skipMystery() {
+    if (isRoundComplete) return
+    setSelectedAnswer('')
+    setFeedback(`Skipped. The mystery sound was /${mystery.symbol}/.`)
+    setIsSkipped(true)
+  }
+
   function beginNextMystery() {
-    setMystery(startMystery())
-    setChoices(createMysteryChoices())
+    const nextMystery = startMystery()
+    const nextClueOrder = initialClueOrder ?? createMysteryClueOrder()
+    setMystery(nextMystery)
+    setClueOrder(nextClueOrder)
+    setChoices(makeChoices(nextMystery, nextClueOrder))
     setRevealedClues(1)
     setSelectedAnswer('')
     setAttemptedAnswers([])
     setFeedback('')
     setIsSolved(false)
+    setIsSkipped(false)
     setRound((currentRound) => currentRound + 1)
   }
 
@@ -78,25 +93,26 @@ export default function Activity2MysterySound({ initialSound }) {
           {choices.map((symbol) => (
             <button
               type="button"
-              className={`sound-choice${selectedAnswer === symbol ? ' sound-choice-selected' : ''}${isSolved && symbol === mystery.symbol ? ' sound-choice-correct' : ''}`}
+              className={`sound-choice${selectedAnswer === symbol ? ' sound-choice-selected' : ''}${isRoundComplete && symbol === mystery.symbol ? ' sound-choice-correct' : ''}`}
               key={symbol}
               onClick={() => setSelectedAnswer(symbol)}
               aria-pressed={selectedAnswer === symbol}
-              disabled={isSolved || attemptedAnswers.includes(symbol)}
+              disabled={isRoundComplete || attemptedAnswers.includes(symbol)}
             >
               /{symbol}/
             </button>
           ))}
         </div>
 
-        {feedback && <p className={`sound-feedback ${isSolved ? 'sound-feedback-correct' : 'sound-feedback-incorrect'}`} role="status">{feedback}</p>}
+        {feedback && <p className={`sound-feedback ${isSolved ? 'sound-feedback-correct' : isSkipped ? 'sound-feedback-skipped' : 'sound-feedback-incorrect'}`} role="status">{feedback}</p>}
 
         <div className="sound-activity-actions mystery-sound-actions">
           <span>Clue {revealedClues} of {clues.length}</span>
           <div>
-            {!isSolved && revealedClues < clues.length && <button type="button" className="mystery-secondary-button" onClick={revealNextClue}>Reveal another clue</button>}
-            {!isSolved && <button type="button" onClick={submitGuess} disabled={!selectedAnswer}>Submit guess</button>}
-            {isSolved && <button type="button" onClick={beginNextMystery}>Next mystery</button>}
+            {!isRoundComplete && revealedClues < clues.length && <button type="button" className="mystery-secondary-button" onClick={revealNextClue}>Reveal another clue</button>}
+            {!isRoundComplete && <button type="button" className="mystery-secondary-button" onClick={skipMystery}>Skip</button>}
+            {!isRoundComplete && <button type="button" onClick={submitGuess} disabled={!selectedAnswer}>Submit guess</button>}
+            {isRoundComplete && <button type="button" onClick={beginNextMystery}>Next mystery</button>}
           </div>
         </div>
       </div>

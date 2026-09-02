@@ -42,4 +42,27 @@ describe('Activity4VowelDetective', () => {
     expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/i/')
     expect(screen.getByText('beat')).toBeInTheDocument()
   })
+
+  it('navigates between questions without losing selected or checked answers', async () => {
+    const user = userEvent.setup()
+    const questions = [
+      { id: 'first-vowel', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
+      { id: 'second-vowel', features: ['Monophthong', 'High', 'Back', 'Rounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'u' },
+    ]
+    render(<Activity4VowelDetective initialQuestions={questions} />)
+
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    await user.click(screen.getByRole('button', { name: '/u/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: 'Previous question' }))
+
+    expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '/i/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(screen.getByText('Score: 2/2')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    expect(screen.getByRole('button', { name: '/u/' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '/u/' })).toBeDisabled()
+  })
 })
