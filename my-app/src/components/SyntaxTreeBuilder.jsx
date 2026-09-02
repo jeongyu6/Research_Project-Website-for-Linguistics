@@ -562,11 +562,12 @@ export default function SyntaxTreeBuilder() {
   )
   const selectedMovement = movements.find((movement) => movement.id === selectedMovementId)
   const maxLectureStep = tree ? getDepth(tree) : 0
+  const currentLectureStep = Math.min(lectureStep, maxLectureStep)
   const visibleNodeIds = useMemo(() => new Set(
     layout.nodes
-      .filter((node) => !isLectureMode || node.depth <= lectureStep)
+      .filter((node) => !isLectureMode || node.depth <= currentLectureStep)
       .map((node) => node.id),
-  ), [isLectureMode, layout.nodes, lectureStep])
+  ), [currentLectureStep, isLectureMode, layout.nodes])
   const visibleEdges = layout.edges.filter((edge) => visibleNodeIds.has(edge.from) && visibleNodeIds.has(edge.to))
   const visibleNodes = layout.nodes.filter((node) => visibleNodeIds.has(node.id))
   const visibleMovementPaths = movementPaths.filter((movement) => visibleNodeIds.has(movements.find((item) => item.id === movement.id)?.from) && visibleNodeIds.has(movements.find((item) => item.id === movement.id)?.to))
@@ -897,21 +898,17 @@ export default function SyntaxTreeBuilder() {
     return () => window.removeEventListener('keydown', handleTemplateShortcut)
   })
 
-  useEffect(() => {
-    setLectureStep((currentStep) => Math.min(currentStep, maxLectureStep))
-  }, [maxLectureStep])
-
   function toggleLectureMode() {
     setIsLectureMode((current) => !current)
     setLectureStep(0)
   }
 
   function previousLectureStep() {
-    setLectureStep((currentStep) => Math.max(0, currentStep - 1))
+    setLectureStep((currentStep) => Math.max(0, Math.min(currentStep, maxLectureStep) - 1))
   }
 
   function nextLectureStep() {
-    setLectureStep((currentStep) => Math.min(maxLectureStep, currentStep + 1))
+    setLectureStep((currentStep) => Math.min(maxLectureStep, Math.min(currentStep, maxLectureStep) + 1))
   }
 
   function toggleCanvasFullscreen() {
@@ -1362,6 +1359,8 @@ export default function SyntaxTreeBuilder() {
         ))}
       </section>
 
+      {status && <p className="tree-status" role="status">{status}</p>}
+
       <div className="tree-workspace">
         <aside className="tree-sidebar" aria-label="Tree editing toolbar">
         <section className={isToolbarCollapsed ? 'tree-panel tree-editor tree-editor-collapsed' : 'tree-panel tree-editor'} aria-label="Tree editing controls">
@@ -1570,13 +1569,15 @@ export default function SyntaxTreeBuilder() {
             <span>{Math.round(zoomLevel * 100)}%</span>
             <button type="button" onClick={zoomIn} aria-label="Zoom in">+</button>
             <button type="button" onClick={fitToScreen}>Fit</button>
+            <button type="button" onClick={undoTreeEdit} disabled={undoStack.length === 0}>Undo</button>
+            <button type="button" onClick={redoTreeEdit} disabled={redoStack.length === 0}>Redo</button>
             <button type="button" onClick={toggleCanvasFullscreen}>Full screen</button>
             <button type="button" aria-pressed={isLectureMode} onClick={toggleLectureMode}>
               {isLectureMode ? 'Lecture on' : 'Lecture off'}
             </button>
-            <button type="button" onClick={previousLectureStep} disabled={!isLectureMode || lectureStep === 0}>Back</button>
-            <span>Step {isLectureMode ? lectureStep + 1 : maxLectureStep + 1}/{maxLectureStep + 1}</span>
-            <button type="button" onClick={nextLectureStep} disabled={!isLectureMode || lectureStep === maxLectureStep}>Next</button>
+            <button type="button" onClick={previousLectureStep} disabled={!isLectureMode || currentLectureStep === 0}>Back</button>
+            <span>Step {isLectureMode ? currentLectureStep + 1 : maxLectureStep + 1}/{maxLectureStep + 1}</span>
+            <button type="button" onClick={nextLectureStep} disabled={!isLectureMode || currentLectureStep === maxLectureStep}>Next</button>
           </div>
           <div className="tree-download-menu">
             <button
