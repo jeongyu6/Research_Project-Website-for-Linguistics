@@ -14,7 +14,9 @@ const vowelLocations = {
 
 export default function Activity3VowelMapDrop() {
   const [placements, setPlacements] = useState({})
+  const [placementHistory, setPlacementHistory] = useState([])
   const [selectedSymbol, setSelectedSymbol] = useState('')
+  const [selectedTarget, setSelectedTarget] = useState('')
   const [isChecked, setIsChecked] = useState(false)
   const placedSymbols = Object.values(placements)
   const remainingSymbols = mapDropSymbols.filter((symbol) => !placedSymbols.includes(symbol))
@@ -23,20 +25,48 @@ export default function Activity3VowelMapDrop() {
     .map(([targetSymbol, placedSymbol]) => ({ targetSymbol, placedSymbol }))
 
   function placeSymbol(symbol, targetSymbol) {
-    if (!symbol || isChecked) return
+    if (!symbol) return
     setPlacements((current) => {
       const next = Object.fromEntries(
         Object.entries(current).filter(([target, placed]) => target !== targetSymbol && placed !== symbol),
       )
       next[targetSymbol] = symbol
+      setPlacementHistory((history) => [...history, current])
       return next
     })
     setSelectedSymbol('')
+    setSelectedTarget('')
+  }
+
+  function undoPlacement() {
+    if (selectedTarget) {
+      const symbolToRemove = placements[selectedTarget]
+      setPlacements((current) => Object.fromEntries(
+        Object.entries(current).filter(([target]) => target !== selectedTarget),
+      ))
+      setPlacementHistory((history) => history.map((snapshot) => Object.fromEntries(
+        Object.entries(snapshot).filter(([, placed]) => placed !== symbolToRemove),
+      )))
+      setSelectedTarget('')
+      return
+    }
+    if (selectedSymbol) {
+      setSelectedSymbol('')
+      return
+    }
+    if (placementHistory.length === 0) return
+    const previousPlacements = placementHistory[placementHistory.length - 1]
+    setPlacements(previousPlacements)
+    setPlacementHistory((history) => history.slice(0, -1))
+    setSelectedSymbol('')
+    setSelectedTarget('')
   }
 
   function resetChart() {
     setPlacements({})
+    setPlacementHistory([])
     setSelectedSymbol('')
+    setSelectedTarget('')
     setIsChecked(false)
   }
 
@@ -64,6 +94,7 @@ export default function Activity3VowelMapDrop() {
         ))}
       </div>
 
+      <div className={isChecked ? 'vowel-map-workspace vowel-map-workspace-reviewing' : 'vowel-map-workspace'}>
       <div className="vowel-map-chart" aria-label="Canadian English vowel chart practice area">
         <svg className="vowel-diagram vowel-drop-diagram" viewBox="0 0 980 680" role="group" aria-label="Empty vowel chart">
           <g className="vowel-lines">
@@ -87,19 +118,25 @@ export default function Activity3VowelMapDrop() {
             const checkedClass = isChecked
               ? placedSymbol === symbol ? ' vowel-drop-target-correct' : ' vowel-drop-target-incorrect'
               : ''
+            const selectedClass = selectedTarget === symbol ? ' vowel-drop-target-selected' : ''
             return (
             <g
-              className={`vowel-drop-target${placedSymbol ? ' vowel-drop-target-filled' : ''}${checkedClass}`}
+              className={`vowel-drop-target${placedSymbol ? ' vowel-drop-target-filled' : ''}${checkedClass}${selectedClass}`}
               key={symbol}
               transform={`translate(${x} ${y})`}
               role="button"
               tabIndex="0"
               aria-label={`Vowel chart target ${index + 1}`}
-              onClick={() => placeSymbol(selectedSymbol, symbol)}
+              aria-pressed={selectedTarget === symbol}
+              onClick={() => {
+                if (selectedSymbol) placeSymbol(selectedSymbol, symbol)
+                else if (placedSymbol) setSelectedTarget((current) => current === symbol ? '' : symbol)
+              }}
               onKeyDown={(event) => {
                 if (event.key === 'Enter' || event.key === ' ') {
                   event.preventDefault()
-                  placeSymbol(selectedSymbol, symbol)
+                  if (selectedSymbol) placeSymbol(selectedSymbol, symbol)
+                  else if (placedSymbol) setSelectedTarget((current) => current === symbol ? '' : symbol)
                 }
               }}
               onDragOver={(event) => event.preventDefault()}
@@ -115,22 +152,30 @@ export default function Activity3VowelMapDrop() {
         </svg>
       </div>
 
-      {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => setIsChecked(true)}>Check My Answer</button>}
       {isChecked && (
         <section className="vowel-map-review" aria-labelledby="vowel-map-review-heading">
           <h4 id="vowel-map-review-heading">Answer Summary</h4>
-          {incorrectPlacements.length === 0 ? (
+          {incorrectPlacements.length === 0 && remainingSymbols.length === 0 ? (
             <p>Excellent! All {mapDropSymbols.length} vowels are in the correct positions.</p>
           ) : (
             <>
-              <p>{incorrectPlacements.length} {incorrectPlacements.length === 1 ? 'vowel was' : 'vowels were'} placed incorrectly. Review the correct locations:</p>
-              <ul>
-                {incorrectPlacements.map(({ placedSymbol }) => <li key={placedSymbol}><strong>/{placedSymbol}/</strong> → {vowelLocations[placedSymbol]}</li>)}
-              </ul>
+              {incorrectPlacements.length > 0 && <p>{incorrectPlacements.length} {incorrectPlacements.length === 1 ? 'vowel was' : 'vowels were'} placed incorrectly. Review the correct locations:</p>}
+              {incorrectPlacements.length > 0 && (
+                <ul>
+                  {incorrectPlacements.map(({ placedSymbol }) => <li key={placedSymbol}><strong>/{placedSymbol}/</strong> → {vowelLocations[placedSymbol]}</li>)}
+                </ul>
+              )}
+              {remainingSymbols.length > 0 && <p className="vowel-map-review-missing">{remainingSymbols.length} {remainingSymbols.length === 1 ? 'vowel still needs' : 'vowels still need'} to be placed.</p>}
+              <p className="vowel-map-review-help">Select a vowel on the chart and choose Undo, then place it in the correct location.</p>
             </>
           )}
         </section>
       )}
+      </div>
+      <div className="vowel-map-actions">
+        <button type="button" className="vowel-map-undo-button" disabled={!selectedTarget && !selectedSymbol && placementHistory.length === 0} onClick={undoPlacement}>Undo</button>
+        {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => setIsChecked(true)}>Check My Answer</button>}
+      </div>
       <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>
     </section>
   )
