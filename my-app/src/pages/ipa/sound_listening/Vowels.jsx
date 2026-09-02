@@ -40,7 +40,7 @@ export default function Vowels() {
   const [selectedVowel,setSelectedVowel]=useState(''); const [selectedVowelSymbol,setSelectedVowelSymbol]=useState(''); const [selectedVowelRecordings,setSelectedVowelRecordings]=useState([])
   function handleVowelSelect(key,symbol,recordings=[]){setSelectedVowel(key);setSelectedVowelSymbol(symbol);setSelectedVowelRecordings(recordings)}
   return (
-<section className="ipa-chart-section">
+<section className="ipa-chart-section vowel-listening-section">
         <div className="ipa-section-heading">
           <h2>Canadian English Vowels </h2>
           <p>English vowels arranged by tongue height and backness.</p>

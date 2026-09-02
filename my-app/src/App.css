@@ -2014,6 +2014,25 @@ main {
   background: #ffffff;
 }
 
+.vowel-listening-section {
+  gap: 12px;
+  padding: clamp(16px, 2.5vw, 24px);
+}
+
+.vowel-listening-section .ipa-section-heading p {
+  margin: 0;
+}
+
+.vowel-listening-section .vowel-chart {
+  padding: 8px;
+}
+
+.vowel-listening-section .vowel-diagram {
+  width: 100%;
+  min-width: 680px;
+  height: clamp(430px, calc(100vh - 300px), 620px);
+}
+
 .vowel-diagram {
   display: block;
   width: 100%;
@@ -2114,6 +2133,28 @@ main {
   border-radius: 2px;
   outline: 2px solid #000000;
   outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .vowel-listening-section {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .vowel-listening-section .vowel-chart {
+    padding: 4px;
+  }
+
+  .vowel-listening-section .vowel-diagram {
+    min-width: 620px;
+    height: auto;
+  }
+
+  .vowel-listening-section .vowel-chart-note {
+    right: 16px;
+    bottom: 14px;
+    font-size: 1rem;
+  }
 }
 
 .ipa-symbol {
