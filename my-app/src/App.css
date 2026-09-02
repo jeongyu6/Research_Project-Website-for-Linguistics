@@ -591,6 +591,7 @@ main {
 
 .sound-feedback-correct { background: #e6f7ee; color: #11623a; }
 .sound-feedback-incorrect { background: #fdebed; color: #91222d; }
+.sound-feedback-skipped { background: #eaf2ff; color: #123b73; }
 
 .sound-activity-actions span { color: #334463; font-weight: 800; }
 
@@ -606,6 +607,27 @@ main {
 }
 
 .sound-activity-actions button:disabled { cursor: not-allowed; opacity: 0.45; }
+
+.question-navigation {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.question-navigation button {
+  min-height: 42px;
+  padding: 8px 16px;
+  border: 2px solid #8ea9cc;
+  border-radius: 11px;
+  background: #ffffff;
+  color: #123b73;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.question-navigation button:hover:not(:disabled),
+.question-navigation button:focus-visible { border-color: #1f5fb5; background: #eaf2ff; outline: none; }
+.question-navigation button:disabled { cursor: not-allowed; opacity: 0.4; }
 
 .mystery-clue-list {
   display: grid;
