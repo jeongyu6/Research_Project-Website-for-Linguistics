@@ -55,6 +55,33 @@ export const consonantRecordings = {
   'l': [recordingUrl('Consonants/L-leg.mp3')],
 }
 
+export const consonantDescriptions = {
+  'p': { features: 'Voiceless bilabial plosive', example: 'pat', underlined: ['p'] },
+  'b': { features: 'Voiced bilabial plosive', example: 'bat', underlined: ['b'] },
+  'm': { features: 'Voiced bilabial nasal', example: 'man', underlined: ['m'] },
+  'f': { features: 'Voiceless labiodental fricative', example: 'fan', underlined: ['f'] },
+  'v': { features: 'Voiced labiodental fricative', example: 'van', underlined: ['v'] },
+  'θ': { features: 'Voiceless dental fricative', example: 'thin', underlined: ['th'] },
+  'ð': { features: 'Voiced dental fricative', example: 'then', underlined: ['th'] },
+  't': { features: 'Voiceless alveolar plosive', example: 'top', underlined: ['t'] },
+  'd': { features: 'Voiced alveolar plosive', example: 'dog', underlined: ['d'] },
+  'n': { features: 'Voiced alveolar nasal', example: 'net', underlined: ['n'] },
+  's': { features: 'Voiceless alveolar fricative', example: 'sip', underlined: ['s'] },
+  'z': { features: 'Voiced alveolar fricative', example: 'zip', underlined: ['z'] },
+  'l': { features: 'Voiced alveolar lateral approximant', example: 'lip', underlined: ['l'] },
+  'ɹ': { features: 'Voiced retroflex rhotic approximant', example: 'red', underlined: ['r'] },
+  'ʃ': { features: 'Voiceless postalveolar fricative', example: 'ship', underlined: ['sh'] },
+  'ʒ': { features: 'Voiced postalveolar fricative', example: 'measure', underlined: ['s'] },
+  'tʃ': { features: 'Voiceless postalveolar affricate', example: 'chip', underlined: ['ch'] },
+  'dʒ': { features: 'Voiced postalveolar affricate', example: 'jam', underlined: ['j'] },
+  'j': { features: 'Voiced palatal glide approximant', example: 'yes', underlined: ['y'] },
+  'k': { features: 'Voiceless velar plosive', example: 'cat', underlined: ['c'] },
+  'g': { features: 'Voiced velar plosive', example: 'go', underlined: ['g'] },
+  'ŋ': { features: 'Voiced velar nasal', example: 'sing', underlined: ['ng'] },
+  'w': { features: 'Voiced labial-velar glide approximant', example: 'we', underlined: ['w'] },
+  'h': { features: 'Voiceless glottal fricative', example: 'hat', underlined: ['h'] },
+}
+
 export const vowelRecordings = {
   'i': [recordingUrl('Vowels/i-sheep.mp3')],
   'I': [recordingUrl('Vowels/ɪ-ship.mp3')],
@@ -71,4 +98,21 @@ export const vowelRecordings = {
   'aj': [recordingUrl('Vowels/aj-buy.mp3')],
   'aw': [recordingUrl('Vowels/aw-cow.mp3')],
   'ɑ': [recordingUrl('Vowels/a-father.mp3')],
+}
+
+export const vowelDescriptions = {
+  'i': { features: 'High front unrounded monophthong', example: 'beat', underlined: ['ea'] },
+  'I': { features: 'High front unrounded monophthong', example: 'bit', underlined: ['i'] },
+  'ɛ': { features: 'Mid front unrounded monophthong', example: 'bet', underlined: ['e'] },
+  'æ': { features: 'Low front unrounded monophthong', example: 'bat', underlined: ['a'] },
+  'ə': { features: 'Mid central unrounded monophthong', example: 'teacher', underlined: ['e'], underlineLastOccurrence: true },
+  'ʌ': { features: 'Mid central unrounded monophthong', example: 'putt', underlined: ['u'] },
+  'u': { features: 'High back rounded monophthong', example: 'boot', underlined: ['oo'] },
+  'ʊ': { features: 'High back rounded monophthong', example: 'put', underlined: ['u'] },
+  'ɑ': { features: 'Low back unrounded monophthong', example: 'pot, father', underlined: ['o', 'a'] },
+  'ej': { features: 'Mid-to-high front unrounded diphthong', example: 'bait', underlined: ['ai'] },
+  'ow': { features: 'Mid-to-high back rounded diphthong', example: 'boat', underlined: ['oa'] },
+  'aj': { features: 'Low-to-high, central-to-front unrounded diphthong', example: 'my', underlined: ['y'] },
+  'aw': { features: 'Low-to-high, central-to-back unrounded diphthong', example: 'cow', underlined: ['ow'] },
+  'ɔj': { features: 'Mid-to-high, back-to-front, rounded-to-unrounded diphthong', example: 'boy', underlined: ['oy'] },
 }

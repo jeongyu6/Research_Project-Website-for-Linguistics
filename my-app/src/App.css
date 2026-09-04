@@ -2489,6 +2489,31 @@ main {
   width: min(100%, 320px);
 }
 
+.vowel-recording-description,
+.sound-recording-description {
+  flex-basis: 100%;
+  padding-top: 12px;
+  border-top: 1px solid #dbe5f1;
+  font-weight: 400;
+}
+
+.vowel-recording-description p,
+.sound-recording-description p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.vowel-recording-description p + p,
+.sound-recording-description p + p {
+  margin-top: 4px;
+}
+
+.sound-example-letters {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
 .page-footer {
   padding: 30px 0 34px;
   border-top: 1px solid #e0e8f0;

@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { consonantRecordings, pulmonicColumns, pulmonicRows } from './ipaData.js'
+import { consonantDescriptions, consonantRecordings, pulmonicColumns, pulmonicRows } from './ipaData.js'
+import UnderlinedExample from './UnderlinedExample.jsx'
 
 function PulmonicSymbols({ cell, rowLabel, columnLabel, selectedSymbol, onSelect }) {
   if (!cell) {
@@ -32,6 +33,7 @@ function PulmonicSymbols({ cell, rowLabel, columnLabel, selectedSymbol, onSelect
 
 export default function Consonants() {
   const [selectedPulmonic,setSelectedPulmonic]=useState(''); const [selectedPulmonicSymbol,setSelectedPulmonicSymbol]=useState(''); const [selectedPulmonicRecordings,setSelectedPulmonicRecordings]=useState([])
+  const selectedDescription = consonantDescriptions[selectedPulmonicSymbol]
   function handlePulmonicSelect(key,symbol,recordings=[]){setSelectedPulmonic(key);setSelectedPulmonicSymbol(symbol);setSelectedPulmonicRecordings(recordings)}
   return (
 <section className="ipa-chart-section">
@@ -92,6 +94,17 @@ export default function Consonants() {
                 Your browser does not support the audio player.
               </audio>
             ))}
+            {selectedDescription && (
+              <div className="sound-recording-description" aria-live="polite">
+                <p>{selectedDescription.features}</p>
+                <p>
+                  <strong>Example:</strong>{' '}
+                  <span className="sound-example-word">
+                    <UnderlinedExample example={selectedDescription.example} underlined={selectedDescription.underlined} />
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         )}
       </section>

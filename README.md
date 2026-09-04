@@ -4,8 +4,8 @@ This research project provides interactive learning resources for linguistics st
 
 The website currently includes:
 
-- A Canadian English vowel chart with audio recordings
-- A Canadian English consonant chart with audio recordings
+- An interactive Canadian English vowel chart with audio recordings, articulatory descriptions, and example words
+- An interactive Canadian English consonant chart with audio recordings, articulatory descriptions, and example words
 - An interactive IPA keyboard and transcription editor
 - A Practice Space containing four phonetics activities
 - A syntax tree builder app
@@ -63,8 +63,11 @@ Linguistics_Programming_Website/
 │   │       │   │   ├── IPAKeyboard.test.jsx
 │   │       │   │   └── index.js
 │   │       │   ├── sound_listening/
+│   │       │   │   ├── UnderlinedExample.jsx
 │   │       │   │   ├── Vowels.jsx
+│   │       │   │   ├── Vowels.test.jsx
 │   │       │   │   ├── Consonants.jsx
+│   │       │   │   ├── Consonants.test.jsx
 │   │       │   │   ├── ipaData.js
 │   │       │   │   ├── vowelChartPositions.js
 │   │       │   │   └── index.js
@@ -82,6 +85,8 @@ Linguistics_Programming_Website/
 │   │       │       ├── mystery_sound/
 │   │       │       │   ├── Activity2_MysterySound.jsx
 │   │       │       │   ├── Activity2_MysterySound.test.jsx
+│   │       │       │   ├── questions.js
+│   │       │       │   ├── questions.test.js
 │   │       │       │   └── index.js
 │   │       │       ├── vowel_map_drop/
 │   │       │       │   ├── Activity3_VowelMapDrop.jsx
@@ -93,7 +98,7 @@ Linguistics_Programming_Website/
 │   │       │           ├── questions.js
 │   │       │           ├── questions.test.js
 │   │       │           └── index.js
-│   │       └── treeform/.               # For edit later throughout the work
+│   │       └── treeform/
 │   │           ├── Treeform_Page.jsx
 │   │           ├── SyntaxTreeBuilder.jsx
 │   │           └── index.js
@@ -106,21 +111,29 @@ Linguistics_Programming_Website/
 `IPA_Page.jsx` is a small page-level component that arranges four feature areas:
 
 ```text
-Vowels, Consonants,  IPA Keyboard, Practice Space
+Vowels, Consonants, IPA Keyboard, Practice Space
 ```
 
 Each major feature is stored in its own folder with a local `index.js`. Tests are colocated with the components or data they verify.
+
+### Sound Listening
+
+The Canadian English vowel and consonant charts play an example recording when a symbol is selected. Each main chart symbol also displays its articulatory description and example word beneath the audio player, with the spelling associated with the selected sound underlined. Descriptions and recording mappings are maintained in `sound_listening/ipaData.js`, while vowel-chart coordinates are shared through `vowelChartPositions.js`.
 
 ### Practice Space
 
 The Practice Space contains four independent activity packages:
 
 1. **Build the Sound** — Students identify consonants from voicing, manner, and place features.
-2. **Mystery Sound** — Reserved for the second activity.
+2. **Mystery Sound** — Students identify a consonant from progressively revealed phonetic clues, with more points awarded for solving it sooner.
 3. **Vowel Map Drop** — Students place vowels on the shared Canadian English vowel chart and review mistakes.
 4. **Vowel Detective** — Students identify vowels from type, height, backness, and rounding features.
 
-Activities 1 and 4 randomly select questions, shuffle answer choices, track scores, and display an end-of-session review. Activity 3 uses the same vowel coordinates as the listening chart.
+Activities 1 and 4 randomly select questions, shuffle answer choices, track scores, and display an end-of-session review. Activity 2 runs continuous scored rounds with optional clues and skipping. Activity 3 uses the same vowel coordinates as the listening chart.
+
+### Syntax Tree Builder
+
+The Tree Builder supports creating and editing syntax trees in the browser, including common branching templates, terminals, features, movement links, and import/export controls.
 
 ## Deployment
 
