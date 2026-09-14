@@ -24,9 +24,10 @@
 
 main {
   width: 100%;
-  max-width: 1720px;
+  /* Halve the outer whitespace, including the centered container margins. */
+  max-width: calc(50% + 860px);
   margin: 0 auto;
-  padding: 0 52px 0;
+  padding: 0 26px 0;
 }
 
 .ut-header {
@@ -395,7 +396,7 @@ main {
 
 @media (max-width: 1200px) {
   main {
-    padding: 0 34px;
+    padding: 0 17px;
   }
 
   .hero {
@@ -420,7 +421,7 @@ main {
 
 @media (max-width: 768px) {
   main {
-    padding: 0 22px;
+    padding: 0 11px;
   }
 
   .resource-grid {
@@ -2521,9 +2522,9 @@ main {
   color: #121a35;
   font-size: 1.05rem;
   background: transparent;
-  max-width: 1720px;
+  max-width: calc(50% + 860px);
   margin: 0 auto;
-  width: calc(100% - 104px);
+  width: calc(100% - 52px);
 }
 
 .page-footer p {
