@@ -3,7 +3,7 @@ import { useState } from 'react'
 import QuizSummary from '../QuizSummary.jsx'
 import { createVowelDetectiveSession, vowelInventory } from './questions.js'
 
-export default function Activity4VowelDetective({ initialQuestions }) {
+export default function Activity5VowelDetective({ initialQuestions }) {
   const startSession = () => initialQuestions ?? createVowelDetectiveSession(vowelInventory, 10)
   const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startSession)
@@ -53,15 +53,15 @@ export default function Activity4VowelDetective({ initialQuestions }) {
 
   if (showSummary) {
     return (
-      <QuizSummary activityNumber="4" title="Vowel Detective" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} />
+      <QuizSummary activityNumber="5" title="Vowel Detective" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} />
     )
   }
 
   return (
-    <section aria-label="Activity 4: Vowel Detective">
+    <section className="expanded-quiz" aria-label="Activity 5: Vowel Detective">
       <div className="sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 4: Vowel Detective</h3>
+          <h3>Activity 5: Vowel Detective</h3>
           <div className="sound-activity-meta">
             <QuestionTimer key={timerSession} questionId={question.id} paused={isChecked} onExpire={expireQuestion} />
             <span className="sound-activity-progress">Question {questionIndex + 1} of {questions.length}</span>

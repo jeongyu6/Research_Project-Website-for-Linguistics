@@ -13,7 +13,7 @@ const vowelLocations = {
   aj: 'Low + Central-to-front', aw: 'Low + Central', 'ɑ': 'Low + Back',
 }
 
-export default function Activity3VowelMapDrop() {
+export default function Activity1VowelMapDrop() {
   const [timerSession, setTimerSession] = useState(0)
   const [timedOut, setTimedOut] = useState(false)
   const [placements, setPlacements] = useState({})
@@ -80,7 +80,7 @@ export default function Activity3VowelMapDrop() {
   return (
     <section className="vowel-map-activity" aria-labelledby="vowel-map-drop-title">
       <div className="sound-activity-header">
-        <h3 id="vowel-map-drop-title">Activity 3: Vowel Map Drop</h3>
+        <h3 id="vowel-map-drop-title">Activity 1: Vowel Map Drop</h3>
         <div className="sound-activity-meta">
           <QuestionTimer key={timerSession} questionId="chart" duration={180} paused={isChecked} onExpire={() => {
             setTimedOut(true)

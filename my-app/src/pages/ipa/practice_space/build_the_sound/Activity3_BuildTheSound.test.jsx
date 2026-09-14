@@ -1,7 +1,7 @@
 import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import Activity1BuildTheSound from './Activity1_BuildTheSound.jsx'
+import Activity3BuildTheSound from './Activity3_BuildTheSound.jsx'
 
 beforeEach(() => {
   const storage = new Map()
@@ -12,8 +12,8 @@ beforeEach(() => {
 })
 afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals() })
 const questions = Array.from({ length: 10 }, (_, i) => ({ id: `q${i}`, features: ['Voiceless', 'Bilabial', 'Plosive'], choices: ['p', 'b'], answer: 'p' }))
-it.each([[6, false], [7, true], [10, true]])('unlocks Level 2 at 70 percent: %i correct', (correct, unlocked) => {
-  render(<Activity1BuildTheSound initialQuestions={questions} />)
+it.each([[6, false], [7, true], [8, true], [10, true]])('unlocks Level 2 at 70 percent or above: %i correct', (correct, unlocked) => {
+  render(<Activity3BuildTheSound initialQuestions={questions} />)
   const level2 = screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' })
   expect(level2).toBeDisabled()
   for (let i = 0; i < 10; i++) {
@@ -32,7 +32,7 @@ it.each([[6, false], [7, true], [10, true]])('unlocks Level 2 at 70 percent: %i 
     expect(screen.getByRole('heading', { name: 'Level 2: Match the Words to the Vowels' })).toBeInTheDocument()
     expect(screen.getByRole('timer')).toHaveTextContent('3:00')
     cleanup()
-    render(<Activity1BuildTheSound initialQuestions={questions} />)
+    render(<Activity3BuildTheSound initialQuestions={questions} />)
     expect(screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' })).toBeEnabled()
   } else {
     expect(screen.queryByRole('button', { name: 'Continue to Level 2' })).not.toBeInTheDocument()
@@ -41,7 +41,7 @@ it.each([[6, false], [7, true], [10, true]])('unlocks Level 2 at 70 percent: %i 
 
 it('summarizes grades and active time, preserves attempts, and saves both levels', () => {
   vi.useFakeTimers()
-  render(<Activity1BuildTheSound initialQuestions={questions.slice(0, 2)} />)
+  render(<Activity3BuildTheSound initialQuestions={questions.slice(0, 2)} />)
   act(() => vi.advanceTimersByTime(5000))
   fireEvent.click(screen.getByRole('button', { name: '/p/' }))
   fireEvent.click(screen.getByRole('button', { name: 'Check answer' }))
@@ -69,7 +69,14 @@ it('summarizes grades and active time, preserves attempts, and saves both levels
   expect(screen.getByText('Overall grade: 2/16 (13%)')).toBeInTheDocument()
   expect(screen.getByText('Total time: 3:12')).toBeInTheDocument()
   cleanup()
-  render(<Activity1BuildTheSound />)
+  render(<Activity3BuildTheSound />)
   fireEvent.click(screen.getByRole('button', { name: 'Overall summary' }))
   expect(screen.getByText('Total time: 3:12')).toBeInTheDocument()
+})
+
+it('restores an unlock from a saved score of exactly 70 percent', () => {
+  window.localStorage.setItem('build-the-sound-level-2-unlocked', 'true')
+  window.localStorage.setItem('build-the-sound-level-results', JSON.stringify({ 1: { score: 7, total: 10 } }))
+  render(<Activity3BuildTheSound initialQuestions={questions} />)
+  expect(screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' })).toBeEnabled()
 })

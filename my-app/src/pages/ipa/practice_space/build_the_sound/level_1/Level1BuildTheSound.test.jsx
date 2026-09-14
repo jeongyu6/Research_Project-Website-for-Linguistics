@@ -16,7 +16,7 @@ describe('Level1BuildTheSound', () => {
     const user = userEvent.setup()
     render(<Level1BuildTheSound initialQuestions={testQuestions} />)
 
-    expect(screen.getByRole('heading', { name: 'Activity 1: Build the Sound' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Activity 3: Build the Sound' })).toBeInTheDocument()
     expect(screen.getByText('Voiceless')).toBeInTheDocument()
     expect(screen.getByText('Fricative')).toBeInTheDocument()
     expect(screen.getByText('Dental')).toBeInTheDocument()
