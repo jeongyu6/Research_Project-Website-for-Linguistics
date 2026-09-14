@@ -1,81 +1,75 @@
 import '@testing-library/jest-dom/vitest'
-import { cleanup, render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
+import { act, cleanup, fireEvent, render, screen, within } from '@testing-library/react'
+import { afterEach, beforeEach, expect, it, vi } from 'vitest'
 import Activity1BuildTheSound from './Activity1_BuildTheSound.jsx'
 
-const testQuestions = [
-  { id: 'first', features: ['Voiceless', 'Fricative', 'Dental'], choices: ['f', 'θ', 'ð', 's'], answer: 'θ' },
-  { id: 'second', features: ['Voiced', 'Nasal', 'Velar'], choices: ['m', 'n', 'ŋ', 'ɲ'], answer: 'ŋ' },
-]
-
-describe('Activity1BuildTheSound', () => {
-  afterEach(cleanup)
-
-  it('checks a correct answer and advances to the next question', async () => {
-    const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
-
-    expect(screen.getByRole('heading', { name: 'Activity 1: Build the Sound' })).toBeInTheDocument()
-    expect(screen.getByText('Voiceless')).toBeInTheDocument()
-    expect(screen.getByText('Fricative')).toBeInTheDocument()
-    expect(screen.getByText('Dental')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: '/θ/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('Correct!')
-    expect(screen.getByText('Score: 1/2')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Next question' }))
-    expect(screen.getByText('Voiced')).toBeInTheDocument()
-    expect(screen.getByText('Nasal')).toBeInTheDocument()
-    expect(screen.getByText('Velar')).toBeInTheDocument()
+beforeEach(() => {
+  const storage = new Map()
+  vi.stubGlobal('localStorage', {
+    getItem: (key) => storage.get(key) ?? null,
+    setItem: (key, value) => storage.set(key, String(value)),
   })
+})
+afterEach(() => { cleanup(); vi.useRealTimers(); vi.unstubAllGlobals() })
+const questions = Array.from({ length: 10 }, (_, i) => ({ id: `q${i}`, features: ['Voiceless', 'Bilabial', 'Plosive'], choices: ['p', 'b'], answer: 'p' }))
+it.each([[6, false], [7, true], [10, true]])('unlocks Level 2 at 70 percent: %i correct', (correct, unlocked) => {
+  render(<Activity1BuildTheSound initialQuestions={questions} />)
+  const level2 = screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' })
+  expect(level2).toBeDisabled()
+  for (let i = 0; i < 10; i++) {
+    fireEvent.click(screen.getByRole('button', { name: i < correct ? '/p/' : '/b/' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Check answer' }))
+    if (i < 9) {
+      expect(level2).toBeDisabled()
+      fireEvent.click(screen.getByRole('button', { name: 'Next question' }))
+    }
+  }
+  expect(level2.disabled).toBe(!unlocked)
+  fireEvent.click(screen.getByRole('button', { name: 'View summary' }))
+  expect(screen.getByRole('heading', { name: 'Build the Sound Summary' })).toBeInTheDocument()
+  if (unlocked) {
+    fireEvent.click(screen.getByRole('button', { name: 'Continue to Level 2' }))
+    expect(screen.getByRole('heading', { name: 'Level 2: Match the Words to the Vowels' })).toBeInTheDocument()
+    expect(screen.getByRole('timer')).toHaveTextContent('3:00')
+    cleanup()
+    render(<Activity1BuildTheSound initialQuestions={questions} />)
+    expect(screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' })).toBeEnabled()
+  } else {
+    expect(screen.queryByRole('button', { name: 'Continue to Level 2' })).not.toBeInTheDocument()
+  }
+})
 
-  it('reveals the correct symbol after an incorrect answer', async () => {
-    const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
-
-    await user.click(screen.getByRole('button', { name: '/f/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('The correct answer is /θ/.')
-    expect(screen.getByText('Score: 0/2')).toBeInTheDocument()
-  })
-
-  it('shows a review summary before starting a new session', async () => {
-    const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={[testQuestions[0]]} />)
-
-    await user.click(screen.getByRole('button', { name: '/f/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    await user.click(screen.getByRole('button', { name: 'View summary' }))
-
-    expect(screen.getByRole('heading', { name: 'Build the Sound Summary' })).toBeInTheDocument()
-    expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('/f/')
-    expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/θ/')
-    expect(screen.getByRole('button', { name: 'Start a new session' })).toBeInTheDocument()
-  })
-
-  it('answers question 2 first and preserves it when returning to question 1', async () => {
-    const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
-
-    expect(screen.getByRole('button', { name: 'Previous question' })).toBeDisabled()
-    await user.click(screen.getByRole('button', { name: 'Next question' }))
-    await user.click(screen.getByRole('button', { name: '/ŋ/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    expect(screen.getByText('Score: 1/2')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Previous question' }))
-    expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '/θ/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    expect(screen.getByText('Score: 2/2')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Next question' }))
-    expect(screen.getByRole('button', { name: '/ŋ/' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: '/ŋ/' })).toBeDisabled()
-  })
+it('summarizes grades and active time, preserves attempts, and saves both levels', () => {
+  vi.useFakeTimers()
+  render(<Activity1BuildTheSound initialQuestions={questions.slice(0, 2)} />)
+  act(() => vi.advanceTimersByTime(5000))
+  fireEvent.click(screen.getByRole('button', { name: '/p/' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Check answer' }))
+  act(() => vi.advanceTimersByTime(30000))
+  fireEvent.click(screen.getByRole('button', { name: 'Next question' }))
+  act(() => vi.advanceTimersByTime(3000))
+  fireEvent.click(screen.getByRole('button', { name: 'Overall summary' }))
+  expect(screen.getByText('Complete both levels to see your overall grade.')).toBeInTheDocument()
+  act(() => vi.advanceTimersByTime(60000))
+  fireEvent.click(screen.getByRole('button', { name: 'Level 1: Build the Sound' }))
+  expect(screen.getByText('Question 2 of 2')).toBeInTheDocument()
+  expect(screen.getByRole('timer')).toHaveTextContent('0:27')
+  act(() => vi.advanceTimersByTime(4000))
+  fireEvent.click(screen.getByRole('button', { name: '/p/' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Check answer' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Level 2: Match Words to Vowels' }))
+  act(() => vi.advanceTimersByTime(180000))
+  fireEvent.click(screen.getByRole('button', { name: 'View overall summary' }))
+  const level1 = screen.getByRole('row', { name: /Level 1: Build the Sound/ })
+  expect(within(level1).getByText('100%')).toBeInTheDocument()
+  expect(within(level1).getByText('0:12')).toBeInTheDocument()
+  const level2 = screen.getByRole('row', { name: /Level 2: Match the Words/ })
+  expect(within(level2).getByText('3:00')).toBeInTheDocument()
+  expect(within(level2).getByText('Time expired')).toBeInTheDocument()
+  expect(screen.getByText('Overall grade: 2/16 (13%)')).toBeInTheDocument()
+  expect(screen.getByText('Total time: 3:12')).toBeInTheDocument()
+  cleanup()
+  render(<Activity1BuildTheSound />)
+  fireEvent.click(screen.getByRole('button', { name: 'Overall summary' }))
+  expect(screen.getByText('Total time: 3:12')).toBeInTheDocument()
 })

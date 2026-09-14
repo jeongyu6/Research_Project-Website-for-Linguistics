@@ -1,9 +1,11 @@
+import QuestionTimer from '../QuestionTimer.jsx'
 import { useState } from 'react'
 import QuizSummary from '../QuizSummary.jsx'
 import { createVowelDetectiveSession, vowelInventory } from './questions.js'
 
 export default function Activity4VowelDetective({ initialQuestions }) {
   const startSession = () => initialQuestions ?? createVowelDetectiveSession(vowelInventory, 10)
+  const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startSession)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState({})
@@ -16,6 +18,14 @@ export default function Activity4VowelDetective({ initialQuestions }) {
   const isCorrect = response?.isCorrect ?? selectedAnswer === question.answer
   const score = Object.values(responses).filter(({ isCorrect: answerIsCorrect }) => answerIsCorrect).length
   const allQuestionsAnswered = Object.keys(responses).length === questions.length
+
+  function expireQuestion() {
+    if (isChecked) return
+    setResponses((current) => ({ ...current, [question.id]: {
+      id: question.id, features: question.features, exampleWord: question.exampleWord,
+      selectedAnswer, correctAnswer: question.answer, isCorrect: false, timedOut: true,
+    } }))
+  }
 
   function checkAnswer() {
     if (!selectedAnswer || isChecked) return
@@ -33,6 +43,7 @@ export default function Activity4VowelDetective({ initialQuestions }) {
   }
 
   function restartActivity() {
+    setTimerSession((session) => session + 1)
     setQuestions(startSession())
     setQuestionIndex(0)
     setSelectedAnswers({})
@@ -51,7 +62,10 @@ export default function Activity4VowelDetective({ initialQuestions }) {
       <div className="sound-activity">
         <div className="sound-activity-header">
           <h3>Activity 4: Vowel Detective</h3>
-          <span className="sound-activity-progress">Question {questionIndex + 1} of {questions.length}</span>
+          <div className="sound-activity-meta">
+            <QuestionTimer key={timerSession} questionId={question.id} paused={isChecked} onExpire={expireQuestion} />
+            <span className="sound-activity-progress">Question {questionIndex + 1} of {questions.length}</span>
+          </div>
         </div>
         <p className="sound-activity-instruction">Which IPA vowel matches all four features?</p>
         <div className="sound-feature-list" aria-label="Vowel features">
@@ -66,7 +80,7 @@ export default function Activity4VowelDetective({ initialQuestions }) {
         </div>
         {isChecked && (
           <p className={`sound-feedback ${isCorrect ? 'sound-feedback-correct' : 'sound-feedback-incorrect'}`} role="status">
-            {isCorrect ? `Correct! /${question.answer}/ matches all four features.` : `Not quite. The correct answer is /${question.answer}/.`}
+            {response?.timedOut ? `Time’s up. The correct answer is /${question.answer}/.` : isCorrect ? `Correct! /${question.answer}/ matches all four features.` : `Not quite. The correct answer is /${question.answer}/.`}
           </p>
         )}
         <div className="question-navigation" aria-label="Question navigation">

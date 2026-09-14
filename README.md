@@ -74,14 +74,26 @@ Linguistics_Programming_Website/
 │   │       │   └── practice_space/
 │   │       │       ├── PracticeSpace.jsx
 │   │       │       ├── PracticeSpace.test.jsx
+│   │       │       ├── QuestionTimer.jsx
+│   │       │       ├── QuestionTimer.test.jsx
+│   │       │       ├── ActivityTimers.test.jsx
 │   │       │       ├── QuizSummary.jsx
 │   │       │       ├── index.js
 │   │       │       ├── build_the_sound/
 │   │       │       │   ├── Activity1_BuildTheSound.jsx
 │   │       │       │   ├── Activity1_BuildTheSound.test.jsx
-│   │       │       │   ├── questions.js
-│   │       │       │   ├── questions.test.js
-│   │       │       │   └── index.js
+│   │       │       │   ├── LevelSummary.jsx
+│   │       │       │   ├── useLevelTime.js
+│   │       │       │   ├── index.js
+│   │       │       │   ├── level_1/
+│   │       │       │   │   ├── Level1BuildTheSound.jsx
+│   │       │       │   │   ├── Level1BuildTheSound.test.jsx
+│   │       │       │   │   ├── level1Questions.js
+│   │       │       │   │   └── level1Questions.test.js
+│   │       │       │   └── level_2/
+│   │       │       │       ├── Level2WordVowelMatch.jsx
+│   │       │       │       ├── Level2WordVowelMatch.test.jsx
+│   │       │       │       └── level2Words.js
 │   │       │       ├── mystery_sound/
 │   │       │       │   ├── Activity2_MysterySound.jsx
 │   │       │       │   ├── Activity2_MysterySound.test.jsx
@@ -122,14 +134,43 @@ The Canadian English vowel and consonant charts play an example recording when a
 
 ### Practice Space
 
-The Practice Space contains four independent activity packages:
+The Practice Space contains four activity packages:
 
-1. **Build the Sound** — Students identify consonants from voicing, manner, and place features.
-2. **Mystery Sound** — Students identify a consonant from progressively revealed phonetic clues, with more points awarded for solving it sooner.
-3. **Vowel Map Drop** — Students place vowels on the shared Canadian English vowel chart and review mistakes.
-4. **Vowel Detective** — Students identify vowels from type, height, backness, and rounding features.
+1. **Build the Sound** — A two-level activity: identify consonants, then match words to their first vowel sound.
+2. **Mystery Sound** — Identify a consonant using progressively revealed clues. Correct guesses earn 300, 200, or 100 points depending on how many clues have been revealed.
+3. **Vowel Map Drop** — Place vowels on the Canadian English vowel chart, undo placements, and review mistakes.
+4. **Vowel Detective** — Identify vowels from type, height, backness, and rounding features.
 
-Activities 1 and 4 randomly select questions, shuffle answer choices, track scores, and display an end-of-session review. Activity 2 runs continuous scored rounds with optional clues and skipping. Activity 3 uses the same vowel coordinates as the listening chart.
+### Activity Timers
+
+A clock icon and countdown appear to the left of the question, round, or placement count on the right side of each activity header.
+
+| Activity | Time limit |
+| --- | --- |
+| Build the Sound — Level 1 | 30 seconds per question |
+| Build the Sound — Level 2 | 3 minutes per word-matching attempt |
+| Mystery Sound | 30 seconds per round |
+| Vowel Map Drop | 3 minutes per chart attempt |
+| Vowel Detective | 30 seconds per question |
+
+The countdown stops when an answer or attempt is submitted. New questions and rounds receive a fresh countdown; returning to an unfinished question resumes its remaining time. The timer turns red during the final 10 seconds.
+
+When time expires, Level 1 and Vowel Detective record the question as incorrect and reveal the answer. Mystery Sound ends the round without awarding points. The chart activities stop accepting changes and show a review of the current placements, including missing answers. Restarting an attempt resets its timer.
+
+### Build the Sound: Level 1
+
+Level 1 selects 10 consonant questions and shuffles their answer choices. Students identify the symbol matching the supplied voicing, manner, and place features.
+
+- **Previous** and **Next** allow navigation while preserving responses within the current session.
+- Selecting a choice does not submit it; students must use **Check answer**.
+- **View summary** appears once every question has been submitted or timed out. Skipped questions must be completed first.
+- A score of **70% or higher (7 out of 10)** unlocks Level 2. The Level 1 summary includes **Continue to Level 2** after unlocking.
+
+### Build the Sound: Level 2 — Match the Words to the Vowels
+
+Drag each word from the word bank to the vowel that represents its **first vowel sound**.
+
+**IMPORTANT:** Some words contain more than one vowel sound. Focus only on **the first vowel sound** in each word.
 
 ### Syntax Tree Builder
 

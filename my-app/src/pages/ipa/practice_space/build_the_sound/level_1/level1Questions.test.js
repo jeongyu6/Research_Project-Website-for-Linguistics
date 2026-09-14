@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { consonantInventory, createAnswerChoices, createQuestionSession, shuffleItems } from './questions.js'
+import { consonantInventory, createAnswerChoices, createQuestionSession, shuffleItems } from './level1Questions.js'
 
 describe('consonantInventory', () => {
   it('contains 24 unique and complete consonant records', () => {

@@ -2552,6 +2552,66 @@ main {
 
 }
 
+.question-timer {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  flex-shrink: 0;
+  padding: 6px 12px;
+  border-radius: 8px;
+  background: #eaf2ff;
+  color: #123b73;
+  font-size: 1rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+.question-timer-urgent { background: #fdebed; color: #91222d; }
+.sound-activity-header:has(.question-timer) { flex-wrap: wrap; }
+
+.sound-activity-meta {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-left: auto;
+  text-align: right;
+}
+
+.question-timer-icon {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.build-sound-levels { display: grid; gap: 14px; min-width: 0; }
+.build-sound-level-navigation, .word-vowel-actions, .word-vowel-bank { display: flex; flex-wrap: wrap; gap: 10px; }
+.build-sound-level-navigation button { padding: 10px 16px; border: 1px solid #b7c8df; border-radius: 10px; background: white; color: #123b73; font: inherit; font-weight: 700; cursor: pointer; }
+.build-sound-level-navigation button[aria-current] { background: #1f5fb5; color: white; }
+.build-sound-level-navigation button:disabled, .word-vowel-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+.level-unlock-message { padding: 16px; border-radius: 10px; background: #eaf2ff; display: grid; gap: 12px; }
+.word-vowel-activity { display: grid; gap: 12px; min-width: 0; padding: clamp(12px, 2vw, 24px); border: 1px solid #cbdaf0; border-radius: 16px; background: #f7faff; }
+.word-vowel-activity h3 { margin: 0; }
+.word-vowel-bank button[aria-pressed='true'] { background: #1f5fb5; color: white; }
+.word-vowel-chart { border: 1px solid #dbe6f5; border-radius: 14px; background: white; overflow-x: auto; }
+.word-vowel-chart svg { display: block; width: 100%; min-width: 620px; height: clamp(360px, 48vh, 560px); }
+.word-vowel-axis { fill: #123b73; font-size: 22px; text-anchor: middle; }
+.word-vowel-target { cursor: pointer; }
+.word-vowel-target rect { fill: #f7faff; stroke: #8ea9cc; stroke-width: 2; }
+.word-vowel-target:hover rect, .word-vowel-target:focus-visible rect { fill: #dfeafb; stroke: #1555c5; stroke-width: 4; }
+.word-vowel-symbol { font-size: 27px; font-weight: 700; fill: #001747; }
+.word-vowel-word { font-size: 21px; fill: #123b73; }
+.word-vowel-correct rect { fill: #e6f7ee; stroke: #16834b; }
+.word-vowel-incorrect rect { fill: #fdebed; stroke: #b72e3b; }
+.word-vowel-results ul { columns: 2; }
+.word-vowel-actions { justify-content: flex-end; align-items: center; }
+
+.levels-summary-table-wrap { overflow-x: auto; }
+.levels-summary-table { width: 100%; border-collapse: collapse; text-align: left; }
+.levels-summary-table caption { text-align: left; font-weight: 700; padding-bottom: 12px; }
+.levels-summary-table th, .levels-summary-table td { padding: 14px; border: 1px solid #cbdaf0; }
+.levels-summary-table thead { background: #eaf2ff; color: #123b73; }
+.levels-overall-grade { padding: 18px; border-radius: 10px; background: #eaf2ff; color: #123b73; font-size: 1.2rem; }
 /* Each IPA section occupies one screen; oversized content scrolls inside it. */
 html.ipa-screen-scrolling {
   scroll-snap-type: y mandatory;
