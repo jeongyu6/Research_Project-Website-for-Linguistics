@@ -57,4 +57,25 @@ describe('Activity1BuildTheSound', () => {
     expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/θ/')
     expect(screen.getByRole('button', { name: 'Start a new session' })).toBeInTheDocument()
   })
+
+  it('answers question 2 first and preserves it when returning to question 1', async () => {
+    const user = userEvent.setup()
+    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
+
+    expect(screen.getByRole('button', { name: 'Previous question' })).toBeDisabled()
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    await user.click(screen.getByRole('button', { name: '/ŋ/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(screen.getByText('Score: 1/2')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Previous question' }))
+    expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: '/θ/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    expect(screen.getByText('Score: 2/2')).toBeInTheDocument()
+
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    expect(screen.getByRole('button', { name: '/ŋ/' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '/ŋ/' })).toBeDisabled()
+  })
 })
