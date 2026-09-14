@@ -22,9 +22,13 @@ describe('Vowels', () => {
     const user = userEvent.setup()
     render(<Vowels />)
 
+    await user.click(screen.getByRole('button', { name: 'IPA vowel æ, play recording' }))
+    expect(screen.getByText('Low front unrounded monophthong')).toBeInTheDocument()
+
     await user.click(screen.getByRole('button', { name: 'IPA vowel ej, play recording' }))
 
-    expect(screen.getByText('Mid-to-high front unrounded diphthong')).toBeInTheDocument()
+    expect(screen.queryByText('Low front unrounded monophthong')).not.toBeInTheDocument()
+    expect(screen.getByText('Mid front unrounded diphthong')).toBeInTheDocument()
     expect(screen.getByText('ai')).toHaveClass('sound-example-letters')
     expect(screen.getByText('ai').parentElement).toHaveTextContent('bait')
   })

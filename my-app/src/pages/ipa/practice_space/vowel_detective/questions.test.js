@@ -17,11 +17,11 @@ describe('vowelInventory', () => {
     ['u', 'Monophthong', 'High', 'Back', 'Rounded'],
     ['ʊ', 'Monophthong', 'High', 'Back', 'Rounded'],
     ['ɑ', 'Monophthong', 'Low', 'Back', 'Unrounded'],
-    ['ej', 'Diphthong', 'Mid-to-high', 'Front', 'Unrounded'],
+    ['ej', 'Diphthong', 'Mid', 'Front', 'Unrounded'],
     ['ow', 'Diphthong', 'Mid-to-high', 'Back', 'Rounded'],
-    ['aj', 'Diphthong', 'Low-to-high', 'Central-to-front', 'Unrounded'],
-    ['aw', 'Diphthong', 'Low-to-high', 'Central-to-back', 'Unrounded'],
-    ['ɔj', 'Diphthong', 'Mid-to-high', 'Back-to-front', 'Rounded-to-unrounded'],
+    ['aj', 'Diphthong', 'Low', 'Central-to-front', 'Unrounded'],
+    ['aw', 'Diphthong', 'Low', 'Central', 'Unrounded'],
+    ['ɔj', 'Diphthong', 'Mid', 'Back-to-front', 'Rounded-to-unrounded'],
   ])('/%s/ has the supplied vowel features', (symbol, type, height, backness, rounding) => {
     expect(vowelInventory).toContainEqual(expect.objectContaining({ symbol, type, height, backness, rounding }))
   })
