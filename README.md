@@ -4,8 +4,8 @@ This research project provides interactive learning resources for linguistics st
 
 The website currently includes:
 
-- A Canadian English vowel chart with audio recordings
-- A Canadian English consonant chart with audio recordings
+- An interactive Canadian English vowel chart with audio recordings, articulatory descriptions, and example words
+- An interactive Canadian English consonant chart with audio recordings, articulatory descriptions, and example words
 - An interactive IPA keyboard and transcription editor
 - A Practice Space containing four phonetics activities
 - A syntax tree builder app
@@ -63,8 +63,11 @@ Linguistics_Programming_Website/
 │   │       │   │   ├── IPAKeyboard.test.jsx
 │   │       │   │   └── index.js
 │   │       │   ├── sound_listening/
+│   │       │   │   ├── UnderlinedExample.jsx
 │   │       │   │   ├── Vowels.jsx
+│   │       │   │   ├── Vowels.test.jsx
 │   │       │   │   ├── Consonants.jsx
+│   │       │   │   ├── Consonants.test.jsx
 │   │       │   │   ├── ipaData.js
 │   │       │   │   ├── vowelChartPositions.js
 │   │       │   │   └── index.js
@@ -107,7 +110,7 @@ Linguistics_Programming_Website/
 │   │       │           ├── questions.js
 │   │       │           ├── questions.test.js
 │   │       │           └── index.js
-│   │       └── treeform/.               # For edit later throughout the work
+│   │       └── treeform/
 │   │           ├── Treeform_Page.jsx
 │   │           ├── SyntaxTreeBuilder.jsx
 │   │           └── index.js
@@ -120,10 +123,14 @@ Linguistics_Programming_Website/
 `IPA_Page.jsx` is a small page-level component that arranges four feature areas:
 
 ```text
-Vowels, Consonants,  IPA Keyboard, Practice Space
+Vowels, Consonants, IPA Keyboard, Practice Space
 ```
 
 Each major feature is stored in its own folder with a local `index.js`. Tests are colocated with the components or data they verify.
+
+### Sound Listening
+
+The Canadian English vowel and consonant charts play an example recording when a symbol is selected. Each main chart symbol also displays its articulatory description and example word beneath the audio player, with the spelling associated with the selected sound underlined. Descriptions and recording mappings are maintained in `sound_listening/ipaData.js`, while vowel-chart coordinates are shared through `vowelChartPositions.js`.
 
 ### Practice Space
 
@@ -165,67 +172,9 @@ Drag each word from the word bank to the vowel that represents its **first vowel
 
 **IMPORTANT:** Some words contain more than one vowel sound. Focus only on **the first vowel sound** in each word.
 
-**Student word bank:** about • choice • dress • face • fleece • foot • goose • goat • kit • loud • palm • prize • strut • trap
+### Syntax Tree Builder
 
-The completed chart shows vowel symbols, front/central/back columns, high/mid/low rows, and dividing lines in the style of Activity 3. Students can drag words or select a word and then a vowel using a mouse, touch, or keyboard.
-
-- Select a placed word to move it. Replacing a word returns the displaced word to the bank.
-- **Undo** reverses placement changes one at a time without resetting the timer.
-- **Reset words** clears placements and Undo history and starts a fresh three-minute attempt.
-- **Check matches** becomes available after all 14 words are placed.
-- Submission or timeout shows the score and corrections. **Try again** starts a new attempt.
-
-<details>
-<summary>Instructor answer key</summary>
-
-| Vowel | Word |
-| --- | --- |
-| /i/ | fleece |
-| /ɪ/ | kit |
-| /ej/ | face |
-| /ɛ/ | dress |
-| /æ/ | trap |
-| /ə/ | **a**bout |
-| /ʌ/ | strut |
-| /u/ | goose |
-| /ʊ/ | foot |
-| /ow/ | goat |
-| /ɑ/ | palm |
-| /aj/ | prize |
-| /aw/ | loud |
-| /ɔj/ | choice |
-
-</details>
-
-### Overall Grades and Time Summary
-
-**Overall summary** in the Build the Sound navigation displays the latest completed attempt for each level:
-
-- Correct answers out of the total and a percentage grade.
-- Completion, locked, or timeout status.
-- Active working time in minutes and seconds.
-
-After both levels are complete, it also displays the combined grade and total working time. The combined grade uses **total correct answers ÷ total possible answers**, normally out of 24 (10 Level 1 questions and 14 Level 2 matches); it is not an unweighted average of the two percentages.
-
-Working time excludes answer review and time spent on the overall summary. Opening the overall summary pauses the active attempt and preserves it when returning. Retrying a level replaces its saved grade and time only when the new attempt is completed.
-
-Level 2 unlock status and the latest completed results are stored in the current browser's local storage. They are not synced to a student account or another browser. Clearing browser storage removes these saved results. In-progress attempts are not saved across reloads. Older saved results without timing data display **Not recorded**.
-
-### Build the Sound Code Organization
-
-- `build_the_sound/Activity1_BuildTheSound.jsx` coordinates level selection, the 70% unlock, and saved results.
-- `level_1/` contains the original consonant quiz, its question data, and tests.
-- `level_2/` contains word matching, the word bank and answer key, and tests.
-- `LevelSummary.jsx` renders grades and elapsed time across both levels.
-- `useLevelTime.js` measures active working time.
-- `practice_space/QuestionTimer.jsx` provides the shared countdown used by all four activities.
-- `practice_space/QuizSummary.jsx` provides the question-by-question review used by Level 1 and Vowel Detective.
-
-Tests cover the 70% unlock boundary, word matching, Undo, timer expiry and reset, summary navigation, combined grades, active time, and saved results. To run the Build the Sound and timer tests from `my-app`:
-
-```bash
-npm run test:run -- src/pages/ipa/practice_space/build_the_sound src/pages/ipa/practice_space/QuestionTimer.test.jsx src/pages/ipa/practice_space/ActivityTimers.test.jsx
-```
+The Tree Builder supports creating and editing syntax trees in the browser, including common branching templates, terminals, features, movement links, and import/export controls.
 
 ## Deployment
 

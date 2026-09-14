@@ -24,9 +24,10 @@
 
 main {
   width: 100%;
-  max-width: 1720px;
+  /* Halve the outer whitespace, including the centered container margins. */
+  max-width: calc(50% + 860px);
   margin: 0 auto;
-  padding: 0 52px 0;
+  padding: 0 26px 0;
 }
 
 .ut-header {
@@ -395,7 +396,7 @@ main {
 
 @media (max-width: 1200px) {
   main {
-    padding: 0 34px;
+    padding: 0 17px;
   }
 
   .hero {
@@ -420,7 +421,7 @@ main {
 
 @media (max-width: 768px) {
   main {
-    padding: 0 22px;
+    padding: 0 11px;
   }
 
   .resource-grid {
@@ -2071,6 +2072,25 @@ main {
   background: #ffffff;
 }
 
+.vowel-listening-section {
+  gap: 12px;
+  padding: clamp(16px, 2.5vw, 24px);
+}
+
+.vowel-listening-section .ipa-section-heading p {
+  margin: 0;
+}
+
+.vowel-listening-section .vowel-chart {
+  padding: 8px;
+}
+
+.vowel-listening-section .vowel-diagram {
+  width: 100%;
+  min-width: 680px;
+  height: clamp(430px, calc(100vh - 300px), 620px);
+}
+
 .vowel-diagram {
   display: block;
   width: 100%;
@@ -2171,6 +2191,28 @@ main {
   border-radius: 2px;
   outline: 2px solid #000000;
   outline-offset: 2px;
+}
+
+@media (max-width: 768px) {
+  .vowel-listening-section {
+    gap: 10px;
+    padding: 14px;
+  }
+
+  .vowel-listening-section .vowel-chart {
+    padding: 4px;
+  }
+
+  .vowel-listening-section .vowel-diagram {
+    min-width: 620px;
+    height: auto;
+  }
+
+  .vowel-listening-section .vowel-chart-note {
+    right: 16px;
+    bottom: 14px;
+    font-size: 1rem;
+  }
 }
 
 .ipa-symbol {
@@ -2448,6 +2490,31 @@ main {
   width: min(100%, 320px);
 }
 
+.vowel-recording-description,
+.sound-recording-description {
+  flex-basis: 100%;
+  padding-top: 12px;
+  border-top: 1px solid #dbe5f1;
+  font-weight: 400;
+}
+
+.vowel-recording-description p,
+.sound-recording-description p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.vowel-recording-description p + p,
+.sound-recording-description p + p {
+  margin-top: 4px;
+}
+
+.sound-example-letters {
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+}
+
 .page-footer {
   padding: 30px 0 34px;
   border-top: 1px solid #e0e8f0;
@@ -2455,9 +2522,9 @@ main {
   color: #121a35;
   font-size: 1.05rem;
   background: transparent;
-  max-width: 1720px;
+  max-width: calc(50% + 860px);
   margin: 0 auto;
-  width: calc(100% - 104px);
+  width: calc(100% - 52px);
 }
 
 .page-footer p {
@@ -2545,3 +2612,182 @@ main {
 .levels-summary-table th, .levels-summary-table td { padding: 14px; border: 1px solid #cbdaf0; }
 .levels-summary-table thead { background: #eaf2ff; color: #123b73; }
 .levels-overall-grade { padding: 18px; border-radius: 10px; background: #eaf2ff; color: #123b73; font-size: 1.2rem; }
+/* Each IPA section occupies one screen; oversized content scrolls inside it. */
+html.ipa-screen-scrolling {
+  scroll-snap-type: y mandatory;
+}
+
+.ipa-screen-scrolling .ipa-page {
+  gap: 0;
+  padding-bottom: 0;
+}
+
+.ipa-screen-scrolling .ipa-page-header {
+  margin-bottom: 24px;
+}
+
+.ipa-screen {
+  height: 100dvh;
+  min-height: 0;
+  padding: 16px 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.ipa-screen > section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding: clamp(12px, 2vh, 24px);
+  gap: 12px;
+}
+
+.ipa-screen .vowel-listening-section .vowel-diagram {
+  min-width: 0;
+  height: clamp(200px, calc(100dvh - 380px), 620px);
+}
+
+.ipa-screen .vowel-chart-note {
+  position: static;
+  margin: 4px 0 0;
+}
+
+.ipa-screen .ipa-table th,
+.ipa-screen .ipa-table td {
+  padding-top: clamp(3px, 0.7vh, 10px);
+  padding-bottom: clamp(3px, 0.7vh, 10px);
+}
+
+.ipa-screen .ipa-table td {
+  height: auto;
+}
+
+.ipa-screen .recording-player {
+  margin-top: 0;
+  padding: 10px 14px;
+  gap: 8px;
+}
+
+.ipa-screen-scrolling .page-footer {
+  scroll-snap-align: end;
+}
+
+/* Give spare screen height to the interactive content itself. */
+.ipa-screen > section > * {
+  flex-shrink: 0;
+}
+
+.ipa-screen .ipa-table-wrap {
+  flex: 1 0 auto;
+  display: flex;
+}
+
+.ipa-screen .ipa-table {
+  flex: 1;
+}
+
+.ipa-screen .pulmonic-symbol-button .ipa-symbol {
+  font-size: clamp(1.3rem, 3.5vh, 2.2rem);
+}
+
+.ipa-screen .vowel-listening-section .vowel-chart {
+  flex: 1 0 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .vowel-listening-section .vowel-diagram {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 200px;
+  width: 100%;
+}
+
+.ipa-screen .ipa-editor {
+  flex: 1 0 150px;
+}
+
+.ipa-screen .practice-space-workspace > [role='tabpanel'] {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .practice-space-workspace > [role='tabpanel'] > * {
+  flex: 1 0 auto;
+}
+
+.ipa-screen .sound-activity,
+.ipa-screen .vowel-map-activity {
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .sound-choice-list {
+  flex: 1 0 auto;
+  align-items: stretch;
+}
+
+.ipa-screen .sound-choice {
+  flex: 1 0 88px;
+  min-height: 72px;
+  font-size: clamp(1.5rem, 4vh, 2.6rem);
+}
+
+/* Size Map Drop from the space left after its instructions and controls. */
+.ipa-screen .practice-space-workspace > [role='tabpanel']:has(.vowel-map-activity),
+.ipa-screen .practice-space-workspace > [role='tabpanel'] > .vowel-map-activity {
+  flex: 1 1 0;
+  min-height: 0;
+}
+
+.ipa-screen .vowel-map-activity {
+  gap: 10px;
+  padding: 12px;
+}
+
+.ipa-screen .vowel-map-activity > * {
+  flex-shrink: 0;
+}
+
+.ipa-screen .vowel-map-workspace {
+  display: grid;
+  flex: 1 1 0;
+  min-height: 180px;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.ipa-screen .vowel-map-chart {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ipa-screen .vowel-diagram.vowel-drop-diagram {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
+  min-width: 0;
+  min-height: 0;
+}
+
+.ipa-screen .vowel-map-review {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ipa-screen .vowel-map-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .ipa-screen .vowel-map-workspace-reviewing {
+    grid-template-rows: minmax(180px, 1fr) auto;
+    flex-basis: auto;
+  }
+}
