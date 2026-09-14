@@ -1,96 +1,61 @@
-import { useState } from 'react'
-import QuizSummary from '../QuizSummary.jsx'
-import { consonantInventory, createQuestionSession } from './questions.js'
+import LevelSummary from './LevelSummary.jsx'
+import { useEffect, useState } from 'react'
+import Level1BuildTheSound from './level_1/Level1BuildTheSound.jsx'
+import Level2WordVowelMatch from './level_2/Level2WordVowelMatch.jsx'
+
+const resultsKey = 'build-the-sound-level-results'
+
+function readResults() {
+  try {
+    const stored = JSON.parse(window.localStorage.getItem(resultsKey))
+    return Object.fromEntries([1, 2].filter((id) => {
+      const value = stored?.[id]
+      return Number.isInteger(value?.score) && Number.isInteger(value?.total) && value.total > 0 && value.score >= 0 && value.score <= value.total
+    }).map((id) => [id, stored[id]]))
+  } catch { return {} }
+}
+
+const unlockKey = 'build-the-sound-level-2-unlocked'
 
 export default function Activity1BuildTheSound({ initialQuestions }) {
-  const startQuestionSession = () => initialQuestions ?? createQuestionSession(consonantInventory, 10)
-  const [questions, setQuestions] = useState(startQuestionSession)
-  const [questionIndex, setQuestionIndex] = useState(0)
-  const [selectedAnswers, setSelectedAnswers] = useState({})
-  const [responses, setResponses] = useState({})
-  const [showSummary, setShowSummary] = useState(false)
-  const question = questions[questionIndex]
-  const selectedAnswer = selectedAnswers[question.id] ?? ''
-  const response = responses[question.id]
-  const isChecked = Boolean(response)
-  const isCorrect = response?.isCorrect ?? selectedAnswer === question.answer
-  const score = Object.values(responses).filter(({ isCorrect: answerIsCorrect }) => answerIsCorrect).length
-  const allQuestionsAnswered = Object.keys(responses).length === questions.length
+  const [results, setResults] = useState(readResults)
+  const [showOverallSummary, setShowOverallSummary] = useState(false)
+  const [level, setLevel] = useState(1)
+  const [level2Unlocked, setLevel2Unlocked] = useState(() => {
+    try { return window.localStorage.getItem(unlockKey) === 'true' } catch { return false }
+  })
 
-  function checkAnswer() {
-    if (!selectedAnswer || isChecked) return
-    setResponses((currentResponses) => ({
-      ...currentResponses,
-      [question.id]: { id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect },
-    }))
+  useEffect(() => {
+    try { window.localStorage.setItem(resultsKey, JSON.stringify(results)) } catch { /* Results remain available for this visit. */ }
+  }, [results])
+
+  function selectLevel(nextLevel) {
+    setShowOverallSummary(false)
+    setLevel(nextLevel)
   }
 
-  function restartActivity() {
-    setQuestions(startQuestionSession())
-    setQuestionIndex(0)
-    setSelectedAnswers({})
-    setResponses({})
-    setShowSummary(false)
-  }
-
-  if (showSummary) {
-    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} />
+  function completeLevel1(score, total, seconds) {
+    setResults((current) => ({ ...current, 1: { score, total, seconds } }))
+    if (total > 0 && score / total >= 0.7) {
+      setLevel2Unlocked(true)
+      try { window.localStorage.setItem(unlockKey, 'true') } catch { /* Unlock still works for this visit. */ }
+    }
   }
 
   return (
-    <section aria-label="Activity 1: Build the Sound">
-      <div className="sound-activity">
-        <div className="sound-activity-header">
-          <h3>Activity 1: Build the Sound</h3>
-          <span className="sound-activity-progress">
-            Question {questionIndex + 1} of {questions.length}
-          </span>
-        </div>
-
-        <p className="sound-activity-instruction">Which IPA symbol matches all three features?</p>
-        <div className="sound-feature-list" aria-label="Phonetic features">
-          {question.features.map((feature) => <span key={feature}>{feature}</span>)}
-        </div>
-
-        <div className="sound-choice-list" role="group" aria-label="Choose an IPA symbol">
-          {question.choices.map((choice) => {
-            const choiceIsCorrect = isChecked && choice === question.answer
-            const choiceIsIncorrect = isChecked && choice === selectedAnswer && !isCorrect
-            return (
-              <button
-                type="button"
-                className={`sound-choice${selectedAnswer === choice ? ' sound-choice-selected' : ''}${choiceIsCorrect ? ' sound-choice-correct' : ''}${choiceIsIncorrect ? ' sound-choice-incorrect' : ''}`}
-                key={choice}
-                onClick={() => !isChecked && setSelectedAnswers((answers) => ({ ...answers, [question.id]: choice }))}
-                aria-pressed={selectedAnswer === choice}
-                disabled={isChecked}
-              >
-                /{choice}/
-              </button>
-            )
-          })}
-        </div>
-
-        {isChecked && (
-          <p className={`sound-feedback ${isCorrect ? 'sound-feedback-correct' : 'sound-feedback-incorrect'}`} role="status">
-            {isCorrect
-              ? `Correct! /${question.answer}/ matches all three features.`
-              : `Not quite. The correct answer is /${question.answer}/.`}
-          </p>
-        )}
-
-        <div className="question-navigation" aria-label="Question navigation">
-          <button type="button" aria-label="Previous question" onClick={() => setQuestionIndex((index) => index - 1)} disabled={questionIndex === 0}>‹ Previous</button>
-          <button type="button" aria-label="Next question" onClick={() => setQuestionIndex((index) => index + 1)} disabled={questionIndex === questions.length - 1}>Next ›</button>
-        </div>
-
-        <div className="sound-activity-actions">
-          <span>Score: {score}/{questions.length}</span>
-          {allQuestionsAnswered
-            ? <button type="button" onClick={() => setShowSummary(true)}>View summary</button>
-            : !isChecked && <button type="button" onClick={checkAnswer} disabled={!selectedAnswer}>Check answer</button>}
-        </div>
+    <div className="build-sound-levels">
+      <nav className="build-sound-level-navigation" aria-label="Build the Sound levels">
+        <button type="button" aria-current={!showOverallSummary && level === 1 ? 'step' : undefined} onClick={() => selectLevel(1)}>Level 1: Build the Sound</button>
+        <button type="button" aria-current={!showOverallSummary && level === 2 ? 'step' : undefined} disabled={!level2Unlocked} aria-describedby={!level2Unlocked ? 'level-two-requirement' : undefined} onClick={() => selectLevel(2)}>Level 2: Match Words to Vowels</button>
+        <button type="button" aria-current={showOverallSummary ? 'page' : undefined} onClick={() => setShowOverallSummary(true)}>Overall summary</button>
+      </nav>
+      {!level2Unlocked && <p id="level-two-requirement">Score 70% or higher in Level 1 (7 out of 10) to unlock Level 2.</p>}
+      {showOverallSummary && <LevelSummary results={results} level2Unlocked={level2Unlocked} />}
+      <div hidden={showOverallSummary}>
+      {level === 1
+        ? <Level1BuildTheSound initialQuestions={initialQuestions} active={!showOverallSummary} onComplete={completeLevel1} level2Unlocked={level2Unlocked} onOpenLevel2={() => selectLevel(2)} />
+        : <Level2WordVowelMatch active={!showOverallSummary} onBack={() => selectLevel(1)} onComplete={(score, total, timedOut, seconds) => setResults((current) => ({ ...current, 2: { score, total, timedOut, seconds } }))} onShowSummary={() => setShowOverallSummary(true)} />}
       </div>
-    </section>
+    </div>
   )
 }

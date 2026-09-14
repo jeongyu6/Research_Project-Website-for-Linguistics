@@ -1,3 +1,4 @@
+import QuestionTimer from '../QuestionTimer.jsx'
 import { useState } from 'react'
 import { mapDropSymbols, vowelChartPositions } from '../../sound_listening/vowelChartPositions.js'
 
@@ -13,6 +14,8 @@ const vowelLocations = {
 }
 
 export default function Activity3VowelMapDrop() {
+  const [timerSession, setTimerSession] = useState(0)
+  const [timedOut, setTimedOut] = useState(false)
   const [placements, setPlacements] = useState({})
   const [placementHistory, setPlacementHistory] = useState([])
   const [selectedSymbol, setSelectedSymbol] = useState('')
@@ -25,6 +28,7 @@ export default function Activity3VowelMapDrop() {
     .map(([targetSymbol, placedSymbol]) => ({ targetSymbol, placedSymbol }))
 
   function placeSymbol(symbol, targetSymbol) {
+    if (timedOut) return
     if (!symbol) return
     setPlacements((current) => {
       const next = Object.fromEntries(
@@ -39,6 +43,7 @@ export default function Activity3VowelMapDrop() {
   }
 
   function undoPlacement() {
+    if (timedOut) return
     if (selectedTarget) {
       const symbolToRemove = placements[selectedTarget]
       setPlacements((current) => Object.fromEntries(
@@ -63,6 +68,8 @@ export default function Activity3VowelMapDrop() {
   }
 
   function resetChart() {
+    setTimerSession((session) => session + 1)
+    setTimedOut(false)
     setPlacements({})
     setPlacementHistory([])
     setSelectedSymbol('')
@@ -74,15 +81,25 @@ export default function Activity3VowelMapDrop() {
     <section className="vowel-map-activity" aria-labelledby="vowel-map-drop-title">
       <div className="sound-activity-header">
         <h3 id="vowel-map-drop-title">Activity 3: Vowel Map Drop</h3>
-        <span className="sound-activity-progress">Placed {placedSymbols.length} of {mapDropSymbols.length}</span>
+        <div className="sound-activity-meta">
+          <QuestionTimer key={timerSession} questionId="chart" duration={180} paused={isChecked} onExpire={() => {
+            setTimedOut(true)
+            setIsChecked(true)
+            setSelectedSymbol('')
+            setSelectedTarget('')
+          }} />
+          <span className="sound-activity-progress">Placed {placedSymbols.length} of {mapDropSymbols.length}</span>
+        </div>
       </div>
+      {timedOut && <p role="status" className="sound-feedback sound-feedback-incorrect">Time’s up. Review your placements, then try again.</p>}
       <p className="sound-activity-instruction">Drag each vowel to its position on the Canadian English vowel chart. You can also select a vowel and then select a target.</p>
 
       <div className="vowel-map-bank" aria-label="Vowel bank">
         {remainingSymbols.map((symbol) => (
           <button
             type="button"
-            draggable
+            draggable={!timedOut}
+            disabled={timedOut}
             className={selectedSymbol === symbol ? 'vowel-bank-symbol vowel-bank-symbol-selected' : 'vowel-bank-symbol'}
             key={symbol}
             aria-pressed={selectedSymbol === symbol}
@@ -173,7 +190,7 @@ export default function Activity3VowelMapDrop() {
       )}
       </div>
       <div className="vowel-map-actions">
-        <button type="button" className="vowel-map-undo-button" disabled={!selectedTarget && !selectedSymbol && placementHistory.length === 0} onClick={undoPlacement}>Undo</button>
+        <button type="button" className="vowel-map-undo-button" disabled={timedOut || (!selectedTarget && !selectedSymbol && placementHistory.length === 0)} onClick={undoPlacement}>Undo</button>
         {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => setIsChecked(true)}>Check My Answer</button>}
       </div>
       <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>

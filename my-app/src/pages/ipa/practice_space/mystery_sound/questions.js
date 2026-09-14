@@ -1,4 +1,4 @@
-import { consonantInventory, shuffleItems } from '../build_the_sound/questions.js'
+import { consonantInventory, shuffleItems } from '../build_the_sound/level_1/level1Questions.js'
 
 export const mysteryFeatureOrder = ['voicing', 'manner', 'place']
 

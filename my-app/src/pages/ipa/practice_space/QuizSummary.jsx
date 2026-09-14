@@ -1,4 +1,4 @@
-export default function QuizSummary({ activityNumber, title, score, total, responses, onRestart }) {
+export default function QuizSummary({ activityNumber, title, score, total, responses, onRestart, children }) {
   const mistakes = responses.filter((response) => !response.isCorrect).length
 
   return (
@@ -11,16 +11,17 @@ export default function QuizSummary({ activityNumber, title, score, total, respo
         <strong>Score: {score}/{total}</strong>
       </div>
       <p>{mistakes === 0 ? 'Excellent—no mistakes to review.' : `Review ${mistakes} ${mistakes === 1 ? 'mistake' : 'mistakes'} below.`}</p>
+      {children}
       <ol className="activity-summary-list">
         {responses.map((response, index) => (
           <li className={response.isCorrect ? 'summary-answer-correct' : 'summary-answer-incorrect'} key={response.id}>
             <div className="summary-question-heading">
               <strong>Question {index + 1}</strong>
-              <span>{response.isCorrect ? 'Correct' : 'Needs review'}</span>
+              <span>{response.timedOut ? 'Time expired' : response.isCorrect ? 'Correct' : 'Needs review'}</span>
             </div>
             <p>{response.features.join(' + ')}</p>
             <dl>
-              <div><dt>Your answer</dt><dd>/{response.selectedAnswer}/</dd></div>
+              <div><dt>Your answer</dt><dd>{response.selectedAnswer ? `/${response.selectedAnswer}/` : 'No answer'}</dd></div>
               <div><dt>Correct answer</dt><dd>/{response.correctAnswer}/</dd></div>
               {response.exampleWord && <div><dt>Example word</dt><dd>{response.exampleWord}</dd></div>}
             </dl>

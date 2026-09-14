@@ -1,0 +1,71 @@
+import '@testing-library/jest-dom/vitest'
+import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
+import { afterEach, expect, it, vi } from 'vitest'
+import Level2WordVowelMatch from './Level2WordVowelMatch.jsx'
+
+const key = { i: 'fleece', 'ɪ': 'kit', ej: 'face', 'ɛ': 'dress', 'æ': 'trap', 'ə': 'about', 'ʌ': 'strut', u: 'goose', 'ʊ': 'foot', ow: 'goat', 'ɑ': 'palm', aj: 'prize', aw: 'loud', 'ɔj': 'choice' }
+afterEach(() => { cleanup(); vi.useRealTimers() })
+it('matches all fourteen words using the supplied first-vowel answer key', () => {
+  render(<Level2WordVowelMatch />)
+  expect(screen.getByRole('button', { name: 'Check matches' })).toBeDisabled()
+  for (const [vowel, word] of Object.entries(key)) {
+    fireEvent.click(screen.getByRole('button', { name: word, exact: true }))
+    fireEvent.keyDown(screen.getByRole('button', { name: `Match word to /${vowel}/`, exact: true }), { key: 'Enter' })
+  }
+  fireEvent.click(screen.getByRole('button', { name: 'Check matches' }))
+  expect(screen.getByRole('status')).toHaveTextContent('14/14 (100%)')
+  expect(screen.getByText('All words are matched correctly!')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Try again' }))
+  expect(screen.getByRole('timer')).toHaveTextContent('3:00')
+  expect(screen.getByRole('button', { name: 'about', exact: true })).toBeEnabled()
+})
+it('supports dragging and returns displaced words to the bank', () => {
+  render(<Level2WordVowelMatch />)
+  const target = screen.getByRole('button', { name: 'Match word to /i/' })
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'kit' } })
+  expect(target).toHaveTextContent('kit')
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'fleece' } })
+  expect(target).toHaveTextContent('fleece')
+  expect(screen.getByRole('button', { name: 'kit', exact: true })).toBeInTheDocument()
+  fireEvent.click(target)
+  expect(screen.getByRole('button', { name: 'fleece', exact: true })).toBeInTheDocument()
+})
+it('expires at three minutes, grades missing answers and locks placements', () => {
+  vi.useFakeTimers()
+  render(<Level2WordVowelMatch />)
+  const target = screen.getByRole('button', { name: 'Match word to /ə/' })
+  act(() => vi.advanceTimersByTime(180000))
+  expect(screen.getByRole('status')).toHaveTextContent('Time’s up. Score: 0/14')
+  expect(target).toHaveAttribute('aria-disabled', 'true')
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'about' } })
+  expect(target).toHaveTextContent('Drop word')
+  expect(screen.getByText('choice', { selector: 'strong' })).toBeInTheDocument()
+})
+
+it('undoes replacements and removals in order without resetting the timer', () => {
+  vi.useFakeTimers()
+  render(<Level2WordVowelMatch />)
+  const undo = screen.getByRole('button', { name: 'Undo' })
+  const target = screen.getByRole('button', { name: 'Match word to /i/' })
+  expect(undo).toBeDisabled()
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'kit' } })
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'fleece' } })
+  act(() => vi.advanceTimersByTime(10000))
+  fireEvent.click(undo)
+  expect(target).toHaveTextContent('kit')
+  expect(screen.getByRole('button', { name: 'fleece', exact: true })).toBeInTheDocument()
+  expect(screen.getByRole('timer')).toHaveTextContent('2:50')
+  fireEvent.click(target)
+  expect(target).toHaveTextContent('Drop word')
+  fireEvent.click(undo)
+  expect(target).toHaveTextContent('kit')
+  fireEvent.click(undo)
+  expect(target).toHaveTextContent('Drop word')
+  expect(undo).toBeDisabled()
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'fleece' } })
+  fireEvent.click(screen.getByRole('button', { name: 'Reset words' }))
+  expect(undo).toBeDisabled()
+  fireEvent.drop(target, { dataTransfer: { getData: () => 'fleece' } })
+  act(() => vi.advanceTimersByTime(180000))
+  expect(undo).toBeDisabled()
+})
