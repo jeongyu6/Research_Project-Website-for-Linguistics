@@ -1,10 +1,10 @@
 import '@testing-library/jest-dom/vitest'
 import { act, cleanup, fireEvent, render, screen } from '@testing-library/react'
 import { afterEach, beforeEach, expect, it, vi } from 'vitest'
-import Build from './build_the_sound/Activity1_BuildTheSound.jsx'
-import Mystery from './mystery_sound/Activity2_MysterySound.jsx'
-import MapDrop from './vowel_map_drop/Activity3_VowelMapDrop.jsx'
-import Detective from './vowel_detective/Activity4_VowelDetective.jsx'
+import Build from './build_the_sound/Activity3_BuildTheSound.jsx'
+import Mystery from './mystery_sound/Activity4_MysterySound.jsx'
+import MapDrop from './vowel_map_drop/Activity1_VowelMapDrop.jsx'
+import Detective from './vowel_detective/Activity5_VowelDetective.jsx'
 
 beforeEach(() => vi.useFakeTimers())
 afterEach(() => { cleanup(); vi.useRealTimers() })

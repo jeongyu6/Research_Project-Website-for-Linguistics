@@ -468,7 +468,7 @@ main {
 
 .practice-activity-tabs {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 10px;
 }
 
@@ -2790,4 +2790,84 @@ html.ipa-screen-scrolling {
     grid-template-rows: minmax(180px, 1fr) auto;
     flex-basis: auto;
   }
+}
+
+.consonant-map-activity { display: grid; gap: 12px; min-width: 0; padding: clamp(12px, 2vw, 24px); border: 1px solid #cbdaf0; border-radius: 16px; background: #f7faff; }
+.consonant-map-bank, .consonant-map-actions { display: flex; flex-wrap: wrap; gap: 8px; }
+.consonant-map-bank button[aria-pressed='true'] { background: #1f5fb5; color: white; }
+.consonant-map-table-wrap { overflow-x: auto; border: 1px solid #cbdaf0; border-radius: 12px; }
+.consonant-map-table { width: 100%; min-width: 760px; border-collapse: collapse; background: white; }
+.consonant-map-table caption { padding: 8px; font-size: 0.9rem; text-align: left; }
+.consonant-map-table th, .consonant-map-table td { border: 1px solid #dbe6f5; padding: 6px; }
+.consonant-map-table th { color: #123b73; background: #eaf2ff; font-size: 0.85rem; }
+.consonant-map-table tbody th { text-align: left; }
+.consonant-map-cell { display: flex; justify-content: center; gap: 5px; }
+.consonant-map-target { flex: 1; min-width: 32px; min-height: 40px; border: 1px dashed #8ea9cc; border-radius: 6px; background: #f7faff; color: #001747; font-size: 1.4rem; cursor: pointer; }
+.consonant-map-target:focus-visible, .consonant-map-target:hover:not(:disabled) { outline: 2px solid #1555c5; }
+.consonant-map-target:disabled { cursor: default; }
+.consonant-map-empty { background: #f0f3f7; }
+.consonant-map-correct { background: #e6f7ee; border-color: #16834b; }
+.consonant-map-incorrect { background: #fdebed; border-color: #b72e3b; }
+.consonant-map-actions { justify-content: flex-end; }
+.consonant-map-actions button:disabled { opacity: 0.55; cursor: not-allowed; }
+.consonant-map-review ul { columns: 2; }
+@media (max-width: 640px) { .consonant-map-review ul { columns: 1; } }
+
+.consonant-levels { display: grid; gap: 14px; min-width: 0; }
+.consonant-levels > h3 { margin: 0; color: #001747; }
+.consonant-map-activity h4 { margin: 0; color: #123b73; }
+.consonant-token-bank { display: grid; gap: 6px; }
+.consonant-map-slot { display: flex; flex: 1; flex-direction: column; align-items: stretch; gap: 5px; min-width: 0; }
+.consonant-map-table th .consonant-map-target { width: 100%; font-size: 0.85rem; padding: 6px; overflow-wrap: anywhere; }
+.consonant-word-target { font-size: 0.85rem; padding: 5px; overflow-wrap: anywhere; }
+.consonant-word-table { min-width: 940px; }
+.consonant-map-slot > .ipa-symbol { text-align: center; padding: 5px; }
+
+/* Let Activities 4 and 5 use spare height for clues and answer choices. */
+.expanded-quiz {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  min-height: max(560px, calc(100dvh - 240px));
+  height: 100%;
+}
+.expanded-quiz > .sound-activity {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: clamp(14px, 2vh, 24px);
+}
+.expanded-quiz .sound-activity-instruction,
+.expanded-quiz .sound-feature-list,
+.expanded-quiz .mystery-clue-list {
+  font-size: clamp(1.1rem, 1.5vw, 1.4rem);
+}
+.expanded-quiz .sound-feature-list span {
+  flex: 1 1 auto;
+  padding: 16px 20px;
+  text-align: center;
+}
+.expanded-quiz .sound-choice-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  flex: 1 0 auto;
+  min-height: clamp(160px, 24vh, 320px);
+  max-height: none;
+  overflow: visible;
+  align-items: stretch;
+  gap: 16px;
+}
+.expanded-quiz .sound-choice-list .sound-choice {
+  min-width: 0;
+  min-height: 76px;
+  padding: 18px;
+  font-size: clamp(1.8rem, 3.6vh, 2.8rem);
+}
+.expanded-quiz .mystery-clue-list li {
+  padding: 16px 20px;
+}
+@media (max-width: 600px) {
+  .expanded-quiz { min-height: 0; height: auto; }
+  .expanded-quiz .sound-choice-list { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; min-height: 160px; }
+  .expanded-quiz .sound-choice-list .sound-choice { padding: 12px; font-size: 1.8rem; }
 }

@@ -4,7 +4,7 @@ import { createMysteryChoices, createMysteryClueOrder, createMysteryClues, creat
 
 const pointsByClueCount = { 1: 300, 2: 200, 3: 100 }
 
-export default function Activity2MysterySound({ initialSound, initialChoices, initialClueOrder }) {
+export default function Activity4MysterySound({ initialSound, initialChoices, initialClueOrder }) {
   const startMystery = () => initialSound ?? createMysterySound()
   const [mystery, setMystery] = useState(startMystery)
   const [clueOrder, setClueOrder] = useState(() => initialClueOrder ?? createMysteryClueOrder())
@@ -71,10 +71,10 @@ export default function Activity2MysterySound({ initialSound, initialChoices, in
   }
 
   return (
-    <section aria-label="Activity 2: Mystery Sound">
+    <section className="expanded-quiz" aria-label="Activity 4: Mystery Sound">
       <div className="sound-activity mystery-sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 2: Mystery Sound</h3>
+          <h3>Activity 4: Mystery Sound</h3>
           <div className="sound-activity-meta">
             <QuestionTimer questionId={round} paused={isRoundComplete} onExpire={() => {
               setSelectedAnswer('')

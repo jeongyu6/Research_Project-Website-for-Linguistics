@@ -30,7 +30,7 @@ export default function LevelSummary({ results, level2Unlocked }) {
               <td>{result ? `${result.score}/${result.total}` : '—'}</td>
               <td>{result ? `${Math.round(result.score / result.total * 100)}%` : '—'}</td>
               <td>{result ? formatTime(result.seconds) : '—'}</td>
-              <td>{result ? result.timedOut ? 'Time expired' : id === 1 && result.score / result.total < 0.7 ? 'Completed — below 70%' : 'Completed' : id === 2 && !level2Unlocked ? 'Locked — earn 70% in Level 1' : 'Not completed'}</td>
+              <td>{result ? result.timedOut ? 'Time expired' : id === 1 && result.score / result.total < 0.7 ? 'Completed — below 70%' : 'Completed' : id === 2 && !level2Unlocked ? 'Locked — earn 70% or above in Level 1' : 'Not completed'}</td>
             </tr>
           })}</tbody>
         </table>

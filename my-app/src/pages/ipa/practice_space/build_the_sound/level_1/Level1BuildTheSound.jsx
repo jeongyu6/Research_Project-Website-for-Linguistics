@@ -53,19 +53,19 @@ export default function Level1BuildTheSound({ initialQuestions, active = true, o
   }
 
   if (showSummary) {
-    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity}>
+    return <QuizSummary activityNumber="3" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity}>
       <div className="level-unlock-message">
-        <p>{level2Unlocked ? 'Level 2 unlocked! Match words to their first vowel sound.' : 'Score at least 70% in Level 1 to unlock Level 2.'}</p>
+        <p>{level2Unlocked ? 'Level 2 unlocked! Match words to their first vowel sound.' : 'Score 70% or above in Level 1 to unlock Level 2.'}</p>
         {level2Unlocked && <button type="button" className="activity-restart-button" onClick={onOpenLevel2}>Continue to Level 2</button>}
       </div>
     </QuizSummary>
   }
 
   return (
-    <section aria-label="Activity 1: Build the Sound">
+    <section aria-label="Activity 3: Build the Sound">
       <div className="sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 1: Build the Sound</h3>
+          <h3>Activity 3: Build the Sound</h3>
           <div className="sound-activity-meta">
             <QuestionTimer key={timerSession} questionId={question.id} paused={isChecked || !active} onExpire={expireQuestion} />
             <span className="sound-activity-progress">
