@@ -8,11 +8,11 @@ export const vowelInventory = [
   { id: 'u-boot', symbol: 'u', exampleWord: 'boot', type: 'Monophthong', height: 'High', backness: 'Back', rounding: 'Rounded' },
   { id: 'upsilon-put', symbol: 'ʊ', exampleWord: 'put', type: 'Monophthong', height: 'High', backness: 'Back', rounding: 'Rounded' },
   { id: 'alpha-pot-father-bought', symbol: 'ɑ', exampleWord: 'pot, father, bought', type: 'Monophthong', height: 'Low', backness: 'Back', rounding: 'Unrounded' },
-  { id: 'ej-bait', symbol: 'ej', exampleWord: 'bait', type: 'Diphthong', height: 'Mid-to-high', backness: 'Front', rounding: 'Unrounded' },
+  { id: 'ej-bait', symbol: 'ej', exampleWord: 'bait', type: 'Diphthong', height: 'Mid', backness: 'Front', rounding: 'Unrounded' },
   { id: 'ow-boat', symbol: 'ow', exampleWord: 'boat', type: 'Diphthong', height: 'Mid-to-high', backness: 'Back', rounding: 'Rounded' },
-  { id: 'aj-my', symbol: 'aj', exampleWord: 'my', type: 'Diphthong', height: 'Low-to-high', backness: 'Central-to-front', rounding: 'Unrounded' },
-  { id: 'aw-cow', symbol: 'aw', exampleWord: 'cow', type: 'Diphthong', height: 'Low-to-high', backness: 'Central-to-back', rounding: 'Unrounded' },
-  { id: 'oj-boy', symbol: 'ɔj', exampleWord: 'boy', type: 'Diphthong', height: 'Mid-to-high', backness: 'Back-to-front', rounding: 'Rounded-to-unrounded' },
+  { id: 'aj-my', symbol: 'aj', exampleWord: 'my', type: 'Diphthong', height: 'Low', backness: 'Central-to-front', rounding: 'Unrounded' },
+  { id: 'aw-cow', symbol: 'aw', exampleWord: 'cow', type: 'Diphthong', height: 'Low', backness: 'Central', rounding: 'Unrounded' },
+  { id: 'oj-boy', symbol: 'ɔj', exampleWord: 'boy', type: 'Diphthong', height: 'Mid', backness: 'Back-to-front', rounding: 'Rounded-to-unrounded' },
 ]
 
 function shuffle(items, random) {

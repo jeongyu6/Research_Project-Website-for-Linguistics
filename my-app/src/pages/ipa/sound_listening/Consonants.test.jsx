@@ -24,7 +24,7 @@ describe('Consonants', () => {
 
     await user.click(screen.getByRole('button', { name: 'θ, Fricative, Interdental, play recording' }))
 
-    expect(screen.getByText('Voiceless dental fricative')).toBeInTheDocument()
+    expect(screen.getByText('Voiceless interdental fricative')).toBeInTheDocument()
     expect(screen.getByText('th', { selector: '.sound-example-letters' })).toHaveClass('sound-example-letters')
   })
 })
