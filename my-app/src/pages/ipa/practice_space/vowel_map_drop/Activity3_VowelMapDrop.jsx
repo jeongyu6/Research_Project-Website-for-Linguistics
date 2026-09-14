@@ -175,8 +175,8 @@ export default function Activity3VowelMapDrop() {
       <div className="vowel-map-actions">
         <button type="button" className="vowel-map-undo-button" disabled={!selectedTarget && !selectedSymbol && placementHistory.length === 0} onClick={undoPlacement}>Undo</button>
         {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => setIsChecked(true)}>Check My Answer</button>}
+        <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>
       </div>
-      <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>
     </section>
   )
 }

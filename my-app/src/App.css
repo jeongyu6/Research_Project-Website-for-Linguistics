@@ -2678,15 +2678,56 @@ html.ipa-screen-scrolling {
   font-size: clamp(1.5rem, 4vh, 2.6rem);
 }
 
-.ipa-screen .vowel-map-chart {
-  flex: 1 0 240px;
-  display: flex;
+/* Size Map Drop from the space left after its instructions and controls. */
+.ipa-screen .practice-space-workspace > [role='tabpanel']:has(.vowel-map-activity),
+.ipa-screen .practice-space-workspace > [role='tabpanel'] > .vowel-map-activity {
+  flex: 1 1 0;
+  min-height: 0;
 }
 
-.ipa-screen .vowel-drop-diagram {
-  flex: 1;
-  width: 100%;
+.ipa-screen .vowel-map-activity {
+  gap: 10px;
+  padding: 12px;
+}
+
+.ipa-screen .vowel-map-activity > * {
+  flex-shrink: 0;
+}
+
+.ipa-screen .vowel-map-workspace {
+  display: grid;
+  flex: 1 1 0;
+  min-height: 180px;
+  grid-template-rows: minmax(0, 1fr);
+}
+
+.ipa-screen .vowel-map-chart {
+  position: relative;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.ipa-screen .vowel-diagram.vowel-drop-diagram {
+  position: absolute;
+  inset: 6px;
+  width: calc(100% - 12px);
+  height: calc(100% - 12px);
   min-width: 0;
-  height: 100%;
-  min-height: 240px;
+  min-height: 0;
+}
+
+.ipa-screen .vowel-map-review {
+  min-height: 0;
+  overflow-y: auto;
+}
+
+.ipa-screen .vowel-map-actions {
+  flex-wrap: wrap;
+}
+
+@media (max-width: 900px) {
+  .ipa-screen .vowel-map-workspace-reviewing {
+    grid-template-rows: minmax(180px, 1fr) auto;
+    flex-basis: auto;
+  }
 }
