@@ -2551,3 +2551,142 @@ main {
   }
 
 }
+
+/* Each IPA section occupies one screen; oversized content scrolls inside it. */
+html.ipa-screen-scrolling {
+  scroll-snap-type: y mandatory;
+}
+
+.ipa-screen-scrolling .ipa-page {
+  gap: 0;
+  padding-bottom: 0;
+}
+
+.ipa-screen-scrolling .ipa-page-header {
+  margin-bottom: 24px;
+}
+
+.ipa-screen {
+  height: 100dvh;
+  min-height: 0;
+  padding: 16px 0;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
+.ipa-screen > section {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  max-height: 100%;
+  min-height: 0;
+  overflow: auto;
+  align-content: start;
+  padding: clamp(12px, 2vh, 24px);
+  gap: 12px;
+}
+
+.ipa-screen .vowel-listening-section .vowel-diagram {
+  min-width: 0;
+  height: clamp(200px, calc(100dvh - 380px), 620px);
+}
+
+.ipa-screen .vowel-chart-note {
+  position: static;
+  margin: 4px 0 0;
+}
+
+.ipa-screen .ipa-table th,
+.ipa-screen .ipa-table td {
+  padding-top: clamp(3px, 0.7vh, 10px);
+  padding-bottom: clamp(3px, 0.7vh, 10px);
+}
+
+.ipa-screen .ipa-table td {
+  height: auto;
+}
+
+.ipa-screen .recording-player {
+  margin-top: 0;
+  padding: 10px 14px;
+  gap: 8px;
+}
+
+.ipa-screen-scrolling .page-footer {
+  scroll-snap-align: end;
+}
+
+/* Give spare screen height to the interactive content itself. */
+.ipa-screen > section > * {
+  flex-shrink: 0;
+}
+
+.ipa-screen .ipa-table-wrap {
+  flex: 1 0 auto;
+  display: flex;
+}
+
+.ipa-screen .ipa-table {
+  flex: 1;
+}
+
+.ipa-screen .pulmonic-symbol-button .ipa-symbol {
+  font-size: clamp(1.3rem, 3.5vh, 2.2rem);
+}
+
+.ipa-screen .vowel-listening-section .vowel-chart {
+  flex: 1 0 240px;
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .vowel-listening-section .vowel-diagram {
+  flex: 1 1 0;
+  height: 0;
+  min-height: 200px;
+  width: 100%;
+}
+
+.ipa-screen .ipa-editor {
+  flex: 1 0 150px;
+}
+
+.ipa-screen .practice-space-workspace > [role='tabpanel'] {
+  flex: 1 0 auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .practice-space-workspace > [role='tabpanel'] > * {
+  flex: 1 0 auto;
+}
+
+.ipa-screen .sound-activity,
+.ipa-screen .vowel-map-activity {
+  display: flex;
+  flex-direction: column;
+}
+
+.ipa-screen .sound-choice-list {
+  flex: 1 0 auto;
+  align-items: stretch;
+}
+
+.ipa-screen .sound-choice {
+  flex: 1 0 88px;
+  min-height: 72px;
+  font-size: clamp(1.5rem, 4vh, 2.6rem);
+}
+
+.ipa-screen .vowel-map-chart {
+  flex: 1 0 240px;
+  display: flex;
+}
+
+.ipa-screen .vowel-drop-diagram {
+  flex: 1;
+  width: 100%;
+  min-width: 0;
+  height: 100%;
+  min-height: 240px;
+}
