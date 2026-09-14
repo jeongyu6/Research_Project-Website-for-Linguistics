@@ -4,7 +4,7 @@ function formatTime(seconds) {
 }
 
 const levels = [
-  { id: 1, title: 'Build the Sound' },
+  { id: 1, title: 'Vowel Map Drop' },
   { id: 2, title: 'Match the Words to the Vowels' },
 ]
 
@@ -17,7 +17,7 @@ export default function LevelSummary({ results, level2Unlocked }) {
 
   return (
     <section className="activity-summary" aria-labelledby="levels-summary-title">
-      <h3 id="levels-summary-title">Build the Sound: Overall Summary</h3>
+      <h3 id="levels-summary-title">Vowel Map Drop: Overall Summary</h3>
       <p>Your latest completed attempt for each level is shown below. Retrying a level updates its grade when you finish.</p>
       <div className="levels-summary-table-wrap">
         <table className="levels-summary-table">

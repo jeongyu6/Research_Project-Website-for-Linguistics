@@ -4,7 +4,7 @@ import { useState } from 'react'
 import QuizSummary from '../../QuizSummary.jsx'
 import { consonantInventory, createQuestionSession } from './level1Questions.js'
 
-export default function Level1BuildTheSound({ initialQuestions, active = true, onComplete, level2Unlocked, onOpenLevel2 }) {
+export default function Level1BuildTheSound({ initialQuestions, active = true, onComplete }) {
   const startQuestionSession = () => initialQuestions ?? createQuestionSession(consonantInventory, 10)
   const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startQuestionSession)
@@ -54,10 +54,6 @@ export default function Level1BuildTheSound({ initialQuestions, active = true, o
 
   if (showSummary) {
     return <QuizSummary activityNumber="3" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity}>
-      <div className="level-unlock-message">
-        <p>{level2Unlocked ? 'Level 2 unlocked! Match words to their first vowel sound.' : 'Score 70% or above in Level 1 to unlock Level 2.'}</p>
-        {level2Unlocked && <button type="button" className="activity-restart-button" onClick={onOpenLevel2}>Continue to Level 2</button>}
-      </div>
     </QuizSummary>
   }
 
