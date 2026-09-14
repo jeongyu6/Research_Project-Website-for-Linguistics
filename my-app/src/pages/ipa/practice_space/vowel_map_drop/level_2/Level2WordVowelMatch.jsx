@@ -63,7 +63,7 @@ export default function Level2WordVowelMatch({ onBack, onComplete, onShowSummary
   return (
     <section className="word-vowel-activity" aria-labelledby="word-vowel-title">
       <div className="sound-activity-header">
-        <h3 id="word-vowel-title">Level 2: Match the Words to the Vowels</h3>
+        <h4 id="word-vowel-title">Level 2: Match the Words to the Vowels</h4>
         <div className="sound-activity-meta">
           <QuestionTimer key={attempt} questionId="words" duration={180} paused={checked || !active} onExpire={() => finishAttempt(true)} />
           <span className="sound-activity-progress">Placed {14 - remainingWords.length} of 14</span>
