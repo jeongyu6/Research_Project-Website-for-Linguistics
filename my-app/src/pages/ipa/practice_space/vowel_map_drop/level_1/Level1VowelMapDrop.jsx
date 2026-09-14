@@ -92,7 +92,7 @@ export default function Level1VowelMapDrop({ active = true, onComplete, level2Un
   return (
     <section className="vowel-map-activity" aria-labelledby="vowel-map-drop-title">
       <div className="sound-activity-header">
-        <h3 id="vowel-map-drop-title">Activity 1: Vowel Map Drop</h3>
+        <h4 id="vowel-map-drop-title">Level 1: Place Vowels</h4>
         <div className="sound-activity-meta">
           <QuestionTimer key={timerSession} questionId="chart" duration={180} paused={!active || isChecked} onExpire={() => finishAttempt(true)} />
           <span className="sound-activity-progress">Placed {placedSymbols.length} of {mapDropSymbols.length}</span>

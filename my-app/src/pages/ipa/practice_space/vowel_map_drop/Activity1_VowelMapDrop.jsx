@@ -45,7 +45,8 @@ export default function Activity1VowelMapDrop() {
   }
 
   return (
-    <div className="build-sound-levels">
+    <div className="build-sound-levels vowel-map-levels">
+      <h3>Activity 1: Vowel Map Drop</h3>
       <nav className="build-sound-level-navigation" aria-label="Vowel Map Drop levels">
         <button type="button" aria-current={!showOverallSummary && level === 1 ? 'step' : undefined} onClick={() => selectLevel(1)}>Level 1: Vowel Map Drop</button>
         <button type="button" aria-current={!showOverallSummary && level === 2 ? 'step' : undefined} disabled={!level2Unlocked} aria-describedby={!level2Unlocked ? 'level-two-requirement' : undefined} onClick={() => selectLevel(2)}>Level 2: Match Words to Vowels</button>

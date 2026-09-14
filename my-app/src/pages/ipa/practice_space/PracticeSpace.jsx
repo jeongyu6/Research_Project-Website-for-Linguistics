@@ -30,7 +30,7 @@ export default function PracticeSpace() {
           </button>
         ))}
       </div>
-      <div className={activeActivity > 0 ? 'practice-activity-roomy' : undefined} role="tabpanel" aria-label={`Activity #${activeActivity + 1}: ${activities[activeActivity].name}`}>
+      <div className="practice-activity-roomy" role="tabpanel" aria-label={`Activity #${activeActivity + 1}: ${activities[activeActivity].name}`}>
         <ActiveActivity />
       </div>
     </section>
