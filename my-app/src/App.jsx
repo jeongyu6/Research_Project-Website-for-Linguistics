@@ -134,15 +134,11 @@ function App() {
                       <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
                     </svg>
                   </div>
-                  <h3>Language Data & Projects</h3>
-                  <p>Access datasets, ongoing projects, and tools for language research.</p>
-                  <button
-                    type="button"
-                    className="card-button"
-                    onClick={() => setCurrentPage('Treeform_Page')}
-                  >
-                    Explore Data →
-                  </button>
+                  <h3>Treeform</h3>
+                  <p>Create and edit syntax trees with our linguistics diagramming app.</p>
+                  <a className="card-button" href="https://linguistics-diagramming.vercel.app/">
+                    Open Treeform →
+                  </a>
                 </article>
               </div>
             </section>
