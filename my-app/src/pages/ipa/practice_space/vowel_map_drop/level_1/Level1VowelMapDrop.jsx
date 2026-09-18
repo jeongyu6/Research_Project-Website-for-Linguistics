@@ -1,5 +1,7 @@
+import useLevelTime from '../../build_the_sound/useLevelTime.js'
+import QuestionTimer from '../../QuestionTimer.jsx'
 import { useState } from 'react'
-import { mapDropSymbols, vowelChartPositions } from '../../sound_listening/vowelChartPositions.js'
+import { mapDropSymbols, vowelChartPositions } from '../../../sound_listening/vowelChartPositions.js'
 
 const dropTargets = vowelChartPositions
   .map((position) => ({ ...position, symbol: position.activitySymbol ?? position.text }))
@@ -7,17 +9,20 @@ const dropTargets = vowelChartPositions
 
 const vowelLocations = {
   i: 'High + Front', 'ɪ': 'High + Front', 'ʊ': 'High + Back', u: 'High + Back',
-  ej: 'Mid-to-high + Front', 'ɛ': 'Mid + Front', 'ə': 'Mid + Central', ow: 'Mid-to-high + Back',
-  'ʌ': 'Mid + Central', 'ɔj': 'Mid-to-high + Back-to-front', 'æ': 'Low + Front',
-  aj: 'Low-to-high + Central-to-front', aw: 'Low-to-high + Central-to-back', 'ɑ': 'Low + Back',
+  ej: 'Mid + Front', 'ɛ': 'Mid + Front', 'ə': 'Mid + Central', ow: 'Mid-to-high + Back',
+  'ʌ': 'Mid + Central', 'ɔj': 'Mid + Back-to-front', 'æ': 'Low + Front',
+  aj: 'Low + Central-to-front', aw: 'Low + Central', 'ɑ': 'Low + Back',
 }
 
-export default function Activity3VowelMapDrop() {
+export default function Level1VowelMapDrop({ active = true, onComplete, level2Unlocked, onOpenLevel2 }) {
+  const [timerSession, setTimerSession] = useState(0)
+  const [timedOut, setTimedOut] = useState(false)
   const [placements, setPlacements] = useState({})
   const [placementHistory, setPlacementHistory] = useState([])
   const [selectedSymbol, setSelectedSymbol] = useState('')
   const [selectedTarget, setSelectedTarget] = useState('')
   const [isChecked, setIsChecked] = useState(false)
+  const { elapsedSeconds, resetTime } = useLevelTime(active && !isChecked)
   const placedSymbols = Object.values(placements)
   const remainingSymbols = mapDropSymbols.filter((symbol) => !placedSymbols.includes(symbol))
   const incorrectPlacements = Object.entries(placements)
@@ -25,6 +30,7 @@ export default function Activity3VowelMapDrop() {
     .map(([targetSymbol, placedSymbol]) => ({ targetSymbol, placedSymbol }))
 
   function placeSymbol(symbol, targetSymbol) {
+    if (timedOut) return
     if (!symbol) return
     setPlacements((current) => {
       const next = Object.fromEntries(
@@ -39,6 +45,7 @@ export default function Activity3VowelMapDrop() {
   }
 
   function undoPlacement() {
+    if (timedOut) return
     if (selectedTarget) {
       const symbolToRemove = placements[selectedTarget]
       setPlacements((current) => Object.fromEntries(
@@ -62,7 +69,19 @@ export default function Activity3VowelMapDrop() {
     setSelectedTarget('')
   }
 
+  function finishAttempt(expired = false) {
+    setTimedOut(expired)
+    setIsChecked(true)
+    setSelectedSymbol('')
+    setSelectedTarget('')
+    const score = dropTargets.filter(({ symbol }) => placements[symbol] === symbol).length
+    onComplete?.(score, mapDropSymbols.length, elapsedSeconds(), expired)
+  }
+
   function resetChart() {
+    resetTime()
+    setTimerSession((session) => session + 1)
+    setTimedOut(false)
     setPlacements({})
     setPlacementHistory([])
     setSelectedSymbol('')
@@ -73,16 +92,21 @@ export default function Activity3VowelMapDrop() {
   return (
     <section className="vowel-map-activity" aria-labelledby="vowel-map-drop-title">
       <div className="sound-activity-header">
-        <h3 id="vowel-map-drop-title">Activity 3: Vowel Map Drop</h3>
-        <span className="sound-activity-progress">Placed {placedSymbols.length} of {mapDropSymbols.length}</span>
+        <h4 id="vowel-map-drop-title">Level 1: Place Vowels</h4>
+        <div className="sound-activity-meta">
+          <QuestionTimer key={timerSession} questionId="chart" duration={180} paused={!active || isChecked} onExpire={() => finishAttempt(true)} />
+          <span className="sound-activity-progress">Placed {placedSymbols.length} of {mapDropSymbols.length}</span>
+        </div>
       </div>
+      {timedOut && <p role="status" className="sound-feedback sound-feedback-incorrect">Time’s up. Review your placements, then try again.</p>}
       <p className="sound-activity-instruction">Drag each vowel to its position on the Canadian English vowel chart. You can also select a vowel and then select a target.</p>
 
       <div className="vowel-map-bank" aria-label="Vowel bank">
         {remainingSymbols.map((symbol) => (
           <button
             type="button"
-            draggable
+            draggable={!timedOut}
+            disabled={timedOut}
             className={selectedSymbol === symbol ? 'vowel-bank-symbol vowel-bank-symbol-selected' : 'vowel-bank-symbol'}
             key={symbol}
             aria-pressed={selectedSymbol === symbol}
@@ -155,6 +179,7 @@ export default function Activity3VowelMapDrop() {
       {isChecked && (
         <section className="vowel-map-review" aria-labelledby="vowel-map-review-heading">
           <h4 id="vowel-map-review-heading">Answer Summary</h4>
+          {level2Unlocked && <button type="button" className="activity-restart-button" onClick={onOpenLevel2}>Continue to Level 2</button>}
           {incorrectPlacements.length === 0 && remainingSymbols.length === 0 ? (
             <p>Excellent! All {mapDropSymbols.length} vowels are in the correct positions.</p>
           ) : (
@@ -173,10 +198,10 @@ export default function Activity3VowelMapDrop() {
       )}
       </div>
       <div className="vowel-map-actions">
-        <button type="button" className="vowel-map-undo-button" disabled={!selectedTarget && !selectedSymbol && placementHistory.length === 0} onClick={undoPlacement}>Undo</button>
-        {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => setIsChecked(true)}>Check My Answer</button>}
+        <button type="button" className="vowel-map-undo-button" disabled={timedOut || (!selectedTarget && !selectedSymbol && placementHistory.length === 0)} onClick={undoPlacement}>Undo</button>
+        {!isChecked && <button type="button" className="vowel-map-check-button" disabled={placedSymbols.length !== mapDropSymbols.length} onClick={() => finishAttempt()}>Check My Answer</button>}
+        <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>
       </div>
-      <button type="button" className="activity-restart-button" onClick={resetChart}>{isChecked ? 'Try again' : 'Reset chart'}</button>
     </section>
   )
 }

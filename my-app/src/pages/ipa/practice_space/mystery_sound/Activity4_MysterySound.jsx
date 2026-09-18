@@ -1,9 +1,10 @@
+import QuestionTimer from '../QuestionTimer.jsx'
 import { useState } from 'react'
 import { createMysteryChoices, createMysteryClueOrder, createMysteryClues, createMysterySound } from './questions.js'
 
 const pointsByClueCount = { 1: 300, 2: 200, 3: 100 }
 
-export default function Activity2MysterySound({ initialSound, initialChoices, initialClueOrder }) {
+export default function Activity4MysterySound({ initialSound, initialChoices, initialClueOrder }) {
   const startMystery = () => initialSound ?? createMysterySound()
   const [mystery, setMystery] = useState(startMystery)
   const [clueOrder, setClueOrder] = useState(() => initialClueOrder ?? createMysteryClueOrder())
@@ -70,11 +71,18 @@ export default function Activity2MysterySound({ initialSound, initialChoices, in
   }
 
   return (
-    <section aria-label="Activity 2: Mystery Sound">
+    <section className="expanded-quiz" aria-label="Activity 4: Mystery Sound">
       <div className="sound-activity mystery-sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 2: Mystery Sound</h3>
-          <span className="sound-activity-progress">Round {round} · Score {score}</span>
+          <h3>Activity 4: Mystery Sound</h3>
+          <div className="sound-activity-meta">
+            <QuestionTimer questionId={round} paused={isRoundComplete} onExpire={() => {
+              setSelectedAnswer('')
+              setIsSkipped(true)
+              setFeedback(`Time’s up. The mystery sound was /${mystery.symbol}/.`)
+            }} />
+            <span className="sound-activity-progress">Round {round} · Score {score}</span>
+          </div>
         </div>
 
         <p className="sound-activity-instruction">Identify the IPA consonant. Fewer clues earn more points.</p>

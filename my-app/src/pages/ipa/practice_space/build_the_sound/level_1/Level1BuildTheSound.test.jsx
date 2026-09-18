@@ -2,21 +2,21 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import Activity1BuildTheSound from './Activity1_BuildTheSound.jsx'
+import Level1BuildTheSound from './Level1BuildTheSound.jsx'
 
 const testQuestions = [
   { id: 'first', features: ['Voiceless', 'Fricative', 'Dental'], choices: ['f', 'θ', 'ð', 's'], answer: 'θ' },
   { id: 'second', features: ['Voiced', 'Nasal', 'Velar'], choices: ['m', 'n', 'ŋ', 'ɲ'], answer: 'ŋ' },
 ]
 
-describe('Activity1BuildTheSound', () => {
+describe('Level1BuildTheSound', () => {
   afterEach(cleanup)
 
   it('checks a correct answer and advances to the next question', async () => {
     const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
+    render(<Level1BuildTheSound initialQuestions={testQuestions} />)
 
-    expect(screen.getByRole('heading', { name: 'Activity 1: Build the Sound' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Activity 3: Build the Sound' })).toBeInTheDocument()
     expect(screen.getByText('Voiceless')).toBeInTheDocument()
     expect(screen.getByText('Fricative')).toBeInTheDocument()
     expect(screen.getByText('Dental')).toBeInTheDocument()
@@ -35,7 +35,7 @@ describe('Activity1BuildTheSound', () => {
 
   it('reveals the correct symbol after an incorrect answer', async () => {
     const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
+    render(<Level1BuildTheSound initialQuestions={testQuestions} />)
 
     await user.click(screen.getByRole('button', { name: '/f/' }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
@@ -46,7 +46,7 @@ describe('Activity1BuildTheSound', () => {
 
   it('shows a review summary before starting a new session', async () => {
     const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={[testQuestions[0]]} />)
+    render(<Level1BuildTheSound initialQuestions={[testQuestions[0]]} />)
 
     await user.click(screen.getByRole('button', { name: '/f/' }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
@@ -60,7 +60,7 @@ describe('Activity1BuildTheSound', () => {
 
   it('answers question 2 first and preserves it when returning to question 1', async () => {
     const user = userEvent.setup()
-    render(<Activity1BuildTheSound initialQuestions={testQuestions} />)
+    render(<Level1BuildTheSound initialQuestions={testQuestions} />)
 
     expect(screen.getByRole('button', { name: 'Previous question' })).toBeDisabled()
     await user.click(screen.getByRole('button', { name: 'Next question' }))

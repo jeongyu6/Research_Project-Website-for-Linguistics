@@ -1,9 +1,12 @@
+import useLevelTime from '../useLevelTime.js'
+import QuestionTimer from '../../QuestionTimer.jsx'
 import { useState } from 'react'
-import QuizSummary from '../QuizSummary.jsx'
-import { consonantInventory, createQuestionSession } from './questions.js'
+import QuizSummary from '../../QuizSummary.jsx'
+import { consonantInventory, createQuestionSession } from './level1Questions.js'
 
-export default function Activity1BuildTheSound({ initialQuestions }) {
+export default function Level1BuildTheSound({ initialQuestions, active = true, onComplete }) {
   const startQuestionSession = () => initialQuestions ?? createQuestionSession(consonantInventory, 10)
+  const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startQuestionSession)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState({})
@@ -15,17 +18,33 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
   const isChecked = Boolean(response)
   const isCorrect = response?.isCorrect ?? selectedAnswer === question.answer
   const score = Object.values(responses).filter(({ isCorrect: answerIsCorrect }) => answerIsCorrect).length
+  const { elapsedSeconds, resetTime } = useLevelTime(active && !isChecked && !showSummary)
   const allQuestionsAnswered = Object.keys(responses).length === questions.length
+
+  function recordResponse(response) {
+    const next = { ...responses, [question.id]: response }
+    setResponses(next)
+    if (Object.keys(next).length === questions.length) {
+      onComplete?.(Object.values(next).filter((answer) => answer.isCorrect).length, questions.length, elapsedSeconds())
+    }
+  }
+
+  function expireQuestion() {
+    if (isChecked) return
+    recordResponse({
+      id: question.id, features: question.features, exampleWord: question.exampleWord,
+      selectedAnswer, correctAnswer: question.answer, isCorrect: false, timedOut: true,
+    })
+  }
 
   function checkAnswer() {
     if (!selectedAnswer || isChecked) return
-    setResponses((currentResponses) => ({
-      ...currentResponses,
-      [question.id]: { id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect },
-    }))
+    recordResponse({ id: question.id, features: question.features, exampleWord: question.exampleWord, selectedAnswer, correctAnswer: question.answer, isCorrect })
   }
 
   function restartActivity() {
+    resetTime()
+    setTimerSession((session) => session + 1)
     setQuestions(startQuestionSession())
     setQuestionIndex(0)
     setSelectedAnswers({})
@@ -34,17 +53,21 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
   }
 
   if (showSummary) {
-    return <QuizSummary activityNumber="1" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} />
+    return <QuizSummary activityNumber="3" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity}>
+    </QuizSummary>
   }
 
   return (
-    <section aria-label="Activity 1: Build the Sound">
+    <section aria-label="Activity 3: Build the Sound">
       <div className="sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 1: Build the Sound</h3>
-          <span className="sound-activity-progress">
-            Question {questionIndex + 1} of {questions.length}
-          </span>
+          <h3>Activity 3: Build the Sound</h3>
+          <div className="sound-activity-meta">
+            <QuestionTimer key={timerSession} questionId={question.id} paused={isChecked || !active} onExpire={expireQuestion} />
+            <span className="sound-activity-progress">
+              Question {questionIndex + 1} of {questions.length}
+            </span>
+          </div>
         </div>
 
         <p className="sound-activity-instruction">Which IPA symbol matches all three features?</p>
@@ -73,7 +96,7 @@ export default function Activity1BuildTheSound({ initialQuestions }) {
 
         {isChecked && (
           <p className={`sound-feedback ${isCorrect ? 'sound-feedback-correct' : 'sound-feedback-incorrect'}`} role="status">
-            {isCorrect
+            {response?.timedOut ? `Time’s up. The correct answer is /${question.answer}/.` : isCorrect
               ? `Correct! /${question.answer}/ matches all three features.`
               : `Not quite. The correct answer is /${question.answer}/.`}
           </p>

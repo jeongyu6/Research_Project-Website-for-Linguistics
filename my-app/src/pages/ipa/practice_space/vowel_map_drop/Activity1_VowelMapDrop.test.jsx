@@ -2,14 +2,14 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import Activity3VowelMapDrop from './Activity3_VowelMapDrop.jsx'
+import Activity1VowelMapDrop from './Activity1_VowelMapDrop.jsx'
 
-describe('Activity3VowelMapDrop', () => {
+describe('Activity1VowelMapDrop', () => {
   afterEach(cleanup)
 
   it('renders the Vowel Map Drop activity', () => {
-    render(<Activity3VowelMapDrop />)
-    expect(screen.getByRole('heading', { name: 'Activity 3: Vowel Map Drop' })).toBeInTheDocument()
+    render(<Activity1VowelMapDrop />)
+    expect(screen.getByRole('heading', { name: 'Activity 1: Vowel Map Drop' })).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /Vowel chart target/ })).toHaveLength(14)
     ;['/i/', '/ɪ/', '/ʊ/', '/u/', '/ej/', '/ɛ/', '/ə/', '/ow/', '/ʌ/', '/ɔj/', '/æ/', '/aj/', '/aw/', '/ɑ/']
       .forEach((symbol) => expect(screen.getByRole('button', { name: symbol })).toBeInTheDocument())
@@ -17,7 +17,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('places a selected vowel without grading it immediately', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
 
     await user.click(screen.getByRole('button', { name: '/i/' }))
     await user.click(screen.getByRole('button', { name: 'Vowel chart target 1' }))
@@ -30,7 +30,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('allows a vowel to be placed in an incorrect position before checking', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
 
     await user.click(screen.getByRole('button', { name: '/u/' }))
     await user.click(screen.getByRole('button', { name: 'Vowel chart target 1' }))
@@ -41,7 +41,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('undoes the most recent vowel placement', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
     const undoButton = screen.getByRole('button', { name: 'Undo' })
 
     expect(undoButton).toBeDisabled()
@@ -60,7 +60,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('undoes an active vowel selection before changing placements', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
     const vowelButton = screen.getByRole('button', { name: '/i/' })
     const undoButton = screen.getByRole('button', { name: 'Undo' })
 
@@ -77,7 +77,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('removes a selected vowel from the chart even when it was not placed last', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
 
     await user.click(screen.getByRole('button', { name: '/i/' }))
     await user.click(screen.getByRole('button', { name: 'Vowel chart target 1' }))
@@ -96,7 +96,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('toggles a placed vowel selection without removing it', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
     const target = screen.getByRole('button', { name: 'Vowel chart target 1' })
 
     await user.click(screen.getByRole('button', { name: '/i/' }))
@@ -113,7 +113,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('keeps selected-vowel removal out of later placement undo history', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
 
     for (const [index, symbol] of ['i', 'u', 'æ'].entries()) {
       await user.click(screen.getByRole('button', { name: `/${symbol}/` }))
@@ -134,7 +134,7 @@ describe('Activity3VowelMapDrop', () => {
 
   it('marks mistakes and summarizes their correct locations after checking', async () => {
     const user = userEvent.setup()
-    render(<Activity3VowelMapDrop />)
+    render(<Activity1VowelMapDrop />)
     const placements = ['u', 'ɪ', 'ʊ', 'i', 'ej', 'ɛ', 'ə', 'ow', 'ʌ', 'ɔj', 'æ', 'aj', 'aw', 'ɑ']
 
     for (const [index, symbol] of placements.entries()) {

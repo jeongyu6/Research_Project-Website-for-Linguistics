@@ -2,7 +2,7 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import Activity2MysterySound from './Activity2_MysterySound.jsx'
+import Activity4MysterySound from './Activity4_MysterySound.jsx'
 
 const mysterySound = {
   id: 'v-van', symbol: 'v', exampleWord: 'van', voicing: 'Voiced', manner: 'Fricative', place: 'Labiodental',
@@ -10,12 +10,12 @@ const mysterySound = {
 const mysteryChoices = ['v', 'f', 'p', 't']
 const clueOrder = ['voicing', 'manner', 'place']
 
-describe('Activity2MysterySound', () => {
+describe('Activity4MysterySound', () => {
   afterEach(cleanup)
 
   it('renders the Mystery Sound activity', () => {
-    render(<Activity2MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-    expect(screen.getByRole('heading', { name: 'Activity 2: Mystery Sound' })).toBeInTheDocument()
+    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
+    expect(screen.getByRole('heading', { name: 'Activity 4: Mystery Sound' })).toBeInTheDocument()
     expect(screen.getByText('I am voiced.')).toBeInTheDocument()
     expect(screen.queryByText('I am fricative.')).not.toBeInTheDocument()
     expect(screen.getByText('300 points available')).toBeInTheDocument()
@@ -23,7 +23,7 @@ describe('Activity2MysterySound', () => {
 
   it('reveals clues one at a time and reduces the available points', async () => {
     const user = userEvent.setup()
-    render(<Activity2MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
+    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
 
     await user.click(screen.getByRole('button', { name: 'Reveal another clue' }))
     expect(screen.getByText('I am fricative.')).toBeInTheDocument()
@@ -37,7 +37,7 @@ describe('Activity2MysterySound', () => {
 
   it('awards 300 points for a correct guess after the first clue', async () => {
     const user = userEvent.setup()
-    render(<Activity2MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
+    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
 
     await user.click(screen.getByRole('button', { name: '/v/' }))
     await user.click(screen.getByRole('button', { name: 'Submit guess' }))
@@ -49,7 +49,7 @@ describe('Activity2MysterySound', () => {
 
   it('reveals the next clue after an incorrect guess and awards 200 points', async () => {
     const user = userEvent.setup()
-    render(<Activity2MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
+    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
 
     await user.click(screen.getByRole('button', { name: '/f/' }))
     await user.click(screen.getByRole('button', { name: 'Submit guess' }))
@@ -65,7 +65,7 @@ describe('Activity2MysterySound', () => {
 
   it('skips a mystery, reveals the answer, and awards no points', async () => {
     const user = userEvent.setup()
-    render(<Activity2MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
+    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
 
     await user.click(screen.getByRole('button', { name: 'Skip' }))
 

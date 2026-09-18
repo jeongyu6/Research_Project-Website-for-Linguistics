@@ -8,6 +8,7 @@ The website currently includes:
 - An interactive Canadian English consonant chart with audio recordings, articulatory descriptions, and example words
 - An interactive IPA keyboard and transcription editor
 - A Practice Space containing five phonetics activities
+- A syntax tree builder app
 
 ## Technology
 

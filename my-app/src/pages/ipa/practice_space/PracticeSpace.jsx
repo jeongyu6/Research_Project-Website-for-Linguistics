@@ -1,14 +1,16 @@
+import Activity2ConsonantMapDrop from './consonant_map_drop/index.js'
 import { useState } from 'react'
-import Activity1BuildTheSound from './build_the_sound/index.js'
-import Activity2MysterySound from './mystery_sound/index.js'
-import Activity3VowelMapDrop from './vowel_map_drop/index.js'
-import Activity4VowelDetective from './vowel_detective/index.js'
+import Activity3BuildTheSound from './build_the_sound/index.js'
+import Activity4MysterySound from './mystery_sound/index.js'
+import Activity1VowelMapDrop from './vowel_map_drop/index.js'
+import Activity5VowelDetective from './vowel_detective/index.js'
 
 const activities = [
-  { name: 'Build the Sound', Component: Activity1BuildTheSound },
-  { name: 'Mystery Sound', Component: Activity2MysterySound },
-  { name: 'Vowel Map Drop', Component: Activity3VowelMapDrop },
-  { name: 'Vowel Detective', Component: Activity4VowelDetective },
+  { name: 'Vowel Map Drop', Component: Activity1VowelMapDrop },
+  { name: 'Consonant Map Drop', Component: Activity2ConsonantMapDrop },
+  { name: 'Build the Sound', Component: Activity3BuildTheSound },
+  { name: 'Mystery Sound', Component: Activity4MysterySound },
+  { name: 'Vowel Detective', Component: Activity5VowelDetective },
 ]
 
 export default function PracticeSpace() {
@@ -28,7 +30,7 @@ export default function PracticeSpace() {
           </button>
         ))}
       </div>
-      <div role="tabpanel" aria-label={`Activity #${activeActivity + 1}: ${activities[activeActivity].name}`}>
+      <div className="practice-activity-roomy" role="tabpanel" aria-label={`Activity #${activeActivity + 1}: ${activities[activeActivity].name}`}>
         <ActiveActivity />
       </div>
     </section>

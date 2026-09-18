@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { vowelRecordings } from './ipaData.js'
+import { vowelDescriptions, vowelRecordings } from './ipaData.js'
 import { vowelChartPositions } from './vowelChartPositions.js'
+import UnderlinedExample from './UnderlinedExample.jsx'
 
 function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
   const textWidth = Math.max(42, text.length * 24)
@@ -38,6 +39,7 @@ function VowelSymbol({ x, y, text, selectedSymbol, onSelect }) {
 
 export default function Vowels() {
   const [selectedVowel,setSelectedVowel]=useState(''); const [selectedVowelSymbol,setSelectedVowelSymbol]=useState(''); const [selectedVowelRecordings,setSelectedVowelRecordings]=useState([])
+  const selectedDescription = vowelDescriptions[selectedVowelSymbol]
   function handleVowelSelect(key,symbol,recordings=[]){setSelectedVowel(key);setSelectedVowelSymbol(symbol);setSelectedVowelRecordings(recordings)}
   return (
 <section className="ipa-chart-section vowel-listening-section">
@@ -99,6 +101,21 @@ export default function Vowels() {
                 Your browser does not support the audio player.
               </audio>
             ))}
+            {selectedDescription && (
+              <div className="vowel-recording-description" aria-live="polite">
+                <p>{selectedDescription.features}</p>
+                <p>
+                  <strong>{selectedDescription.example.includes(',') ? 'Examples' : 'Example'}:</strong>{' '}
+                  <span className="vowel-example-word">
+                    <UnderlinedExample
+                      example={selectedDescription.example}
+                      underlined={selectedDescription.underlined}
+                      underlineLastOccurrence={selectedDescription.underlineLastOccurrence}
+                    />
+                  </span>
+                </p>
+              </div>
+            )}
           </div>
         )}
       </section>

@@ -2,14 +2,14 @@ import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { afterEach, describe, expect, it } from 'vitest'
-import Activity4VowelDetective from './Activity4_VowelDetective.jsx'
+import Activity5VowelDetective from './Activity5_VowelDetective.jsx'
 
-describe('Activity4VowelDetective', () => {
+describe('Activity5VowelDetective', () => {
   afterEach(cleanup)
 
   it('renders the Vowel Detective activity', () => {
-    render(<Activity4VowelDetective />)
-    expect(screen.getByRole('heading', { name: 'Activity 4: Vowel Detective' })).toBeInTheDocument()
+    render(<Activity5VowelDetective />)
+    expect(screen.getByRole('heading', { name: 'Activity 5: Vowel Detective' })).toBeInTheDocument()
   })
 
   it('checks an answer and displays the score', async () => {
@@ -17,7 +17,7 @@ describe('Activity4VowelDetective', () => {
     const questions = [
       { id: 'test-vowel', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
     ]
-    render(<Activity4VowelDetective initialQuestions={questions} />)
+    render(<Activity5VowelDetective initialQuestions={questions} />)
 
     await user.click(screen.getByRole('button', { name: '/i/' }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
@@ -31,7 +31,7 @@ describe('Activity4VowelDetective', () => {
     const questions = [
       { id: 'test-vowel', exampleWord: 'beat', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
     ]
-    render(<Activity4VowelDetective initialQuestions={questions} />)
+    render(<Activity5VowelDetective initialQuestions={questions} />)
 
     await user.click(screen.getByRole('button', { name: '/u/' }))
     await user.click(screen.getByRole('button', { name: 'Check answer' }))
@@ -49,7 +49,7 @@ describe('Activity4VowelDetective', () => {
       { id: 'first-vowel', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
       { id: 'second-vowel', features: ['Monophthong', 'High', 'Back', 'Rounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'u' },
     ]
-    render(<Activity4VowelDetective initialQuestions={questions} />)
+    render(<Activity5VowelDetective initialQuestions={questions} />)
 
     await user.click(screen.getByRole('button', { name: 'Next question' }))
     await user.click(screen.getByRole('button', { name: '/u/' }))
