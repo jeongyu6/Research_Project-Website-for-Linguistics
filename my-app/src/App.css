@@ -369,6 +369,7 @@ main {
 }
 
 .card-button {
+  font-family: inherit;
   text-decoration: none;
   display: inline-flex;
   align-items: center;
@@ -1063,16 +1064,17 @@ main {
   margin: 0;
   padding-top: 9px;
   color: #001747;
-  font-size: 0.85rem;
+  font-size: 1rem;
   font-weight: 800;
   letter-spacing: 0.06em;
   line-height: 1.35;
   text-transform: uppercase;
+  overflow-wrap: anywhere;
 }
 
 .ipa-keyboard-keys {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(44px, 1fr));
+  grid-template-columns: repeat(10, minmax(0, 1fr));
   gap: 7px;
 }
 
@@ -1080,14 +1082,14 @@ main {
   display: grid;
   place-items: center;
   min-width: 0;
-  min-height: 44px;
+  min-height: 64px;
   padding: 6px;
   border: 1px solid #c8d8ec;
   border-radius: 8px;
   background: #ffffff;
   color: #001747;
   font-family: Menlo, Monaco, 'Courier New', monospace;
-  font-size: 1.25rem;
+  font-size: 2rem;
   font-weight: 700;
   line-height: 1;
   box-shadow: 0 2px 5px rgba(20, 48, 92, 0.05);
@@ -1120,14 +1122,14 @@ main {
   }
 
   .ipa-keyboard-keys {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(34px, 10vw, 42px), 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 5px;
   }
 
   .ipa-key {
-    min-height: clamp(36px, 10vw, 42px);
+    min-height: 52px;
     padding: 4px;
-    font-size: clamp(1rem, 4.5vw, 1.2rem);
+    font-size: clamp(1.35rem, 5vw, 1.75rem);
   }
 
   .ipa-editor-toolbar {
@@ -1415,9 +1417,6 @@ main {
     gap: clamp(8px, 2vw, 14px);
   }
 
-  .ipa-keyboard-keys {
-    grid-template-columns: repeat(auto-fit, minmax(clamp(36px, 5.5vw, 44px), 1fr));
-  }
 }
 
 /* Keep the complete sound charts visible on tablets and phones. */
@@ -1517,7 +1516,7 @@ main {
   }
 
   .ipa-keyboard-group h3 {
-    font-size: 0.75rem;
+    font-size: 0.875rem;
   }
 
   .ipa-editor-toolbar button,
