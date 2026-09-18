@@ -1703,6 +1703,12 @@ html.ipa-screen-scrolling {
   padding-bottom: 0;
 }
 
+.ipa-screen-scrolling .ut-header {
+  /* Start the introductory stop at the banner, above the IPA title and back button. */
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+}
+
 .ipa-screen-scrolling .ipa-page-header {
   margin-bottom: 24px;
 }
