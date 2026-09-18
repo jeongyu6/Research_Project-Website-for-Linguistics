@@ -2,7 +2,6 @@ import { useState } from 'react'
 import './App.css'
 import utLogo from '../Pictures/UofT_logo.png'
 import { IPA_Page } from './pages/ipa/index.js'
-import { Treeform_Page } from './pages/treeform/index.js'
 
 
 // This is the main structure/content of the website.
@@ -43,8 +42,6 @@ function App() {
       <main>
         {currentPage === 'IPA_Page' ? (
           <IPA_Page onBack={() => setCurrentPage('home')} />
-        ) : currentPage === 'Treeform_Page' ? (
-          <Treeform_Page onBack={() => setCurrentPage('home')} />
         ) : (
           <>
             <section className="hero" id="hero">
@@ -136,13 +133,7 @@ function App() {
                   </div>
                   <h3>Language Data & Projects</h3>
                   <p>Access datasets, ongoing projects, and tools for language research.</p>
-                  <button
-                    type="button"
-                    className="card-button"
-                    onClick={() => setCurrentPage('Treeform_Page')}
-                  >
-                    Explore Data →
-                  </button>
+                  <button type="button" className="card-button">Coming Soon</button>
                 </article>
               </div>
             </section>
