@@ -2,10 +2,10 @@ import useLevelTime from '../useLevelTime.js'
 import QuestionTimer from '../../QuestionTimer.jsx'
 import { useState } from 'react'
 import QuizSummary from '../../QuizSummary.jsx'
-import { consonantInventory, createQuestionSession } from './level1Questions.js'
+import { buildTheSoundQuestions } from './buildTheSoundQuestions.js'
 
 export default function Level1BuildTheSound({ initialQuestions, active = true, onComplete }) {
-  const startQuestionSession = () => initialQuestions ?? createQuestionSession(consonantInventory, 10)
+  const startQuestionSession = () => initialQuestions ?? buildTheSoundQuestions
   const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startQuestionSession)
   const [questionIndex, setQuestionIndex] = useState(0)
@@ -53,7 +53,7 @@ export default function Level1BuildTheSound({ initialQuestions, active = true, o
   }
 
   if (showSummary) {
-    return <QuizSummary activityNumber="3" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity}>
+    return <QuizSummary activityNumber="3" title="Build the Sound" score={score} total={questions.length} responses={questions.map(({ id }) => responses[id])} onRestart={restartActivity} showMistakeFilter>
     </QuizSummary>
   }
 

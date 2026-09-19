@@ -10,10 +10,10 @@ beforeEach(() => vi.useFakeTimers())
 afterEach(() => { cleanup(); vi.useRealTimers() })
 const advance = (ms) => act(() => vi.advanceTimersByTime(ms))
 
-it.each([['Build the Sound', Build], ['Vowel Detective', Detective]])('%s records timeout and starts the next question timer', (_, Component) => {
+it.each([['Build the Sound', Build], ['Find the Sound', Detective]])('%s records timeout and starts the next question timer', (_, Component) => {
   render(<Component />)
   advance(30000)
-  expect(screen.getByRole('status')).toHaveTextContent('Time’s up. The correct answer is')
+  expect(screen.getByRole('status')).toHaveTextContent('Time’s up.')
   expect(screen.queryByRole('button', { name: 'Check answer' })).not.toBeInTheDocument()
   fireEvent.click(screen.getByRole('button', { name: 'Next question' }))
   expect(screen.getByRole('timer')).toHaveTextContent('0:30')
@@ -21,12 +21,13 @@ it.each([['Build the Sound', Build], ['Vowel Detective', Detective]])('%s record
   expect(screen.getByRole('timer')).toHaveTextContent('Time’s up')
 })
 
-it('ends a mystery without points and resets for the next round', () => {
+it('records an Odd Sound Out timeout and starts the next question timer', () => {
   render(<Mystery />)
   advance(30000)
-  expect(screen.getByRole('status')).toHaveTextContent('Time’s up. The mystery sound was')
-  expect(screen.getByText(/Round 1 · Score 0/)).toBeInTheDocument()
-  fireEvent.click(screen.getByRole('button', { name: 'Next mystery' }))
+  expect(screen.getByRole('status')).toHaveTextContent('Time’s up.')
+  expect(screen.getByRole('status')).toHaveTextContent('Correct answer: /v/')
+  expect(screen.getByText('Score: 0/15')).toBeInTheDocument()
+  fireEvent.click(screen.getByRole('button', { name: 'Next question' }))
   expect(screen.getByRole('timer')).toHaveTextContent('0:30')
 })
 

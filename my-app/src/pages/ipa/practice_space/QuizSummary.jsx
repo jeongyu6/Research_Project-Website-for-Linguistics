@@ -1,4 +1,7 @@
-export default function QuizSummary({ activityNumber, title, score, total, responses, onRestart, children }) {
+import { useState } from 'react'
+
+export default function QuizSummary({ activityNumber, title, score, total, responses, onRestart, children, showMistakeFilter = false }) {
+  const [mistakesOnly, setMistakesOnly] = useState(false)
   const mistakes = responses.filter((response) => !response.isCorrect).length
 
   return (
@@ -10,10 +13,15 @@ export default function QuizSummary({ activityNumber, title, score, total, respo
         </div>
         <strong>Score: {score}/{total}</strong>
       </div>
-      <p>{mistakes === 0 ? 'Excellent—no mistakes to review.' : `Review ${mistakes} ${mistakes === 1 ? 'mistake' : 'mistakes'} below.`}</p>
+      <p>{score} correct · {mistakes} {mistakes === 1 ? 'mistake' : 'mistakes'}</p>
       {children}
+      {showMistakeFilter && <div className="summary-filter" role="group" aria-label="Summary view">
+        <button type="button" aria-pressed={!mistakesOnly} onClick={() => setMistakesOnly(false)}>All answers ({total})</button>
+        <button type="button" aria-pressed={mistakesOnly} onClick={() => setMistakesOnly(true)}>Mistakes ({mistakes})</button>
+      </div>}
+      {mistakesOnly && mistakes === 0 && <p>No mistakes to review.</p>}
       <ol className="activity-summary-list">
-        {responses.map((response, index) => (
+        {responses.map((response, index) => ({ response, index })).filter(({ response }) => !mistakesOnly || !response.isCorrect).map(({ response, index }) => (
           <li className={response.isCorrect ? 'summary-answer-correct' : 'summary-answer-incorrect'} key={response.id}>
             <div className="summary-question-heading">
               <strong>Question {index + 1}</strong>

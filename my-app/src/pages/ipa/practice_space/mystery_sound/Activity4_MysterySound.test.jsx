@@ -1,78 +1,40 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
-import Activity4MysterySound from './Activity4_MysterySound.jsx'
+import { afterEach, expect, it } from 'vitest'
+import Activity4OddSoundOut from './Activity4_MysterySound.jsx'
+import { oddSoundOutQuestions } from './questions.js'
 
-const mysterySound = {
-  id: 'v-van', symbol: 'v', exampleWord: 'van', voicing: 'Voiced', manner: 'Fricative', place: 'Labiodental',
-}
-const mysteryChoices = ['v', 'f', 'p', 't']
-const clueOrder = ['voicing', 'manner', 'place']
+afterEach(cleanup)
 
-describe('Activity4MysterySound', () => {
-  afterEach(cleanup)
+it('checks an answer and shows the supplied explanation', async () => {
+  const user = userEvent.setup()
+  render(<Activity4OddSoundOut />)
+  expect(screen.getByRole('heading', { name: 'Activity 4: Odd Sound Out' })).toBeInTheDocument()
+  expect(screen.getByText('Question 1 of 15')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: '/v/' }))
+  await user.click(screen.getByRole('button', { name: 'Check answer' }))
+  expect(screen.getByRole('status')).toHaveTextContent('/p t k/ are voiceless plosives. /v/ is a voiced fricative.')
+  expect(screen.getByRole('status')).toHaveTextContent('Correct!')
+  expect(screen.getByRole('status')).toHaveTextContent('Correct answer: /v/')
+  expect(screen.getByText('Score: 1/15')).toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: 'Next question' }))
+  expect(screen.getByText('Question 2 of 15')).toBeInTheDocument()
+})
 
-  it('renders the Mystery Sound activity', () => {
-    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-    expect(screen.getByRole('heading', { name: 'Activity 4: Mystery Sound' })).toBeInTheDocument()
-    expect(screen.getByText('I am voiced.')).toBeInTheDocument()
-    expect(screen.queryByText('I am fricative.')).not.toBeInTheDocument()
-    expect(screen.getByText('300 points available')).toBeInTheDocument()
-  })
+it('shows the vowel section and final summary', async () => {
+  const user = userEvent.setup()
+  render(<Activity4OddSoundOut initialQuestions={oddSoundOutQuestions.slice(8, 9)} />)
+  expect(screen.queryByText('Vowels')).not.toBeInTheDocument()
+  await user.click(screen.getByRole('button', { name: '/u/' }))
+  await user.click(screen.getByRole('button', { name: 'Check answer' }))
+  await user.click(screen.getByRole('button', { name: 'View summary' }))
+  expect(screen.getByRole('heading', { name: 'Odd Sound Out Summary' })).toBeInTheDocument()
+  expect(screen.getByText('Score: 1/1')).toBeInTheDocument()
+})
 
-  it('reveals clues one at a time and reduces the available points', async () => {
-    const user = userEvent.setup()
-    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-
-    await user.click(screen.getByRole('button', { name: 'Reveal another clue' }))
-    expect(screen.getByText('I am fricative.')).toBeInTheDocument()
-    expect(screen.getByText('200 points available')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Reveal another clue' }))
-    expect(screen.getByText('I am labiodental.')).toBeInTheDocument()
-    expect(screen.getByText('100 points available')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Reveal another clue' })).not.toBeInTheDocument()
-  })
-
-  it('awards 300 points for a correct guess after the first clue', async () => {
-    const user = userEvent.setup()
-    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-
-    await user.click(screen.getByRole('button', { name: '/v/' }))
-    await user.click(screen.getByRole('button', { name: 'Submit guess' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('You earned 300 points.')
-    expect(screen.getByText('Round 1 · Score 300')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Next mystery' })).toBeInTheDocument()
-  })
-
-  it('reveals the next clue after an incorrect guess and awards 200 points', async () => {
-    const user = userEvent.setup()
-    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-
-    await user.click(screen.getByRole('button', { name: '/f/' }))
-    await user.click(screen.getByRole('button', { name: 'Submit guess' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('Here is another clue')
-    expect(screen.getByText('I am fricative.')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '/f/' })).toBeDisabled()
-
-    await user.click(screen.getByRole('button', { name: '/v/' }))
-    await user.click(screen.getByRole('button', { name: 'Submit guess' }))
-    expect(screen.getByRole('status')).toHaveTextContent('You earned 200 points.')
-  })
-
-  it('skips a mystery, reveals the answer, and awards no points', async () => {
-    const user = userEvent.setup()
-    render(<Activity4MysterySound initialSound={mysterySound} initialChoices={mysteryChoices} initialClueOrder={clueOrder} />)
-
-    await user.click(screen.getByRole('button', { name: 'Skip' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('Skipped. The mystery sound was /v/.')
-    expect(screen.getByText('Round 1 · Score 0')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: '/v/' })).toBeDisabled()
-    expect(screen.getByRole('button', { name: 'Next mystery' })).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Submit guess' })).not.toBeInTheDocument()
-  })
+it.each([4, 6, 11])('emphasizes the feature term in question %i', (index) => {
+  render(<Activity4OddSoundOut initialQuestions={[oddSoundOutQuestions[index]]} />)
+  const term = index === 4 ? 'place of articulation' : index === 6 ? 'manner of articulation' : 'height'
+  expect(screen.getByText(term).tagName).toBe('STRONG')
 })

@@ -1,127 +1,90 @@
-import QuestionTimer from '../QuestionTimer.jsx'
 import { useState } from 'react'
-import { createMysteryChoices, createMysteryClueOrder, createMysteryClues, createMysterySound } from './questions.js'
+import QuestionTimer from '../QuestionTimer.jsx'
+import { oddSoundOutQuestions } from './questions.js'
 
-const pointsByClueCount = { 1: 300, 2: 200, 3: 100 }
+function formatPrompt(prompt) {
+  return prompt.split(/(place of articulation|manner of articulation|height)/g).map((part, index) => (
+    /^(place of articulation|manner of articulation|height)$/.test(part) ? <strong key={index}>{part}</strong> : part
+  ))
+}
 
-export default function Activity4MysterySound({ initialSound, initialChoices, initialClueOrder }) {
-  const startMystery = () => initialSound ?? createMysterySound()
-  const [mystery, setMystery] = useState(startMystery)
-  const [clueOrder, setClueOrder] = useState(() => initialClueOrder ?? createMysteryClueOrder())
-  const makeChoices = (sound, order) => initialChoices ?? createMysteryChoices(sound, order)
-  const [choices, setChoices] = useState(() => makeChoices(mystery, clueOrder))
-  const [revealedClues, setRevealedClues] = useState(1)
-  const [selectedAnswer, setSelectedAnswer] = useState('')
-  const [attemptedAnswers, setAttemptedAnswers] = useState([])
-  const [feedback, setFeedback] = useState('')
-  const [isSolved, setIsSolved] = useState(false)
-  const [isSkipped, setIsSkipped] = useState(false)
-  const [score, setScore] = useState(0)
-  const [round, setRound] = useState(1)
-  const clues = createMysteryClues(mystery, clueOrder)
-  const isRoundComplete = isSolved || isSkipped
+export default function Activity4OddSoundOut({ initialQuestions = oddSoundOutQuestions }) {
+  const [questionIndex, setQuestionIndex] = useState(0)
+  const [selectedAnswers, setSelectedAnswers] = useState({})
+  const [responses, setResponses] = useState({})
+  const [showSummary, setShowSummary] = useState(false)
+  const [session, setSession] = useState(0)
+  const question = initialQuestions[questionIndex]
+  const selectedAnswer = selectedAnswers[question.id] ?? ''
+  const response = responses[question.id]
+  const answered = Boolean(response)
+  const score = Object.values(responses).filter((item) => item.isCorrect).length
+  const allAnswered = Object.keys(responses).length === initialQuestions.length
 
-  function revealNextClue() {
-    if (revealedClues >= clues.length || isRoundComplete) return
-    setRevealedClues((count) => count + 1)
-    setSelectedAnswer('')
-    setFeedback('')
+  function recordAnswer(timedOut = false) {
+    if (answered || (!selectedAnswer && !timedOut)) return
+    setResponses((previous) => ({
+      ...previous,
+      [question.id]: { selectedAnswer, isCorrect: !timedOut && selectedAnswer === question.answer, timedOut },
+    }))
   }
 
-  function submitGuess() {
-    if (!selectedAnswer || isRoundComplete) return
-    if (selectedAnswer === mystery.symbol) {
-      const points = pointsByClueCount[revealedClues]
-      setScore((currentScore) => currentScore + points)
-      setFeedback(`Correct! The mystery sound is /${mystery.symbol}/. You earned ${points} points.`)
-      setIsSolved(true)
-      return
-    }
-
-    setAttemptedAnswers((answers) => [...answers, selectedAnswer])
-    setSelectedAnswer('')
-    if (revealedClues < clues.length) {
-      setRevealedClues((count) => count + 1)
-      setFeedback('Not quite. Here is another clue—try again.')
-    } else {
-      setFeedback('Not quite. Review all three clues and try again.')
-    }
+  function restart() {
+    setSession((value) => value + 1)
+    setQuestionIndex(0)
+    setSelectedAnswers({})
+    setResponses({})
+    setShowSummary(false)
   }
 
-  function skipMystery() {
-    if (isRoundComplete) return
-    setSelectedAnswer('')
-    setFeedback(`Skipped. The mystery sound was /${mystery.symbol}/.`)
-    setIsSkipped(true)
-  }
-
-  function beginNextMystery() {
-    const nextMystery = startMystery()
-    const nextClueOrder = initialClueOrder ?? createMysteryClueOrder()
-    setMystery(nextMystery)
-    setClueOrder(nextClueOrder)
-    setChoices(makeChoices(nextMystery, nextClueOrder))
-    setRevealedClues(1)
-    setSelectedAnswer('')
-    setAttemptedAnswers([])
-    setFeedback('')
-    setIsSolved(false)
-    setIsSkipped(false)
-    setRound((currentRound) => currentRound + 1)
+  if (showSummary) {
+    return (
+      <section className="activity-summary" aria-label="Activity 4: Odd Sound Out summary">
+        <div className="activity-summary-header"><div><span className="sound-activity-kicker">Activity 4 complete</span><h3>Odd Sound Out Summary</h3></div><strong>Score: {score}/{initialQuestions.length}</strong></div>
+        <ol className="activity-summary-list">
+          {initialQuestions.map((item, index) => (
+            <li key={item.id} className={responses[item.id].isCorrect ? 'summary-answer-correct' : 'summary-answer-incorrect'}>
+              <strong>Question {index + 1}</strong>
+              <p>{item.prompt}</p>
+              <p>Your answer: {responses[item.id].selectedAnswer ? `/${responses[item.id].selectedAnswer}/` : 'No answer'} · Correct answer: /{item.answer}/</p>
+              <p>{item.explanation}</p>
+            </li>
+          ))}
+        </ol>
+        <button type="button" className="activity-restart-button" onClick={restart}>Start a new session</button>
+      </section>
+    )
   }
 
   return (
-    <section className="expanded-quiz" aria-label="Activity 4: Mystery Sound">
-      <div className="sound-activity mystery-sound-activity">
+    <section className="expanded-quiz" aria-label="Activity 4: Odd Sound Out">
+      <div className="sound-activity">
         <div className="sound-activity-header">
-          <h3>Activity 4: Mystery Sound</h3>
+          <h3>Activity 4: Odd Sound Out</h3>
           <div className="sound-activity-meta">
-            <QuestionTimer questionId={round} paused={isRoundComplete} onExpire={() => {
-              setSelectedAnswer('')
-              setIsSkipped(true)
-              setFeedback(`Time’s up. The mystery sound was /${mystery.symbol}/.`)
-            }} />
-            <span className="sound-activity-progress">Round {round} · Score {score}</span>
+            <QuestionTimer key={session} questionId={question.id} paused={answered} onExpire={() => recordAnswer(true)} />
+            <span className="sound-activity-progress">Question {questionIndex + 1} of {initialQuestions.length}</span>
           </div>
         </div>
-
-        <p className="sound-activity-instruction">Identify the IPA consonant. Fewer clues earn more points.</p>
-
-        <ol className="mystery-clue-list" aria-label="Revealed phonetic clues">
-          {clues.slice(0, revealedClues).map((clue, index) => (
-            <li key={clue}><strong>Clue {index + 1}</strong><span>{clue}</span></li>
-          ))}
-        </ol>
-
-        <div className="mystery-points" aria-label="Points available">
-          {pointsByClueCount[revealedClues]} points available
-        </div>
-
-        <div className="sound-choice-list mystery-sound-choices" role="group" aria-label="Guess the mystery IPA symbol">
-          {choices.map((symbol) => (
-            <button
-              type="button"
-              className={`sound-choice${selectedAnswer === symbol ? ' sound-choice-selected' : ''}${isRoundComplete && symbol === mystery.symbol ? ' sound-choice-correct' : ''}`}
-              key={symbol}
-              onClick={() => setSelectedAnswer(symbol)}
-              aria-pressed={selectedAnswer === symbol}
-              disabled={isRoundComplete || attemptedAnswers.includes(symbol)}
-            >
-              /{symbol}/
-            </button>
+        <p className="sound-activity-instruction">{formatPrompt(question.prompt)}</p>
+        <div className="sound-choice-list" role="group" aria-label="Choose the odd sound out">
+          {question.choices.map((choice) => (
+            <button type="button" key={choice} disabled={answered} aria-pressed={selectedAnswer === choice}
+              className={`sound-choice${selectedAnswer === choice ? ' sound-choice-selected' : ''}${answered && choice === question.answer ? ' sound-choice-correct' : ''}`}
+              onClick={() => setSelectedAnswers((previous) => ({ ...previous, [question.id]: choice }))}>/{choice}/</button>
           ))}
         </div>
-
-        {feedback && <p className={`sound-feedback ${isSolved ? 'sound-feedback-correct' : isSkipped ? 'sound-feedback-skipped' : 'sound-feedback-incorrect'}`} role="status">{feedback}</p>}
-
-        <div className="sound-activity-actions mystery-sound-actions">
-          <span>Clue {revealedClues} of {clues.length}</span>
-          <div>
-            {!isRoundComplete && revealedClues < clues.length && <button type="button" className="mystery-secondary-button" onClick={revealNextClue}>Reveal another clue</button>}
-            {!isRoundComplete && <button type="button" className="mystery-secondary-button" onClick={skipMystery}>Skip</button>}
-            {!isRoundComplete && <button type="button" onClick={submitGuess} disabled={!selectedAnswer}>Submit guess</button>}
-            {isRoundComplete && <button type="button" onClick={beginNextMystery}>Next mystery</button>}
-          </div>
+        {answered && <div className={`sound-feedback odd-sound-feedback ${response.isCorrect ? 'sound-feedback-correct' : 'sound-feedback-incorrect'}`} role="status">
+          <strong>{response.timedOut ? 'Time’s up.' : response.isCorrect ? 'Correct!' : 'Not quite.'}</strong>
+          <p>Correct answer: <strong>/{question.answer}/</strong></p>
+          <p>{question.explanation}</p>
+        </div>}
+        <div className="question-navigation" aria-label="Question navigation">
+          <button type="button" aria-label="Previous question" disabled={questionIndex === 0} onClick={() => setQuestionIndex((index) => index - 1)}>‹ Previous</button>
+          <button type="button" aria-label="Next question" disabled={questionIndex === initialQuestions.length - 1} onClick={() => setQuestionIndex((index) => index + 1)}>Next ›</button>
+        </div>
+        <div className="sound-activity-actions"><span>Score: {score}/{initialQuestions.length}</span>
+          {allAnswered ? <button type="button" onClick={() => setShowSummary(true)}>View summary</button> : !answered && <button type="button" disabled={!selectedAnswer} onClick={() => recordAnswer()}>Check answer</button>}
         </div>
       </div>
     </section>

@@ -594,6 +594,7 @@ main {
 .sound-feedback-correct { background: #e6f7ee; color: #11623a; }
 .sound-feedback-incorrect { background: #fdebed; color: #91222d; }
 .sound-feedback-skipped { background: #eaf2ff; color: #123b73; }
+.odd-sound-feedback p { margin: 8px 0 0; }
 
 .sound-activity-actions span { color: #334463; font-weight: 800; }
 
@@ -686,6 +687,9 @@ main {
 .activity-summary-header > strong { color: #1f5fb5; font-size: 1.15rem; }
 .activity-summary > p { margin: 0; color: #334463; font-weight: 700; }
 
+.summary-filter { display: flex; flex-wrap: wrap; gap: 8px; }
+.summary-filter button { padding: 8px 14px; border: 1px solid #9bb5d8; border-radius: 8px; background: #fff; color: #001747; cursor: pointer; font-weight: 700; }
+.summary-filter button[aria-pressed="true"] { background: #1f5fb5; color: #fff; border-color: #1f5fb5; }
 .activity-summary-list {
   display: grid;
   gap: 14px;
