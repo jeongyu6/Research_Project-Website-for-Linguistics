@@ -1,68 +1,28 @@
 import '@testing-library/jest-dom/vitest'
 import { cleanup, render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { afterEach, describe, expect, it } from 'vitest'
-import Activity5VowelDetective from './Activity5_VowelDetective.jsx'
+import { afterEach, expect, it } from 'vitest'
+import Activity5FindTheSound from './Activity5_VowelDetective.jsx'
+import { findTheSoundQuestions } from './questions.js'
 
-describe('Activity5VowelDetective', () => {
-  afterEach(cleanup)
+afterEach(cleanup)
 
-  it('renders the Vowel Detective activity', () => {
-    render(<Activity5VowelDetective />)
-    expect(screen.getByRole('heading', { name: 'Activity 5: Vowel Detective' })).toBeInTheDocument()
-  })
+it('shows the new heading, vowel prompt, and word choices', () => {
+  render(<Activity5FindTheSound />)
+  expect(screen.getByRole('heading', { name: 'Activity 5: Find the Sound' })).toBeInTheDocument()
+  expect(screen.getByText('Question 1 of 15')).toBeInTheDocument()
+  expect(screen.getByText('Which word contains', { exact: false })).toHaveTextContent('/i/')
+  expect(screen.getByRole('button', { name: 'A. see' })).toBeInTheDocument()
+})
 
-  it('checks an answer and displays the score', async () => {
-    const user = userEvent.setup()
-    const questions = [
-      { id: 'test-vowel', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
-    ]
-    render(<Activity5VowelDetective initialQuestions={questions} />)
-
-    await user.click(screen.getByRole('button', { name: '/i/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-
-    expect(screen.getByRole('status')).toHaveTextContent('Correct!')
-    expect(screen.getByText('Score: 1/1')).toBeInTheDocument()
-  })
-
-  it('shows all answers in a summary before restart', async () => {
-    const user = userEvent.setup()
-    const questions = [
-      { id: 'test-vowel', exampleWord: 'beat', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
-    ]
-    render(<Activity5VowelDetective initialQuestions={questions} />)
-
-    await user.click(screen.getByRole('button', { name: '/u/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    await user.click(screen.getByRole('button', { name: 'View summary' }))
-
-    expect(screen.getByRole('heading', { name: 'Vowel Detective Summary' })).toBeInTheDocument()
-    expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('/u/')
-    expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/i/')
-    expect(screen.getByText('beat')).toBeInTheDocument()
-  })
-
-  it('navigates between questions without losing selected or checked answers', async () => {
-    const user = userEvent.setup()
-    const questions = [
-      { id: 'first-vowel', features: ['Monophthong', 'High', 'Front', 'Unrounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'i' },
-      { id: 'second-vowel', features: ['Monophthong', 'High', 'Back', 'Rounded'], choices: ['i', 'u', 'æ', 'ɑ'], answer: 'u' },
-    ]
-    render(<Activity5VowelDetective initialQuestions={questions} />)
-
-    await user.click(screen.getByRole('button', { name: 'Next question' }))
-    await user.click(screen.getByRole('button', { name: '/u/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    await user.click(screen.getByRole('button', { name: 'Previous question' }))
-
-    expect(screen.getByText('Question 1 of 2')).toBeInTheDocument()
-    await user.click(screen.getByRole('button', { name: '/i/' }))
-    await user.click(screen.getByRole('button', { name: 'Check answer' }))
-    expect(screen.getByText('Score: 2/2')).toBeInTheDocument()
-
-    await user.click(screen.getByRole('button', { name: 'Next question' }))
-    expect(screen.getByRole('button', { name: '/u/' })).toHaveAttribute('aria-pressed', 'true')
-    expect(screen.getByRole('button', { name: '/u/' })).toBeDisabled()
-  })
+it('checks a word answer and shows it in the summary', async () => {
+  const user = userEvent.setup()
+  render(<Activity5FindTheSound initialQuestions={findTheSoundQuestions.slice(0, 1)} />)
+  await user.click(screen.getByRole('button', { name: 'B. cat' }))
+  await user.click(screen.getByRole('button', { name: 'Check answer' }))
+  expect(screen.getByRole('status')).toHaveTextContent('The correct word is see.')
+  await user.click(screen.getByRole('button', { name: 'View summary' }))
+  expect(screen.getByRole('heading', { name: 'Find the Sound Summary' })).toBeInTheDocument()
+  expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('cat')
+  expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('see')
 })

@@ -55,7 +55,27 @@ describe('Level1BuildTheSound', () => {
     expect(screen.getByRole('heading', { name: 'Build the Sound Summary' })).toBeInTheDocument()
     expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('/f/')
     expect(screen.getByText('Correct answer').nextSibling).toHaveTextContent('/θ/')
+    expect(screen.getByText('0 correct · 1 mistake')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Mistakes (1)' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Start a new session' })).toBeInTheDocument()
+  })
+
+  it('filters the summary to mistakes while keeping original question numbers', async () => {
+    const user = userEvent.setup()
+    render(<Level1BuildTheSound initialQuestions={testQuestions} />)
+    await user.click(screen.getByRole('button', { name: '/θ/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: 'Next question' }))
+    await user.click(screen.getByRole('button', { name: '/m/' }))
+    await user.click(screen.getByRole('button', { name: 'Check answer' }))
+    await user.click(screen.getByRole('button', { name: 'View summary' }))
+    expect(screen.getByText('1 correct · 1 mistake')).toBeInTheDocument()
+    await user.click(screen.getByRole('button', { name: 'Mistakes (1)' }))
+    expect(screen.getByText('Question 2')).toBeInTheDocument()
+    expect(screen.queryByText('Question 1')).not.toBeInTheDocument()
+    expect(screen.getByText('Your answer').nextSibling).toHaveTextContent('/m/')
+    await user.click(screen.getByRole('button', { name: 'All answers (2)' }))
+    expect(screen.getByText('Question 1')).toBeInTheDocument()
   })
 
   it('answers question 2 first and preserves it when returning to question 1', async () => {

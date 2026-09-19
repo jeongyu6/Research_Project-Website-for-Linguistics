@@ -1,71 +1,17 @@
-import { consonantInventory, shuffleItems } from '../build_the_sound/level_1/level1Questions.js'
-
-export const mysteryFeatureOrder = ['voicing', 'manner', 'place']
-
-export function createMysterySound(inventory = consonantInventory, random = Math.random) {
-  return inventory[Math.floor(random() * inventory.length)]
-}
-
-export function createMysteryClueOrder(random = Math.random) {
-  return shuffleItems(mysteryFeatureOrder, random)
-}
-
-export function createMysteryClues(sound, featureOrder = mysteryFeatureOrder) {
-  return featureOrder.map((feature) => `I am ${sound[feature].toLowerCase()}.`)
-}
-
-export function createMysteryChoices(answer, featureOrder = mysteryFeatureOrder, inventory = consonantInventory, random = Math.random) {
-  const [firstFeature, secondFeature, thirdFeature] = featureOrder
-  const usedSymbols = new Set([answer.symbol])
-  const distractors = []
-
-  function addBestDistractor(predicate, similarityFeatures = []) {
-    const candidates = shuffleItems(
-      inventory.filter((sound) => !usedSymbols.has(sound.symbol) && predicate(sound)),
-      random,
-    ).sort((first, second) => {
-      const score = (sound) => similarityFeatures.filter((feature) => sound[feature] === answer[feature]).length
-      return score(second) - score(first)
-    })
-    const choice = candidates[0]
-    if (!choice) return false
-    usedSymbols.add(choice.symbol)
-    distractors.push(choice.symbol)
-    return true
-  }
-
-  // Eliminated by clue 1, while otherwise resembling the answer when possible.
-  addBestDistractor(
-    (sound) => sound[firstFeature] !== answer[firstFeature],
-    [secondFeature, thirdFeature],
-  )
-
-  // Survives clue 1, then is eliminated by clue 2.
-  addBestDistractor(
-    (sound) => sound[firstFeature] === answer[firstFeature] && sound[secondFeature] !== answer[secondFeature],
-    [thirdFeature],
-  )
-
-  // Survives the first two clues, then is eliminated by clue 3.
-  const hasThirdClueDistractor = addBestDistractor(
-    (sound) => sound[firstFeature] === answer[firstFeature]
-      && sound[secondFeature] === answer[secondFeature]
-      && sound[thirdFeature] !== answer[thirdFeature],
-  )
-
-  // Some feature combinations (for example, voiced affricates) are unique in this inventory.
-  if (!hasThirdClueDistractor) {
-    addBestDistractor(
-      (sound) => sound[firstFeature] === answer[firstFeature],
-      [secondFeature, thirdFeature],
-    )
-  }
-
-  while (distractors.length < 3) {
-    if (!addBestDistractor(() => true, ['voicing', 'manner', 'place'])) break
-  }
-
-  return shuffleItems([answer.symbol, ...distractors], random)
-}
-
-export const mysterySoundInventory = consonantInventory
+export const oddSoundOutQuestions = [
+  { prompt: 'Which consonant is the odd one out?', choices: ['p', 't', 'k', 'v'], answer: 'v', explanation: '/p t k/ are voiceless plosives. /v/ is a voiced fricative.' },
+  { prompt: 'Which consonant is the odd one out?', choices: ['b', 'd', 'ɡ', 't'], answer: 't', explanation: '/b d ɡ/ are voiced plosives. /t/ is voiceless.' },
+  { prompt: 'Which consonant is the odd one out?', choices: ['f', 'θ', 's', 'z'], answer: 'z', explanation: '/f θ s/ are voiceless fricatives. /z/ is voiced.' },
+  { prompt: 'Which consonant is the odd one out?', choices: ['v', 'ð', 'z', 'ʃ'], answer: 'ʃ', explanation: '/v ð z/ are voiced fricatives. /ʃ/ is voiceless.' },
+  { prompt: 'Which consonant has a different place of articulation from the others?', choices: ['p', 'b', 'm', 't'], answer: 't', explanation: '/p b m/ are bilabial. /t/ is alveolar.' },
+  { prompt: 'Which consonant has a different place of articulation from the others?', choices: ['t', 'd', 's', 'f'], answer: 'f', explanation: '/t d s/ are alveolar. /f/ is labiodental.' },
+  { prompt: 'Which consonant has a different manner of articulation from the others?', choices: ['f', 'v', 's', 't'], answer: 't', explanation: '/f v s/ are fricatives. /t/ is a plosive.' },
+  { prompt: 'Which consonant has a different manner of articulation from the others?', choices: ['p', 'b', 'k', 's'], answer: 's', explanation: '/p b k/ are plosives. /s/ is a fricative.' },
+  { prompt: 'Which vowel is the odd one out?', choices: ['i', 'ɪ', 'ɛ', 'u'], answer: 'u', explanation: '/i ɪ ɛ/ are front vowels. /u/ is a back vowel.' },
+  { prompt: 'Which vowel is the odd one out?', choices: ['u', 'ʊ', 'ɑ', 'i'], answer: 'i', explanation: '/u ʊ ɑ/ are back vowels. /i/ is a front vowel.' },
+  { prompt: 'Which vowel is the odd one out?', choices: ['u', 'ʊ', 'ɔ', 'i'], answer: 'i', explanation: '/u ʊ ɔ/ are rounded. /i/ is unrounded.' },
+  { prompt: 'Which vowel has a different height from the others?', choices: ['i', 'u', 'ɑ', 'ɪ'], answer: 'ɑ', explanation: 'The other vowels are produced high or near-high in the vowel space; /ɑ/ is low.' },
+  { prompt: 'Which vowel has a different height from the others?', choices: ['æ', 'ɑ', 'ɛ', 'ɒ'], answer: 'ɛ', explanation: '/æ ɑ ɒ/ are low vowels; /ɛ/ is mid.' },
+  { prompt: 'Which vowel is the odd one out?', choices: ['i', 'ɪ', 'æ', 'ɑ'], answer: 'ɑ', explanation: '/i ɪ æ/ are front vowels. /ɑ/ is back.' },
+  { prompt: 'Which vowel is the odd one out?', choices: ['i', 'ɪ', 'ɛ', 'u'], answer: 'u', explanation: '/i ɪ ɛ/ are unrounded. /u/ is rounded.' },
+].map((question, index) => ({ ...question, id: `odd-sound-out-${index + 1}`, category: index < 8 ? 'Consonants' : 'Vowels' }))

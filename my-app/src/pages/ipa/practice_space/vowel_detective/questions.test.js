@@ -1,46 +1,13 @@
-import { describe, expect, it } from 'vitest'
-import { createVowelChoices, createVowelDetectiveSession, vowelInventory } from './questions.js'
+import { expect, it } from 'vitest'
+import { findTheSoundQuestions } from './questions.js'
 
-describe('vowelInventory', () => {
-  it('contains the 14 supplied Canadian English vowels', () => {
-    expect(vowelInventory).toHaveLength(14)
-    expect(new Set(vowelInventory.map((vowel) => vowel.symbol)).size).toBe(14)
-  })
-
-  it.each([
-    ['i', 'Monophthong', 'High', 'Front', 'Unrounded'],
-    ['ɪ', 'Monophthong', 'High', 'Front', 'Unrounded'],
-    ['ɛ', 'Monophthong', 'Mid', 'Front', 'Unrounded'],
-    ['æ', 'Monophthong', 'Low', 'Front', 'Unrounded'],
-    ['ə', 'Monophthong', 'Mid', 'Central', 'Unrounded'],
-    ['ʌ', 'Monophthong', 'Mid', 'Central', 'Unrounded'],
-    ['u', 'Monophthong', 'High', 'Back', 'Rounded'],
-    ['ʊ', 'Monophthong', 'High', 'Back', 'Rounded'],
-    ['ɑ', 'Monophthong', 'Low', 'Back', 'Unrounded'],
-    ['ej', 'Diphthong', 'Mid', 'Front', 'Unrounded'],
-    ['ow', 'Diphthong', 'Mid-to-high', 'Back', 'Rounded'],
-    ['aj', 'Diphthong', 'Low', 'Central-to-front', 'Unrounded'],
-    ['aw', 'Diphthong', 'Low', 'Central', 'Unrounded'],
-    ['ɔj', 'Diphthong', 'Mid', 'Back-to-front', 'Rounded-to-unrounded'],
-  ])('/%s/ has the supplied vowel features', (symbol, type, height, backness, rounding) => {
-    expect(vowelInventory).toContainEqual(expect.objectContaining({ symbol, type, height, backness, rounding }))
-  })
-})
-
-describe('Vowel Detective question generation', () => {
-  it('selects 10 unique questions with four features and four choices', () => {
-    const session = createVowelDetectiveSession(vowelInventory, 10, () => 0.5)
-    expect(session).toHaveLength(10)
-    expect(new Set(session.map((question) => question.id)).size).toBe(10)
-    session.forEach((question) => {
-      expect(question.features).toHaveLength(4)
-      expect(question.choices).toHaveLength(4)
-      expect(new Set(question.choices).size).toBe(4)
-      expect(question.choices).toContain(question.answer)
-    })
-  })
-
-  it.each(vowelInventory)('keeps /$symbol/ as an answer choice', (vowel) => {
-    expect(createVowelChoices(vowel, vowelInventory, () => 0.25)).toContain(vowel.symbol)
-  })
+it('contains all 15 word questions in the supplied order', () => {
+  expect(findTheSoundQuestions).toHaveLength(15)
+  expect(findTheSoundQuestions.map(({ symbol }) => symbol)).toEqual(['i', 'ɪ', 'ɛ', 'æ', 'ɑ', 'ʌ', 'ʊ', 'u', 'ej', 'aj', 'ow', 'aw', 'ɔj', 'ɔ', 'ə'])
+  expect(findTheSoundQuestions.map(({ answer }) => answer)).toEqual(['see', 'fish', 'fed', 'map', 'hot', 'luck', 'look', 'moon', 'pray', 'five', 'goat', 'cloud', 'toy', 'short', 'about'])
+  for (const question of findTheSoundQuestions) {
+    expect(question.choices).toHaveLength(4)
+    expect(question.choices).toContain(question.answer)
+  }
+  expect(findTheSoundQuestions[13].choices).toEqual(['feet', 'short', 'map', 'book'])
 })

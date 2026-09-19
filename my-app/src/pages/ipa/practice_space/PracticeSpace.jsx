@@ -9,8 +9,8 @@ const activities = [
   { name: 'Vowel Map Drop', Component: Activity1VowelMapDrop },
   { name: 'Consonant Map Drop', Component: Activity2ConsonantMapDrop },
   { name: 'Build the Sound', Component: Activity3BuildTheSound },
-  { name: 'Mystery Sound', Component: Activity4MysterySound },
-  { name: 'Vowel Detective', Component: Activity5VowelDetective },
+  { name: 'Odd Sound Out', Component: Activity4MysterySound },
+  { name: 'Find the Sound', Component: Activity5VowelDetective },
 ]
 
 export default function PracticeSpace() {
