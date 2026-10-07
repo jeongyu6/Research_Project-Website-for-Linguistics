@@ -1,4 +1,4 @@
-// Fixed question order and answer choice order for Activity 3.
+// Fixed question bank for Activity 3; choices are shuffled for each session.
 const questions = [
   [['Voiced', 'Plosive', 'Velar'], ['k', 'd', 'b', 'ɡ'], 'ɡ'],
   [['Voiceless', 'Plosive', 'Bilabial'], ['b', 't', 'k', 'p'], 'p'],

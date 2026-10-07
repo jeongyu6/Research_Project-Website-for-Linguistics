@@ -1,19 +1,21 @@
+import { shuffleQuestionChoices } from '../shuffleQuestionChoices.js'
 import QuestionTimer from '../QuestionTimer.jsx'
 import { useState } from 'react'
 import { findTheSoundQuestions } from './questions.js'
 
 export default function Activity5FindTheSound({ initialQuestions = findTheSoundQuestions }) {
+  const [questions, setQuestions] = useState(() => shuffleQuestionChoices(initialQuestions))
   const [timerSession, setTimerSession] = useState(0)
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [responses, setResponses] = useState({})
   const [showSummary, setShowSummary] = useState(false)
-  const question = initialQuestions[questionIndex]
+  const question = questions[questionIndex]
   const selectedAnswer = selectedAnswers[question.id] ?? ''
   const response = responses[question.id]
   const isChecked = Boolean(response)
   const score = Object.values(responses).filter(({ isCorrect }) => isCorrect).length
-  const allQuestionsAnswered = Object.keys(responses).length === initialQuestions.length
+  const allQuestionsAnswered = Object.keys(responses).length === questions.length
 
   function recordAnswer(timedOut = false) {
     if (isChecked || (!selectedAnswer && !timedOut)) return
@@ -23,6 +25,7 @@ export default function Activity5FindTheSound({ initialQuestions = findTheSoundQ
   }
 
   function restartActivity() {
+    setQuestions(shuffleQuestionChoices(initialQuestions))
     setTimerSession((session) => session + 1)
     setQuestionIndex(0)
     setSelectedAnswers({})
@@ -32,9 +35,9 @@ export default function Activity5FindTheSound({ initialQuestions = findTheSoundQ
 
   if (showSummary) {
     return <section className="activity-summary" aria-label="Activity 5: Find the Sound summary">
-      <div className="activity-summary-header"><div><span className="sound-activity-kicker">Activity 5 complete</span><h3>Find the Sound Summary</h3></div><strong>Score: {score}/{initialQuestions.length}</strong></div>
+      <div className="activity-summary-header"><div><span className="sound-activity-kicker">Activity 5 complete</span><h3>Find the Sound Summary</h3></div><strong>Score: {score}/{questions.length}</strong></div>
       <ol className="activity-summary-list">
-        {initialQuestions.map((item, index) => (
+        {questions.map((item, index) => (
           <li key={item.id} className={responses[item.id].isCorrect ? 'summary-answer-correct' : 'summary-answer-incorrect'}>
             <div className="summary-question-heading"><strong>Question {index + 1}: /{item.symbol}/</strong><span>{responses[item.id].timedOut ? 'Time expired' : responses[item.id].isCorrect ? 'Correct' : 'Needs review'}</span></div>
             <dl><div><dt>Your answer</dt><dd>{responses[item.id].selectedAnswer || 'No answer'}</dd></div><div><dt>Correct answer</dt><dd>{item.answer}</dd></div></dl>
@@ -51,7 +54,7 @@ export default function Activity5FindTheSound({ initialQuestions = findTheSoundQ
         <h3>Activity 5: Find the Sound</h3>
         <div className="sound-activity-meta">
           <QuestionTimer key={timerSession} questionId={question.id} paused={isChecked} onExpire={() => recordAnswer(true)} />
-          <span className="sound-activity-progress">Question {questionIndex + 1} of {initialQuestions.length}</span>
+          <span className="sound-activity-progress">Question {questionIndex + 1} of {questions.length}</span>
         </div>
       </div>
       <p className="sound-activity-instruction">Choose the word that contains the IPA vowel shown.</p>
@@ -67,9 +70,9 @@ export default function Activity5FindTheSound({ initialQuestions = findTheSoundQ
       </p>}
       <div className="question-navigation" aria-label="Question navigation">
         <button type="button" aria-label="Previous question" onClick={() => setQuestionIndex((index) => index - 1)} disabled={questionIndex === 0}>‹ Previous</button>
-        <button type="button" aria-label="Next question" onClick={() => setQuestionIndex((index) => index + 1)} disabled={questionIndex === initialQuestions.length - 1}>Next ›</button>
+        <button type="button" aria-label="Next question" onClick={() => setQuestionIndex((index) => index + 1)} disabled={questionIndex === questions.length - 1}>Next ›</button>
       </div>
-      <div className="sound-activity-actions"><span>Score: {score}/{initialQuestions.length}</span>
+      <div className="sound-activity-actions"><span>Score: {score}/{questions.length}</span>
         {allQuestionsAnswered ? <button type="button" onClick={() => setShowSummary(true)}>View summary</button> : !isChecked && <button type="button" onClick={() => recordAnswer()} disabled={!selectedAnswer}>Check answer</button>}
       </div>
     </div>
