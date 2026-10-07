@@ -346,7 +346,7 @@ main {
   padding: 32px 26px 28px;
   border-radius: 24px;
   background: #ffffff;
-  border: 2px solid #a9bedb;
+  border: 3px solid #527fb8;
   box-shadow: 0 8px 24px rgba(20, 48, 92, 0.1);
   text-align: center;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
@@ -354,7 +354,7 @@ main {
 
 .resource-card:hover,
 .resource-card:focus-within {
-  border-color: #527fb8;
+  border-color: #123b73;
   box-shadow: 0 12px 28px rgba(20, 48, 92, 0.15);
   transform: translateY(-2px);
 }
