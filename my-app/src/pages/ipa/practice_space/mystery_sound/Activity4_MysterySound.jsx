@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import QuestionTimer from '../QuestionTimer.jsx'
-import { oddSoundOutQuestions } from './questions.js'
+import { oddSoundOutQuestions, shuffleQuestionChoices } from './questions.js'
 
 function formatPrompt(prompt) {
   return prompt.split(/(place of articulation|manner of articulation|height)/g).map((part, index) => (
@@ -9,12 +9,13 @@ function formatPrompt(prompt) {
 }
 
 export default function Activity4OddSoundOut({ initialQuestions = oddSoundOutQuestions }) {
+  const [questions, setQuestions] = useState(() => shuffleQuestionChoices(initialQuestions))
   const [questionIndex, setQuestionIndex] = useState(0)
   const [selectedAnswers, setSelectedAnswers] = useState({})
   const [responses, setResponses] = useState({})
   const [showSummary, setShowSummary] = useState(false)
   const [session, setSession] = useState(0)
-  const question = initialQuestions[questionIndex]
+  const question = questions[questionIndex]
   const selectedAnswer = selectedAnswers[question.id] ?? ''
   const response = responses[question.id]
   const answered = Boolean(response)
@@ -30,6 +31,7 @@ export default function Activity4OddSoundOut({ initialQuestions = oddSoundOutQue
   }
 
   function restart() {
+    setQuestions(shuffleQuestionChoices(initialQuestions))
     setSession((value) => value + 1)
     setQuestionIndex(0)
     setSelectedAnswers({})

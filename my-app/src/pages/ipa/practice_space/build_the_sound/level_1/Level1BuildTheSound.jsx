@@ -1,3 +1,4 @@
+import { shuffleQuestionChoices } from '../../shuffleQuestionChoices.js'
 import useLevelTime from '../useLevelTime.js'
 import QuestionTimer from '../../QuestionTimer.jsx'
 import { useState } from 'react'
@@ -5,7 +6,7 @@ import QuizSummary from '../../QuizSummary.jsx'
 import { buildTheSoundQuestions } from './buildTheSoundQuestions.js'
 
 export default function Level1BuildTheSound({ initialQuestions, active = true, onComplete }) {
-  const startQuestionSession = () => initialQuestions ?? buildTheSoundQuestions
+  const startQuestionSession = () => shuffleQuestionChoices(initialQuestions ?? buildTheSoundQuestions)
   const [timerSession, setTimerSession] = useState(0)
   const [questions, setQuestions] = useState(startQuestionSession)
   const [questionIndex, setQuestionIndex] = useState(0)

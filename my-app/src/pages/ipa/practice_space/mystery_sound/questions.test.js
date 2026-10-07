@@ -10,6 +10,5 @@ it('contains the 15 supplied questions in order', () => {
     expect(question.choices).toContain(question.answer)
     expect(question.explanation).toBeTruthy()
   }
-  expect(oddSoundOutQuestions[0].choices).toEqual(['p', 't', 'k', 'v'])
-  expect(oddSoundOutQuestions[14].choices).toEqual(['i', 'ɪ', 'ɛ', 'u'])
+  expect(new Set(oddSoundOutQuestions.map((question) => question.choices.indexOf(question.answer))).size).toBe(4)
 })
