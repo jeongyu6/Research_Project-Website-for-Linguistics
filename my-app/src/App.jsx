@@ -46,7 +46,15 @@ function App() {
           <>
             <section className="hero" id="hero">
               <div className="hero-copy">
-                <h1>Digital Linguistics Resources</h1>
+                <div className="hero-brand">
+                  <span className="hero-brand-mark" aria-hidden="true">
+                    <svg viewBox="0 0 40 40" fill="none">
+                      <path d="M8 17v6M14 11v18M20 6v28M26 13v14M32 17v6" stroke="currentColor" strokeWidth="3" strokeLinecap="round" />
+                    </svg>
+                  </span>
+                  <h1>Lingo<span>Lab</span></h1>
+                </div>
+                <p className="hero-subtitle">Digital Linguistics Resources</p>
                 <p>Explore a growing collection of interactive tools and learning resources designed to support the study of languages and linguistics.</p>
               </div>
 
@@ -79,6 +87,21 @@ function App() {
                   >
                     Explore IPA →
                   </button>
+                </article>
+
+                <article className="resource-card">
+                  <div className="card-icon">
+                    <svg viewBox="0 0 64 64" aria-hidden="true">
+                      <ellipse cx="32" cy="14" rx="18" ry="8" fill="currentColor"/>
+                      <path d="M14 14v32c0 4.4 8.1 8 18 8s18-3.6 18-8V14" fill="currentColor"/>
+                      <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
+                    </svg>
+                  </div>
+                  <h3>Treeform</h3>
+                  <p>Create and edit syntax trees with our linguistics diagramming app.</p>
+                  <a className="card-button" href="https://linguistics-diagramming.vercel.app/">
+                    Open Treeform →
+                  </a>
                 </article>
 
                 <article className="resource-card">
@@ -122,24 +145,14 @@ function App() {
                   <p>Explore how language and society influence each other.</p>
                   <button type="button" className="card-button">Coming Soon</button>
                 </article>
-
-                <article className="resource-card">
-                  <div className="card-icon">
-                    <svg viewBox="0 0 64 64" aria-hidden="true">
-                      <ellipse cx="32" cy="14" rx="18" ry="8" fill="currentColor"/>
-                      <path d="M14 14v32c0 4.4 8.1 8 18 8s18-3.6 18-8V14" fill="currentColor"/>
-                      <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
-                    </svg>
-                  </div>
-                  <h3>Treeform</h3>
-                  <p>Create and edit syntax trees with our linguistics diagramming app.</p>
-                  <a className="card-button" href="https://linguistics-diagramming.vercel.app/">
-                    Open Treeform →
-                  </a>
-                </article>
               </div>
             </section>
-          
+
+            <section className="acknowledgements" aria-labelledby="acknowledgements-heading">
+              <h2 id="acknowledgements-heading">Acknowledgements</h2>
+              <p>We thank Professor Yoonjung Kang for providing materials and feedback on the draft website. We also thank the Linguistics Students’ Association (LSA) for choosing the name LingoLab and for their future contributions to the site’s development.</p>
+            </section>
+
           </>
         )}
       </main>
