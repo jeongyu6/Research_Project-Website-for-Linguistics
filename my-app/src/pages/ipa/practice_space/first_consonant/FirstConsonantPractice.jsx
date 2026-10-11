@@ -47,7 +47,7 @@ export default function FirstConsonantPractice() {
   return <section className="sound-activity first-consonant-practice" aria-labelledby="first-consonant-heading">
     <div className="sound-activity-header">
       <h3 id="first-consonant-heading">Activity 6: First Consonant</h3>
-      <QuestionTimer key={timerSession} questionId="first-consonant-session" duration={180} paused={checked}
+      <QuestionTimer key={timerSession} questionId="first-consonant-session" duration={360} paused={checked}
         onExpire={() => { setTimedOut(true); setChecked(true) }} />
     </div>
     <p className="sound-activity-instruction">Listen to each word and choose or write the IPA symbol for its <strong>first consonant sound</strong>.</p>
