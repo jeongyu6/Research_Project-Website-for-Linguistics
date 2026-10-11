@@ -47,7 +47,7 @@ export default function VowelSoundPractice() {
   return <section className="sound-activity first-consonant-practice" aria-labelledby="vowel-sound-heading">
     <div className="sound-activity-header">
       <h3 id="vowel-sound-heading">Activity 8: Vowel Sound</h3>
-      <QuestionTimer key={timerSession} questionId="vowel-sound-session" duration={180} paused={checked}
+      <QuestionTimer key={timerSession} questionId="vowel-sound-session" duration={360} paused={checked}
         onExpire={() => { setTimedOut(true); setChecked(true) }} />
     </div>
     <p className="sound-activity-instruction">Listen to each word and transcribe its <strong>vowel sound</strong> in IPA. For a diphthong, write both symbols.</p>

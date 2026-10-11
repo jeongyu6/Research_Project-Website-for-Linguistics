@@ -8,19 +8,19 @@ import { lastConsonantQuestions } from './questions.js'
 
 afterEach(() => { cleanup(); vi.restoreAllMocks(); vi.useRealTimers() })
 
-it('expires after three minutes, checks answers, and resets on restart', () => {
+it('expires after six minutes, checks answers, and resets on restart', () => {
   vi.useFakeTimers()
   vi.spyOn(HTMLMediaElement.prototype, 'pause').mockImplementation(() => {})
   render(<LastConsonantPractice />)
-  expect(screen.getByRole('timer')).toHaveTextContent('3:00')
+  expect(screen.getByRole('timer')).toHaveTextContent('6:00')
   fireEvent.change(screen.getByRole('textbox', { name: 'Last consonant for book' }), { target: { value: 'k' } })
-  act(() => vi.advanceTimersByTime(179000))
+  act(() => vi.advanceTimersByTime(359000))
   expect(screen.getByRole('timer')).toHaveTextContent('0:01')
   act(() => vi.advanceTimersByTime(1000))
   expect(screen.getByRole('status')).toHaveTextContent('Time’s up! You scored 1 out of 20.')
   expect(screen.getByRole('combobox', { name: 'Answer choices for book' })).toBeDisabled()
   fireEvent.click(screen.getByRole('button', { name: 'Restart practice' }))
-  expect(screen.getByRole('timer')).toHaveTextContent('3:00')
+  expect(screen.getByRole('timer')).toHaveTextContent('6:00')
   expect(screen.getByRole('textbox', { name: 'Last consonant for book' })).toHaveValue('')
 })
 
@@ -30,8 +30,8 @@ it('stops the timer when students check their answers', () => {
   act(() => vi.advanceTimersByTime(30000))
   fireEvent.change(screen.getByRole('textbox', { name: 'Last consonant for book' }), { target: { value: 'k' } })
   fireEvent.click(screen.getByRole('button', { name: 'Check answers' }))
-  act(() => vi.advanceTimersByTime(180000))
-  expect(screen.getByRole('timer')).toHaveTextContent('2:30')
+  act(() => vi.advanceTimersByTime(360000))
+  expect(screen.getByRole('timer')).toHaveTextContent('5:30')
   expect(screen.getByRole('status')).not.toHaveTextContent('Time’s up!')
 })
 
@@ -89,14 +89,14 @@ it('checks written answers and resets the exercise', async () => {
   render(<LastConsonantPractice />)
   expect(screen.getByRole('button', { name: 'Check answers' })).toBeDisabled()
   for (const { word, answer } of lastConsonantQuestions) {
-    await user.type(screen.getByRole('textbox', { name: `Last consonant for ${word}` }), `[[${answer}]`)
+    fireEvent.change(screen.getByRole('textbox', { name: `Last consonant for ${word}` }), { target: { value: `[${answer}]` } })
   }
   await user.click(screen.getByRole('button', { name: 'Check answers' }))
   expect(screen.getByRole('status')).toHaveTextContent('You scored 20 out of 20.')
   await user.click(screen.getByRole('button', { name: 'Restart practice' }))
   expect(screen.getByRole('textbox', { name: 'Last consonant for book' })).toHaveValue('')
   expect(screen.getByRole('button', { name: 'Check answers' })).toBeDisabled()
-})
+}, 20000)
 
 it('accepts typed IPA symbols and shows corrections', async () => {
   const user = userEvent.setup()

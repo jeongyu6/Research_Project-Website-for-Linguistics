@@ -47,7 +47,7 @@ export default function LastConsonantPractice() {
   return <section className="sound-activity first-consonant-practice" aria-labelledby="last-consonant-heading">
     <div className="sound-activity-header">
       <h3 id="last-consonant-heading">Activity 7: Last Consonant</h3>
-      <QuestionTimer key={timerSession} questionId="last-consonant-session" duration={180} paused={checked}
+      <QuestionTimer key={timerSession} questionId="last-consonant-session" duration={360} paused={checked}
         onExpire={() => { setTimedOut(true); setChecked(true) }} />
     </div>
     <p className="sound-activity-instruction">Listen to each word and choose or write the IPA symbol for its <strong>last consonant sound</strong>.</p>
