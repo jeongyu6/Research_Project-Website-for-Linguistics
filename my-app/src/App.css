@@ -469,7 +469,7 @@ main {
 
 .practice-activity-tabs {
   display: grid;
-  grid-template-columns: repeat(5, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
   gap: 10px;
 }
 
@@ -499,6 +499,16 @@ main {
 }
 
 .practice-activity-placeholder h3 { margin-top: 0; color: #001747; }
+
+.first-consonant-table-scroll { overflow-x: auto; }
+.first-consonant-table { width: 100%; border-collapse: collapse; }
+.first-consonant-table caption { text-align: left; margin-bottom: 12px; font-weight: 700; }
+.first-consonant-table th, .first-consonant-table td { padding: 12px; border-bottom: 1px solid #dbe6f5; text-align: left; }
+.first-consonant-table thead { background: #edf3fc; }
+.first-consonant-table audio { width: 240px; max-width: 100%; }
+.first-consonant-table input { width: 100px; padding: 8px 10px; border: 1px solid #b7c8df; border-radius: 8px; font: inherit; font-size: 1.2rem; }
+
+.first-consonant-dropdown { display: block; margin-bottom: 10px; padding: 8px 10px; border: 1px solid #b7c8df; border-radius: 8px; background: #ffffff; color: #0f336c; font: inherit; }
 
 @media (max-width: 640px) {
   .practice-activity-tabs { grid-template-columns: repeat(2, minmax(0, 1fr)); }

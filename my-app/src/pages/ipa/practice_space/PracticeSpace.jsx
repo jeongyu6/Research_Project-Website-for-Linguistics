@@ -4,6 +4,9 @@ import Activity3BuildTheSound from './build_the_sound/index.js'
 import Activity4MysterySound from './mystery_sound/index.js'
 import Activity1VowelMapDrop from './vowel_map_drop/index.js'
 import Activity5VowelDetective from './vowel_detective/index.js'
+import FirstConsonantPractice from './first_consonant/index.js'
+import LastConsonantPractice from './last_consonant/index.js'
+import VowelSoundPractice from './Vowel_Sound/index.js'
 
 const activities = [
   { name: 'Vowel Map Drop', Component: Activity1VowelMapDrop },
@@ -11,6 +14,9 @@ const activities = [
   { name: 'Build the Sound', Component: Activity3BuildTheSound },
   { name: 'Odd Sound Out', Component: Activity4MysterySound },
   { name: 'Find the Sound', Component: Activity5VowelDetective },
+  { name: 'First Consonant', Component: FirstConsonantPractice },
+  { name: 'Last Consonant', Component: LastConsonantPractice },
+  { name: 'Vowel Sound', Component: VowelSoundPractice },
 ]
 
 export default function PracticeSpace() {
