@@ -6,7 +6,7 @@ import Activity1VowelMapDrop from './vowel_map_drop/index.js'
 import Activity5VowelDetective from './vowel_detective/index.js'
 import FirstConsonantPractice from './first_consonant/index.js'
 import LastConsonantPractice from './last_consonant/index.js'
-import VowelSoundPractice from './Vowel_Sound/index.js'
+import VowelSoundPractice from './vowel_sound/index.js'
 
 const activities = [
   { name: 'Vowel Map Drop', Component: Activity1VowelMapDrop },
