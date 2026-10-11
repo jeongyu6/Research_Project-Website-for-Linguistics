@@ -19,13 +19,13 @@ export const pulmonicRows = [
   ['Lateral Approximant', ['', '', '', 'l', '', '', '', '']],
 ]
 
-const recordingFiles = import.meta.glob('../../../../Recordings/**/*.mp3', {
+const recordingFiles = import.meta.glob('../../../../Recordings_for_Chart/**/*.mp3', {
   eager: true,
   import: 'default',
   query: '?url',
 })
 
-const recordingUrl = (path) => recordingFiles[`../../../../Recordings/${path}`]
+const recordingUrl = (path) => recordingFiles[`../../../../Recordings_for_Chart/${path}`]
 
 export const consonantRecordings = {
   'p': [recordingUrl('Consonants/P-pack-vid.mp3')],
