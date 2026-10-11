@@ -1683,6 +1683,10 @@ main {
   line-height: 1.7;
 }
 
+.acknowledgements p + p {
+  margin-top: 16px;
+}
+
 .page-footer {
   padding: 30px 0 34px;
   border-top: 1px solid #e0e8f0;
