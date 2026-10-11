@@ -97,10 +97,10 @@ function App() {
                       <path d="M14 26c0 4.4 8.1 8 18 8s18-3.6 18-8M14 38c0 4.4 8.1 8 18 8s18-3.6 18-8" fill="none" stroke="#ffffff" strokeWidth="3"/>
                     </svg>
                   </div>
-                  <h3>Treeform</h3>
+                  <h3>LingoTree</h3>
                   <p>Create and edit syntax trees with our linguistics diagramming app.</p>
                   <a className="card-button" href="https://linguistics-diagramming.vercel.app/">
-                    Open Treeform →
+                    Open LingoTree →
                   </a>
                 </article>
 
@@ -150,7 +150,17 @@ function App() {
 
             <section className="acknowledgements" aria-labelledby="acknowledgements-heading">
               <h2 id="acknowledgements-heading">Acknowledgements</h2>
-              <p>We thank Professor Yoonjung Kang for providing materials and feedback on the draft website. We also thank the Linguistics Students’ Association (LSA) for choosing the name LingoLab and for their future contributions to the site’s development.</p>
+              <p>
+                We thank Professor Yoonjung Kang for providing materials and feedback on the draft website.
+                We are grateful to George Farag and Kate Prigaro for recording the IPA sounds.
+                We also thank the Linguistics Students’ Association (LSA), particularly Gabrielle Goodman,
+                for choosing the name LingoLab and for their future contributions to the site’s development.
+              </p>
+              <p>
+                This website was developed by Yuseon Jeong from the Department of Computer and Mathematical Sciences
+                and Professor Saffieh Maghaddam from the Department of Language Studies.
+                We welcome feedback and suggestions from students who use the website.
+              </p>
             </section>
 
           </>
